@@ -10,6 +10,107 @@
 **Domain**: bhashamitra.co.nz
 **Status**: MVP Development Phase
 
+## Git Workflow (Dec 2024)
+
+### Branch Strategy
+
+| Branch | Purpose | Protection |
+|--------|---------|------------|
+| `main` | Production-ready code | Protected, requires PR |
+| `develop` | Integration branch for testing | Default working branch |
+| `feature/*` | New features | Created from `develop` |
+| `fix/*` | Bug fixes | Created from `develop` |
+| `hotfix/*` | Urgent production fixes | Created from `main` |
+
+### Development Flow
+
+```
+1. LOCAL TESTING (localhost)
+   └── Developer tests changes locally
+       - Backend: http://localhost:8000
+       - Frontend: http://localhost:3000
+
+2. FEATURE BRANCH
+   └── Create branch from `develop`
+       git checkout develop
+       git pull origin develop
+       git checkout -b feature/my-feature
+
+3. COMMIT & PUSH
+   └── Push to feature branch
+       git add .
+       git commit -m "feat: description"
+       git push -u origin feature/my-feature
+
+4. PULL REQUEST TO DEVELOP
+   └── Create PR: feature/* → develop
+       - Code review
+       - CI/CD tests pass
+       - Merge when approved
+
+5. TESTING IN DEVELOP
+   └── Test integrated features in develop branch
+       - Full integration testing
+       - QA validation
+
+6. RELEASE TO MAIN
+   └── Create PR: develop → main
+       - Final review
+       - Production deployment
+```
+
+### Branch Commands
+
+```bash
+# Start new feature
+git checkout develop
+git pull origin develop
+git checkout -b feature/my-feature
+
+# Start bug fix
+git checkout develop
+git pull origin develop
+git checkout -b fix/bug-description
+
+# Merge feature to develop (via PR or locally)
+git checkout develop
+git merge feature/my-feature
+git push origin develop
+
+# Release to main (when ready)
+git checkout main
+git merge develop
+git push origin main
+```
+
+### Commit Message Convention
+
+```
+type(scope): description
+
+Types:
+- feat: New feature
+- fix: Bug fix
+- docs: Documentation
+- style: Formatting
+- refactor: Code restructuring
+- test: Tests
+- chore: Maintenance
+
+Examples:
+- feat(tts): add Sarvam AI provider
+- fix(alphabet): correct Tamil letter audio playback
+- docs(readme): update setup instructions
+```
+
+### Current Repository Status
+
+- **Remote**: `origin` (GitHub)
+- **Current Branch**: `develop`
+- **Main Branch**: `main` (protected)
+
+---
+
 ## Development Workflow Guidelines (Dec 2024)
 
 ### Two Senior Developers Model

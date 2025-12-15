@@ -1,0 +1,10 @@
+-r base.txt
+
+# Monitoring
+sentry-sdk>=1.38,<2.0
+
+# Health checks
+django-health-check>=3.17,<4.0
+
+# Redis cache backend
+django-redis>=5.4,<6.0

@@ -1,34 +1,34 @@
 # BhashaMitra: Zero-Cost Build Strategy
 
 > **Mission**: Build a world-class heritage language learning platform without hiring developers or language experts
-> **Approach**: Leverage Claude Code as Senior Dev + Free Resources + Community
+> **Approach**: Leverage AI-assisted Development + Free Resources + Community
 > **Savings**: Estimated $50,000-$100,000+ in development and content costs
 
 ---
 
 ## Executive Summary
 
-By strategically using Claude Code, free government APIs, Creative Commons content, and community contributions, we can build BhashaMitra with **$0 development cost** and minimal operational expenses (~$30-50/month).
+By strategically using AI-assisted development, free government APIs, Creative Commons content, and community contributions, we can build BhashaMitra with **$0 development cost** and minimal operational expenses (~$30-50/month).
 
 ### Cost Comparison
 
 | Traditional Approach | Cost | Our Approach | Cost |
 |---------------------|------|--------------|------|
-| Full-stack Developer (3 months) | $15,000-30,000 | Claude Code | $0 |
-| Language Expert (Hindi) | $5,000-10,000 | Claude + Free Resources | $0 |
-| Language Expert (Tamil) | $5,000-10,000 | Claude + Free Resources | $0 |
+| Full-stack Developer (3 months) | $15,000-30,000 | AI-assisted | $0 |
+| Language Expert (Hindi) | $5,000-10,000 | AI + Free Resources | $0 |
+| Language Expert (Tamil) | $5,000-10,000 | AI + Free Resources | $0 |
 | Content Writer | $3,000-5,000 | StoryWeaver CC Content | $0 |
-| UI/UX Designer | $5,000-10,000 | Claude + Shadcn/ui | $0 |
-| QA Tester | $3,000-5,000 | Claude + Automated Tests | $0 |
+| UI/UX Designer | $5,000-10,000 | AI + Shadcn/ui | $0 |
+| QA Tester | $3,000-5,000 | AI + Automated Tests | $0 |
 | **TOTAL TRADITIONAL** | **$36,000-70,000** | **TOTAL OUR WAY** | **$0** |
 
 ---
 
-## Part 1: What Claude Code Can Build (100% Free)
+## Part 1: What AI-Assisted Development Can Build (100% Free)
 
 ### 1.1 Complete Backend System
 
-| Component | Traditional Cost | Claude Builds |
+| Component | Traditional Cost | AI Builds |
 |-----------|-----------------|---------------|
 | Django Project Setup | $500 | ✅ Complete config, settings, Docker |
 | User Authentication | $1,000 | ✅ JWT, registration, login, password reset |
@@ -37,7 +37,7 @@ By strategically using Claude Code, free government APIs, Creative Commons conte
 | Business Logic | $2,000 | ✅ Points, streaks, badges, SRS |
 | Admin Panel | $1,000 | ✅ Django admin customization |
 
-**Claude Code Deliverables:**
+**AI-Assisted Deliverables:**
 - Complete Django project structure
 - All database migrations
 - Full API implementation
@@ -46,7 +46,7 @@ By strategically using Claude Code, free government APIs, Creative Commons conte
 
 ### 1.2 Complete Frontend System
 
-| Component | Traditional Cost | Claude Builds |
+| Component | Traditional Cost | AI Builds |
 |-----------|-----------------|---------------|
 | Next.js Setup | $500 | ✅ App Router, TypeScript |
 | UI Components | $2,000 | ✅ Using Shadcn/ui + Tailwind |
@@ -56,7 +56,7 @@ By strategically using Claude Code, free government APIs, Creative Commons conte
 | Parent Dashboard | $1,000 | ✅ Reports, child management |
 | Mobile Responsive | $1,000 | ✅ PWA ready |
 
-**Claude Code Deliverables:**
+**AI-Assisted Deliverables:**
 - Complete Next.js frontend
 - Reusable component library
 - State management (Zustand)
@@ -65,7 +65,7 @@ By strategically using Claude Code, free government APIs, Creative Commons conte
 
 ### 1.3 External Integrations
 
-| Integration | Traditional Cost | Claude Builds |
+| Integration | Traditional Cost | AI Builds |
 |-------------|-----------------|---------------|
 | Bhashini TTS/STT | $2,000 | ✅ Full client implementation |
 | StoryWeaver API | $1,500 | ✅ Story fetching, caching |
@@ -97,7 +97,7 @@ By strategically using Claude Code, free government APIs, Creative Commons conte
 - Categories/themes
 - Author attribution
 
-**Claude Code Tasks:**
+**Development Tasks:**
 ```
 ✅ Build StoryWeaver API client
 ✅ Implement story caching system
@@ -117,7 +117,7 @@ By strategically using Claude Code, free government APIs, Creative Commons conte
 | Transliteration | Script conversion | FREE |
 | Translation | Multi-language support | FREE |
 
-**Claude Code Tasks:**
+**Development Tasks:**
 ```
 ✅ Implement Bhashini client
 ✅ Audio caching system
@@ -138,11 +138,11 @@ By strategically using Claude Code, free government APIs, Creative Commons conte
 
 ---
 
-## Part 3: What Claude Code Can Generate (Language Content)
+## Part 3: AI-Generated Language Content
 
 ### 3.1 Alphabet Data Generation
 
-**Claude can generate complete alphabet datasets:**
+**AI can generate complete alphabet datasets:**
 
 | Language | Script | Letters | Matras | Total |
 |----------|--------|---------|--------|-------|
@@ -153,7 +153,7 @@ By strategically using Claude Code, free government APIs, Creative Commons conte
 | Telugu | Telugu | 60 | 16 | 76 |
 | Malayalam | Malayalam | 52 | 12 | 64 |
 
-**Data Claude Generates:**
+**Data AI Generates:**
 - Character (native script)
 - Romanization
 - IPA pronunciation
@@ -162,18 +162,18 @@ By strategically using Claude Code, free government APIs, Creative Commons conte
 - Category (vowel/consonant/matra)
 - Order for teaching sequence
 
-**Sample Claude Generation (already done for Hindi):**
+**Sample Generation (already done for Hindi):**
 ```python
 VOWELS = [
     {'char': 'अ', 'roman': 'a', 'ipa': 'ə', 'example': 'अनार', 'ex_trans': 'pomegranate'},
     {'char': 'आ', 'roman': 'aa', 'ipa': 'aː', 'example': 'आम', 'ex_trans': 'mango'},
-    # ... (Claude generates complete set)
+    # ... (AI generates complete set)
 ]
 ```
 
 ### 3.2 Vocabulary Generation
 
-**Claude can generate themed vocabulary:**
+**AI can generate themed vocabulary:**
 
 | Theme | Words | Difficulty |
 |-------|-------|------------|
@@ -193,7 +193,7 @@ VOWELS = [
 | Nature | 40-50 words | Level 2-3 |
 | Travel | 30-40 words | Level 3 |
 
-**Data Claude Generates per word:**
+**Data AI Generates per word:**
 - Word (native script)
 - Romanization
 - Translation (English)
@@ -207,7 +207,7 @@ VOWELS = [
 
 ### 3.3 Grammar Content Generation
 
-**Claude can generate grammar lessons:**
+**AI can generate grammar lessons:**
 
 | Topic | Subtopics | Exercises |
 |-------|-----------|-----------|
@@ -218,7 +218,7 @@ VOWELS = [
 | Postpositions | Common postpositions | 20-30 |
 | Sentence Structure | SOV order, questions | 30-50 |
 
-**Data Claude Generates:**
+**Data AI Generates:**
 - Rule explanation (simple + detailed)
 - Formula/pattern
 - 5-10 examples per rule
@@ -228,9 +228,9 @@ VOWELS = [
 
 ### 3.4 Game Content Generation
 
-**Claude can generate game content:**
+**AI can generate game content:**
 
-| Game Type | Content Needed | Claude Generates |
+| Game Type | Content Needed | AI Generates |
 |-----------|---------------|------------------|
 | Memory Match | Word-image pairs | ✅ JSON data |
 | Word Search | Word grids | ✅ Algorithm + grids |
@@ -241,7 +241,7 @@ VOWELS = [
 
 ### 3.5 Assessment Generation
 
-**Claude can generate assessments:**
+**AI can generate assessments:**
 
 | Assessment Type | Questions | Purpose |
 |-----------------|-----------|---------|
@@ -271,7 +271,7 @@ VOWELS = [
 
 ### 4.2 Content Review (Quality Check)
 
-Even though Claude generates content, you should review:
+Even though AI generates content, you should review:
 
 | Content | Review Focus | Time Estimate |
 |---------|-------------|---------------|
@@ -296,7 +296,7 @@ Even though Claude generates content, you should review:
 ## Part 5: Implementation Roadmap
 
 ### Phase 1: Core Platform (Weeks 1-2)
-**Claude Code builds:**
+**AI builds:**
 - [ ] Django backend setup
 - [ ] User authentication
 - [ ] Child profiles
@@ -304,7 +304,7 @@ Even though Claude generates content, you should review:
 - [ ] Basic API
 
 ### Phase 2: Story System (Week 2-3)
-**Claude Code builds:**
+**AI builds:**
 - [ ] StoryWeaver integration
 - [ ] Story reader UI
 - [ ] Bhashini TTS integration
@@ -312,14 +312,14 @@ Even though Claude generates content, you should review:
 - [ ] Audio player
 
 ### Phase 3: Learning Modules (Weeks 3-4)
-**Claude Code builds + generates:**
+**AI builds + generates:**
 - [ ] Hindi alphabet data
 - [ ] Vocabulary themes (5 initial)
 - [ ] Flashcard system with SRS
 - [ ] Basic games (3-4 types)
 
 ### Phase 4: Gamification (Week 4)
-**Claude Code builds:**
+**AI builds:**
 - [ ] Points system
 - [ ] Badges (12 types)
 - [ ] Streaks
@@ -327,7 +327,7 @@ Even though Claude generates content, you should review:
 - [ ] Parent dashboard
 
 ### Phase 5: Polish & Launch (Week 4-5)
-**Claude Code + You:**
+**AI + You:**
 - [ ] Testing
 - [ ] Bug fixes
 - [ ] Content review
@@ -338,9 +338,9 @@ Even though Claude generates content, you should review:
 
 ## Part 6: Ongoing Content (Post-Launch)
 
-### Monthly Content Updates (Claude Generates)
+### Monthly Content Updates (AI Generates)
 
-| Month | Content | Claude Work |
+| Month | Content | AI Work |
 |-------|---------|-------------|
 | Month 1 | Launch Hindi MVP | Done |
 | Month 2 | Add Tamil | Generate alphabet + vocabulary |
@@ -351,7 +351,7 @@ Even though Claude generates content, you should review:
 
 ### Content Generation Sessions
 
-**Schedule 2-hour sessions with Claude:**
+**Schedule 2-hour development sessions:**
 1. Generate vocabulary theme (50 words)
 2. Review and refine
 3. Export to seed script
@@ -361,7 +361,7 @@ Even though Claude generates content, you should review:
 
 ## Part 7: Quality Assurance Strategy
 
-### Automated Testing (Claude Writes)
+### Automated Testing
 - Unit tests for all services
 - API integration tests
 - Frontend component tests
@@ -387,11 +387,11 @@ Even though Claude generates content, you should review:
 
 | Item | Traditional | Our Approach |
 |------|-------------|--------------|
-| Backend Development | $15,000 | $0 (Claude) |
-| Frontend Development | $10,000 | $0 (Claude) |
-| Content Creation | $20,000 | $0 (Claude + Free) |
+| Backend Development | $15,000 | $0 (AI-assisted) |
+| Frontend Development | $10,000 | $0 (AI-assisted) |
+| Content Creation | $20,000 | $0 (AI + Free) |
 | Design | $5,000 | $0 (Templates) |
-| Testing | $3,000 | $0 (Claude + Self) |
+| Testing | $3,000 | $0 (AI + Self) |
 | **Total Development** | **$53,000** | **$0** |
 
 ### Operational Costs (Monthly)
@@ -403,7 +403,7 @@ Even though Claude generates content, you should review:
 | Domain | $2.50 | Annual ~$30 |
 | Bhashini API | $0 | Government free tier |
 | StoryWeaver | $0 | Creative Commons |
-| Claude Pro | $20 | For ongoing development |
+| AI Tools | $20 | For ongoing development |
 | **Total Monthly** | **$20-70** | |
 
 ### Your Time Investment
@@ -455,7 +455,7 @@ Even though Claude generates content, you should review:
 4. [ ] Set up local development environment
 
 ### Next 2 Weeks
-1. [ ] Review Claude-generated Hindi content
+1. [ ] Review AI-generated Hindi content
 2. [ ] Test basic app flow
 3. [ ] Recruit 5 beta testers (family/friends)
 
@@ -477,7 +477,7 @@ Even though Claude generates content, you should review:
 - ❌ Large budget
 
 **You have:**
-- ✅ Claude Code as your senior developer
+- ✅ AI-assisted development
 - ✅ Free government APIs (Bhashini)
 - ✅ 53,000+ free stories (StoryWeaver)
 - ✅ AI-generated language content
@@ -487,7 +487,7 @@ Even though Claude generates content, you should review:
 **Total Investment:**
 - 💰 Money: ~$30-70/month
 - ⏰ Time: 30-50 hours over 5 weeks
-- 💪 Effort: Guide Claude, review content, test
+- 💪 Effort: Guide development, review content, test
 
 **Potential Impact:**
 - 🎯 Serve 42,000+ Indian households in NZ

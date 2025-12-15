@@ -1,6 +1,6 @@
 # Heritage Language Learning App - Complete Frontend Development Guide
 
-> **For Claude Code Implementation**
+> **Frontend Implementation Guide**
 > **Featuring: Peppi 🐱 - The AI Ragdoll Cat Tutor**
 
 ---
@@ -12,7 +12,7 @@
 | **Tech Stack** | Next.js 14, TypeScript, Tailwind CSS, Framer Motion, Zustand |
 | **Target Users** | Indian diaspora children (4-14 years) |
 | **Languages** | Hindi, Tamil, Gujarati, Punjabi |
-| **Signature Feature** | Peppi - AI conversational tutor (Claude Haiku) |
+| **Signature Feature** | Peppi - AI conversational tutor |
 | **Backend** | Django REST Framework + PostgreSQL |
 
 ---
@@ -346,7 +346,7 @@ export function usePeppiChat({ childId, language }: { childId: string; language:
 ### Cost Analysis
 
 ```
-Claude Haiku Pricing:
+AI API Pricing:
 - Input: $0.25 / million tokens
 - Output: $1.25 / million tokens
 
@@ -701,7 +701,7 @@ export interface Badge {
 This guide provides everything needed to build a production-ready children's heritage language learning app with:
 
 ✅ **Competitive Edge**: Only heritage-focused app with AI tutor
-✅ **Peppi**: Friendly Ragdoll cat AI companion (Claude Haiku)
+✅ **Peppi**: Friendly Ragdoll cat AI companion
 ✅ **Child-First**: Bright colors, large buttons, celebrations
 ✅ **Gamification**: Streaks, XP, badges, levels
 ✅ **Modern Stack**: Next.js 14 + TypeScript + Tailwind

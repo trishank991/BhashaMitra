@@ -1,4 +1,4 @@
-# BhashaMitra TTS Implementation Guide for Claude Code
+# BhashaMitra TTS Implementation Guide
 
 > **Purpose**: Complete implementation guide for Text-to-Speech using AI4Bharat Indic Parler-TTS
 > **Provider**: Hugging Face Inference API (PRO Plan - $9/month)

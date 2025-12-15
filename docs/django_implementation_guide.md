@@ -1,6 +1,6 @@
-# BhashaMitra - Django Implementation Guide for Claude Code
+# BhashaMitra - Django Implementation Guide
 
-> **Purpose**: Complete technical specification for Claude Code to build BhashaMitra
+> **Purpose**: Complete technical specification to build BhashaMitra
 > **Stack**: Django 5.x + PostgreSQL + React (Next.js) Frontend
 > **Timeline**: 30-day MVP
 
@@ -1775,7 +1775,7 @@ pytest
 
 ---
 
-## ⚠️ Important Notes for Claude Code
+## ⚠️ Important Development Notes
 
 1. **Always create `__init__.py`** files in every Python package directory
 2. **Run migrations** after creating/modifying models: `python manage.py makemigrations && python manage.py migrate`

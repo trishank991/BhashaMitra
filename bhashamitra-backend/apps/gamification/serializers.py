@@ -1,6 +1,6 @@
 """Gamification serializers."""
 from rest_framework import serializers
-from .models import Badge, ChildBadge, Streak, VoiceRecording, PointsLog, Leaderboard
+from .models import Badge, ChildBadge, Streak, VoiceRecording
 
 
 class BadgeSerializer(serializers.ModelSerializer):
@@ -9,9 +9,9 @@ class BadgeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Badge
         fields = [
-            'id', 'name', 'slug', 'description', 'category',
-            'icon', 'color', 'points', 'requirement_type',
-            'requirement_value', 'display_order'
+            'id', 'name', 'description', 'icon',
+            'criteria_type', 'criteria_value',
+            'display_order', 'points_bonus'
         ]
 
 
@@ -44,11 +44,11 @@ class VoiceRecordingSerializer(serializers.ModelSerializer):
     class Meta:
         model = VoiceRecording
         fields = [
-            'id', 'recording_type', 'story', 'page_number',
-            'text_content', 'audio_url', 'duration_seconds',
-            'accuracy_score', 'feedback', 'created_at'
+            'id', 'story', 'page_number', 'audio_url',
+            'duration_ms', 'transcription', 'confidence_score',
+            'recorded_at'
         ]
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id', 'recorded_at']
 
 
 class CreateRecordingSerializer(serializers.ModelSerializer):
@@ -57,17 +57,8 @@ class CreateRecordingSerializer(serializers.ModelSerializer):
     class Meta:
         model = VoiceRecording
         fields = [
-            'recording_type', 'story', 'page_number',
-            'text_content', 'audio_url', 'duration_seconds'
+            'story', 'page_number', 'audio_url', 'duration_ms'
         ]
-
-
-class PointsLogSerializer(serializers.ModelSerializer):
-    """Points log serializer."""
-
-    class Meta:
-        model = PointsLog
-        fields = ['id', 'points', 'activity', 'description', 'created_at']
 
 
 class LeaderboardEntrySerializer(serializers.Serializer):

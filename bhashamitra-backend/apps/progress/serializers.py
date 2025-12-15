@@ -1,21 +1,27 @@
 """Progress serializers."""
 from rest_framework import serializers
-from .models import Progress, DailyActivity, ReadingSession
+from .models import Progress, DailyActivity
 from apps.stories.serializers import StoryListSerializer
 
 
 class ProgressSerializer(serializers.ModelSerializer):
     """Progress serializer."""
     story = StoryListSerializer(read_only=True)
-    progress_percentage = serializers.IntegerField(read_only=True)
+    progress_percentage = serializers.SerializerMethodField()
 
     class Meta:
         model = Progress
         fields = [
-            'id', 'story', 'status', 'current_page', 'total_pages',
-            'progress_percentage', 'time_spent_seconds',
-            'started_at', 'completed_at', 'read_count', 'last_read_at'
+            'id', 'story', 'status', 'current_page', 'pages_completed',
+            'progress_percentage', 'time_spent_seconds', 'points_earned',
+            'started_at', 'completed_at', 'last_read_at'
         ]
+
+    def get_progress_percentage(self, obj):
+        """Calculate progress percentage based on story page count."""
+        if obj.story and obj.story.page_count > 0:
+            return int((obj.pages_completed / obj.story.page_count) * 100)
+        return 0
 
 
 class ProgressUpdateSerializer(serializers.Serializer):
@@ -32,19 +38,7 @@ class DailyActivitySerializer(serializers.ModelSerializer):
         fields = [
             'date', 'stories_started', 'stories_completed',
             'pages_read', 'time_spent_seconds', 'points_earned',
-            'recordings_made', 'letters_practiced', 'words_practiced',
-            'games_played'
-        ]
-
-
-class ReadingSessionSerializer(serializers.ModelSerializer):
-    """Reading session serializer."""
-
-    class Meta:
-        model = ReadingSession
-        fields = [
-            'id', 'story', 'start_page', 'end_page',
-            'duration_seconds', 'started_at', 'ended_at'
+            'recordings_made'
         ]
 
 

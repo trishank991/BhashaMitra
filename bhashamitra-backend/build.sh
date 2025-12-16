@@ -13,6 +13,8 @@ echo "=== DEBUG: Checking environment ==="
 echo "DJANGO_ENV: $DJANGO_ENV"
 echo "DATABASE_URL set: $(if [ -n "$DATABASE_URL" ]; then echo 'YES'; else echo 'NO'; fi)"
 echo "DATABASE_URL length: ${#DATABASE_URL}"
+python -c "import os; print(f'Python sees DATABASE_URL: {bool(os.getenv(\"DATABASE_URL\"))}')"
+python -c "import os; env=os.getenv('DJANGO_ENV','dev'); db=os.getenv('DATABASE_URL'); print(f'Will load: prod' if env=='prod' or db else 'Will load: dev')"
 echo "==================================="
 
 echo "Running migrations..."

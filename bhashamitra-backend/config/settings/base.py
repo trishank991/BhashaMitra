@@ -145,7 +145,13 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+# Parse CORS origins, cleaning up any whitespace/newlines and invalid entries
+_cors_origins_raw = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000')
+CORS_ALLOWED_ORIGINS = [
+    origin.strip().rstrip('/')  # Remove whitespace and trailing slashes
+    for origin in _cors_origins_raw.replace('\n', ',').split(',')
+    if origin.strip() and origin.strip().startswith(('http://', 'https://'))
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # ===========================================

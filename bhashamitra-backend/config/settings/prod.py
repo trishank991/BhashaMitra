@@ -1,8 +1,14 @@
 """Production settings."""
 from .base import *
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
 import dj_database_url
+
+# Optional Sentry import
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    SENTRY_AVAILABLE = True
+except ImportError:
+    SENTRY_AVAILABLE = False
 
 DEBUG = False
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
@@ -108,8 +114,8 @@ if USE_S3_STORAGE:
     elif AWS_S3_ENDPOINT_URL:
         MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/'
 
-# Sentry Error Tracking
-if os.getenv('SENTRY_DSN'):
+# Sentry Error Tracking (optional)
+if SENTRY_AVAILABLE and os.getenv('SENTRY_DSN'):
     sentry_sdk.init(
         dsn=os.getenv('SENTRY_DSN'),
         integrations=[DjangoIntegration()],

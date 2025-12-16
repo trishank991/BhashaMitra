@@ -10,53 +10,111 @@
 **Domain**: bhashamitra.co.nz
 **Status**: MVP Development Phase
 
+## Deployment (Dec 2024)
+
+### Production URLs
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| **Backend API** | Render | https://bhashamitra.onrender.com |
+| **Frontend** | Vercel | https://bhashamitra-frontend.vercel.app |
+| **Database** | Render PostgreSQL | Internal connection via DATABASE_URL |
+
+### Deployment Configuration
+
+**Backend (Render):**
+- Config file: `bhashamitra-backend/render.yaml`
+- Build script: `bhashamitra-backend/build.sh`
+- Start command: `gunicorn config.wsgi:application`
+- Environment variables set in Render dashboard
+- Auto-deploys from `develop` branch
+
+**Frontend (Vercel):**
+- Framework: Next.js (auto-detected)
+- Root directory: `bhashamitra-frontend`
+- Environment variable: `NEXT_PUBLIC_API_URL=https://bhashamitra.onrender.com/api/v1`
+- Auto-deploys from `develop` branch
+
+### Environment Variables (Production)
+
+**Render (Backend):**
+- `DJANGO_ENV=prod`
+- `SECRET_KEY` (auto-generated)
+- `DATABASE_URL` (from linked database)
+- `ALLOWED_HOSTS=.onrender.com`
+- `CORS_ALLOWED_ORIGINS=https://bhashamitra-frontend.vercel.app`
+
+**Vercel (Frontend):**
+- `NEXT_PUBLIC_API_URL=https://bhashamitra.onrender.com/api/v1`
+
+---
+
 ## Git Workflow (Dec 2024)
 
 ### Branch Strategy
 
-| Branch | Purpose | Protection |
+| Branch | Purpose | Deploys To |
 |--------|---------|------------|
-| `main` | Production-ready code | Protected, requires PR |
-| `develop` | Integration branch for testing | Default working branch |
-| `feature/*` | New features | Created from `develop` |
-| `fix/*` | Bug fixes | Created from `develop` |
+| `main` | Production-ready code | Production (manual) |
+| `develop` | Integration & staging | Render + Vercel (auto) |
+| `feature/*` | New features | Local only |
+| `fix/*` | Bug fixes | Local only |
 | `hotfix/*` | Urgent production fixes | Created from `main` |
 
 ### Development Flow
 
 ```
-1. LOCAL TESTING (localhost)
-   └── Developer tests changes locally
-       - Backend: http://localhost:8000
-       - Frontend: http://localhost:3000
+┌─────────────────────────────────────────────────────────────────────┐
+│                        DEVELOPMENT WORKFLOW                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  1. LOCAL DEVELOPMENT (localhost)                                    │
+│     ├── Backend: http://localhost:8000                               │
+│     ├── Frontend: http://localhost:3000                              │
+│     └── Test all changes thoroughly before committing                │
+│                                                                      │
+│  2. FEATURE BRANCH (local → GitHub)                                  │
+│     ├── Create: git checkout -b feature/my-feature develop          │
+│     ├── Commit: git commit -m "feat: description"                    │
+│     └── Push: git push -u origin feature/my-feature                  │
+│                                                                      │
+│  3. PULL REQUEST → develop                                           │
+│     ├── Create PR on GitHub: feature/* → develop                     │
+│     ├── Code review & approval required                              │
+│     └── Merge triggers auto-deploy to Render + Vercel                │
+│                                                                      │
+│  4. STAGING TEST (develop branch)                                    │
+│     ├── Backend: https://bhashamitra.onrender.com                    │
+│     ├── Frontend: https://bhashamitra-frontend.vercel.app            │
+│     └── Full integration testing on staging                          │
+│                                                                      │
+│  5. PRODUCTION RELEASE (main branch)                                 │
+│     ├── Create PR: develop → main                                    │
+│     ├── Final review & approval                                      │
+│     └── Merge to main = Production release                           │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-2. FEATURE BRANCH
-   └── Create branch from `develop`
-       git checkout develop
-       git pull origin develop
-       git checkout -b feature/my-feature
+### Quick Reference Commands
 
-3. COMMIT & PUSH
-   └── Push to feature branch
-       git add .
-       git commit -m "feat: description"
-       git push -u origin feature/my-feature
+```bash
+# Start new feature
+git checkout develop
+git pull origin develop
+git checkout -b feature/my-feature
 
-4. PULL REQUEST TO DEVELOP
-   └── Create PR: feature/* → develop
-       - Code review
-       - CI/CD tests pass
-       - Merge when approved
+# Work locally, test, then commit
+git add .
+git commit -m "feat: description"
+git push -u origin feature/my-feature
 
-5. TESTING IN DEVELOP
-   └── Test integrated features in develop branch
-       - Full integration testing
-       - QA validation
+# Create PR on GitHub: feature/my-feature → develop
+# After PR approved and merged, changes auto-deploy to staging
 
-6. RELEASE TO MAIN
-   └── Create PR: develop → main
-       - Final review
-       - Production deployment
+# When ready for production:
+# Create PR on GitHub: develop → main
+# After approval, merge to main for production release
 ```
 
 ### Branch Commands

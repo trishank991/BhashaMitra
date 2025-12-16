@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd bhashamitra-frontend && npm run build",
-  "outputDirectory": "bhashamitra-frontend/.next",
-  "installCommand": "cd bhashamitra-frontend && npm install",
-  "framework": "nextjs"
-}

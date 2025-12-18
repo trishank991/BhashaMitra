@@ -13,7 +13,7 @@ services:
     region: oregon
     rootDir: bhashamitra-backend
     buildCommand: "./build.sh"
-    preDeployCommand: "python manage.py migrate && python manage.py seed_badges || true"
+    preDeployCommand: "python manage.py migrate && python manage.py seed_badges && python manage.py seed_mimic_challenges || true"
     startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
     envVars:
       - key: DJANGO_ENV

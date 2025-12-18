@@ -15,9 +15,20 @@ urlpatterns = [
         name='story-page-audio'
     ),
 
+    # Curriculum audio (pre-generated, available for free tier)
+    path('curriculum/', views.CurriculumAudioListView.as_view(), name='curriculum-list'),
+    path(
+        'curriculum/<str:content_type>/<str:content_id>/',
+        views.CurriculumAudioView.as_view(),
+        name='curriculum-audio'
+    ),
+
     # Service status
     path('status/', views.TTSStatusView.as_view(), name='status'),
 
     # Pre-warm cache (admin only)
     path('prewarm/<uuid:story_id>/', views.PrewarmStoryAudioView.as_view(), name='prewarm'),
+
+    # Audio upload for mimic recordings
+    path('upload-audio/', views.AudioUploadView.as_view(), name='upload-audio'),
 ]

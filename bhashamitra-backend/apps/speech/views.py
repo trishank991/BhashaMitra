@@ -7,6 +7,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from django.http import HttpResponse
 import logging
 
+from apps.speech.models import AudioCache
 from apps.speech.services.tts_service import TTSService, TTSServiceError
 from apps.speech.services.cache_service import AudioCacheService
 
@@ -252,4 +253,578 @@ class PrewarmStoryAudioView(APIView):
             return Response(
                 {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class CurriculumAudioView(APIView):
+    """
+    GET /api/v1/speech/curriculum/{content_type}/{content_id}/
+
+    Get pre-generated audio for curriculum content (alphabet, vocabulary).
+    This endpoint serves cached audio for FREE tier users.
+
+    Parameters:
+    - content_type: 'alphabet' or 'vocabulary'
+    - content_id: transliteration code (e.g., 'ka', 'maa')
+
+    Query Parameters:
+    - language: HINDI (default), TAMIL, etc.
+
+    Response: Audio file (WAV format) or JSON error
+
+    Headers:
+    - X-Audio-Cached: true (always, since this serves pre-generated content)
+    - Cache-Control: public, max-age=31536000 (1 year)
+    """
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'tts'
+
+    def get(self, request, content_type, content_id):
+        language = request.query_params.get('language', 'HINDI')
+
+        # Validate content type
+        valid_content_types = ['alphabet', 'vocabulary', 'alphabet_letter', 'alphabet_example']
+        if content_type not in valid_content_types and not content_type.startswith('vocabulary_'):
+            return Response(
+                {"detail": f"Invalid content type. Must be one of: {valid_content_types}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Look up cached audio by content type and ID
+            audio_cache = AudioCache.objects.filter(
+                content_type__contains=content_type,
+                content_id=content_id,
+                language=language,
+            ).first()
+
+            if not audio_cache:
+                return Response(
+                    {"detail": "Audio not found. Content may not be pre-generated yet."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Read audio file
+            if audio_cache.audio_file:
+                audio_cache.audio_file.open('rb')
+                audio_bytes = audio_cache.audio_file.read()
+                audio_cache.audio_file.close()
+            elif audio_cache.audio_url:
+                # Redirect to stored URL
+                return Response(
+                    {"audio_url": audio_cache.audio_url},
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    {"detail": "Audio file not available"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Update access count
+            audio_cache.increment_access()
+
+            response = HttpResponse(audio_bytes, content_type='audio/wav')
+            response['Content-Disposition'] = f'inline; filename="{content_id}.wav"'
+            response['Content-Length'] = len(audio_bytes)
+            response['X-Audio-Cached'] = 'true'
+            response['X-Content-Type'] = content_type
+            response['X-Content-ID'] = content_id
+            response['Cache-Control'] = 'public, max-age=31536000'  # 1 year cache
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Error serving curriculum audio: {e}")
+            return Response(
+                {"detail": "Error retrieving audio"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class CurriculumAudioListView(APIView):
+    """
+    GET /api/v1/speech/curriculum/
+
+    List all available pre-generated curriculum audio.
+    Useful for frontend to know what's available for offline caching.
+
+    Query Parameters:
+    - language: HINDI (default)
+    - content_type: alphabet, vocabulary (optional filter)
+
+    Response:
+    {
+        "language": "HINDI",
+        "content": {
+            "alphabet": [
+                {"id": "ka", "text": "क", "audio_url": "/api/v1/speech/curriculum/alphabet/ka/"},
+                ...
+            ],
+            "vocabulary": {
+                "family": [...],
+                "colors": [...],
+                ...
+            }
+        },
+        "total_items": 150,
+        "cache_status": "complete"
+    }
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        language = request.query_params.get('language', 'HINDI')
+        content_type_filter = request.query_params.get('content_type')
+
+        # Get all cached curriculum content
+        queryset = AudioCache.objects.filter(
+            language=language,
+            content_type__isnull=False,
+        ).exclude(content_type='')
+
+        if content_type_filter:
+            queryset = queryset.filter(content_type__contains=content_type_filter)
+
+        # Organize by content type
+        content = {
+            'alphabet': [],
+            'vocabulary': {},
+        }
+
+        for item in queryset:
+            entry = {
+                'id': item.content_id,
+                'text': item.text_content,
+                'audio_url': f'/api/v1/speech/curriculum/{item.content_type}/{item.content_id}/',
+            }
+
+            if item.content_type.startswith('alphabet'):
+                content['alphabet'].append(entry)
+            elif item.content_type.startswith('vocabulary_'):
+                category = item.content_type.replace('vocabulary_', '')
+                if category not in content['vocabulary']:
+                    content['vocabulary'][category] = []
+                content['vocabulary'][category].append(entry)
+
+        total_items = queryset.count()
+
+        return Response({
+            'language': language,
+            'content': content,
+            'total_items': total_items,
+            'cache_status': 'complete' if total_items > 0 else 'empty',
+        })
+
+
+# ========================================
+# PEPPI MIMIC VIEWS
+# ========================================
+
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.db.models import Avg, Sum, Count
+from apps.speech.models import PeppiMimicChallenge, PeppiMimicAttempt, PeppiMimicProgress
+from apps.speech.serializers import (
+    MimicChallengeListSerializer,
+    MimicChallengeDetailSerializer,
+    MimicAttemptSerializer,
+    MimicAttemptSubmitSerializer,
+    MimicAttemptResultSerializer,
+    MimicProgressSerializer,
+    MimicProgressSummarySerializer,
+    MimicShareSerializer,
+)
+from apps.speech.services.pronunciation_scorer import pronunciation_scorer
+from apps.speech.services.stt_service import stt_service
+from apps.children.models import Child
+
+
+class MimicChallengeListView(APIView):
+    """
+    GET /api/v1/children/{child_id}/mimic/challenges/
+
+    List pronunciation challenges for a child.
+
+    Query Parameters:
+    - category: GREETING, FAMILY, NUMBERS, COLORS, FESTIVAL, etc.
+    - difficulty: 1, 2, or 3
+    - limit: max results (default 20)
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, child_id):
+        child = get_object_or_404(Child, id=child_id, user=request.user)
+
+        # Build queryset
+        queryset = PeppiMimicChallenge.objects.filter(
+            is_active=True,
+            language=child.language
+        )
+
+        # Filter by category
+        category = request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category=category.upper())
+
+        # Filter by difficulty
+        difficulty = request.query_params.get('difficulty')
+        if difficulty:
+            queryset = queryset.filter(difficulty=int(difficulty))
+
+        # Limit results
+        limit = int(request.query_params.get('limit', 20))
+        queryset = queryset[:limit]
+
+        # Get child's progress for these challenges
+        challenge_ids = [str(c.id) for c in queryset]
+        progress_qs = PeppiMimicProgress.objects.filter(
+            child=child,
+            challenge_id__in=challenge_ids
+        )
+        progress_map = {str(p.challenge_id): p for p in progress_qs}
+
+        # Serialize
+        serializer = MimicChallengeListSerializer(
+            queryset,
+            many=True,
+            context={'progress_map': progress_map}
+        )
+
+        return Response({
+            'challenges': serializer.data,
+            'categories': dict(PeppiMimicChallenge.Category.choices),
+            'total': len(serializer.data),
+        })
+
+
+class MimicChallengeDetailView(APIView):
+    """
+    GET /api/v1/children/{child_id}/mimic/challenges/{challenge_id}/
+
+    Get detailed info for a specific challenge.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, child_id, challenge_id):
+        child = get_object_or_404(Child, id=child_id, user=request.user)
+        challenge = get_object_or_404(
+            PeppiMimicChallenge,
+            id=challenge_id,
+            is_active=True
+        )
+
+        serializer = MimicChallengeDetailSerializer(
+            challenge,
+            context={'child': child}
+        )
+
+        return Response(serializer.data)
+
+
+class MimicAttemptSubmitView(APIView):
+    """
+    POST /api/v1/children/{child_id}/mimic/challenges/{challenge_id}/attempt/
+
+    Submit a pronunciation attempt for scoring.
+
+    Request Body:
+    {
+        "audio_url": "https://r2.example.com/recordings/xxx.webm",
+        "duration_ms": 3000
+    }
+
+    Response:
+    {
+        "attempt_id": "uuid",
+        "transcription": "नमस्ते",
+        "score": 85.5,
+        "stars": 3,
+        "points_earned": 35,
+        "is_personal_best": true,
+        "mastered": true,
+        "peppi_feedback": "WOOOW! Perfect!",
+        "share_message": "...",
+        "progress": {...}
+    }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, child_id, challenge_id):
+        child = get_object_or_404(Child, id=child_id, user=request.user)
+        challenge = get_object_or_404(
+            PeppiMimicChallenge,
+            id=challenge_id,
+            is_active=True
+        )
+
+        # Validate input
+        serializer = MimicAttemptSubmitSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        audio_url = serializer.validated_data['audio_url']
+        duration_ms = serializer.validated_data.get('duration_ms', 3000)
+
+        try:
+            # Step 1: Transcribe audio using STT
+            stt_result = stt_service.transcribe(
+                audio_url=audio_url,
+                language=challenge.language,
+                expected_word=challenge.word  # For mock STT testing
+            )
+
+            # Step 2: Score the pronunciation
+            score_result = pronunciation_scorer.score(
+                transcription=stt_result.transcription,
+                expected_word=challenge.word,
+                stt_confidence=stt_result.confidence,
+                expected_romanization=challenge.romanization
+            )
+
+            # Step 3: Get or create progress record
+            progress, created = PeppiMimicProgress.objects.get_or_create(
+                child=child,
+                challenge=challenge
+            )
+
+            # Step 4: Check if personal best
+            is_personal_best = score_result.final_score > progress.best_score
+
+            # Step 5: Calculate points
+            points = pronunciation_scorer.get_points(
+                score_result.stars,
+                is_personal_best
+            )
+
+            # Step 6: Create attempt record
+            attempt = PeppiMimicAttempt.objects.create(
+                child=child,
+                challenge=challenge,
+                audio_url=audio_url,
+                duration_ms=duration_ms,
+                stt_transcription=stt_result.transcription,
+                stt_confidence=stt_result.confidence,
+                text_match_score=score_result.text_match_score,
+                final_score=score_result.final_score,
+                stars=score_result.stars,
+                points_earned=points,
+                is_personal_best=is_personal_best
+            )
+
+            # Step 7: Update progress
+            progress.update_from_attempt(attempt)
+
+            # Step 8: Update child's total points
+            child.total_points += points
+            child.save(update_fields=['total_points'])
+
+            # Step 9: Get Peppi feedback
+            peppi_feedback = pronunciation_scorer.get_peppi_feedback(
+                challenge,
+                score_result.feedback_key,
+                child.name
+            )
+
+            # Step 10: Generate share message
+            share_message = pronunciation_scorer.generate_share_message(
+                child_name=child.name,
+                word=challenge.word,
+                romanization=challenge.romanization,
+                language=challenge.language,
+                stars=score_result.stars,
+                score=score_result.final_score
+            )
+
+            return Response({
+                'attempt_id': attempt.id,
+                'transcription': stt_result.transcription,
+                'score': score_result.final_score,
+                'stars': score_result.stars,
+                'points_earned': points,
+                'is_personal_best': is_personal_best,
+                'mastered': progress.mastered,
+                'peppi_feedback': peppi_feedback,
+                'share_message': share_message,
+                'progress': {
+                    'best_score': progress.best_score,
+                    'best_stars': progress.best_stars,
+                    'total_attempts': progress.total_attempts,
+                    'mastered': progress.mastered,
+                }
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            logger.error(f"Error processing mimic attempt: {e}")
+            return Response(
+                {'detail': f'Error processing attempt: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class MimicProgressView(APIView):
+    """
+    GET /api/v1/children/{child_id}/mimic/progress/
+
+    Get child's overall mimic progress summary.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, child_id):
+        child = get_object_or_404(Child, id=child_id, user=request.user)
+
+        # Get all progress records
+        progress_qs = PeppiMimicProgress.objects.filter(child=child)
+
+        # Calculate stats
+        total_challenges = PeppiMimicChallenge.objects.filter(
+            is_active=True,
+            language=child.language
+        ).count()
+
+        stats = progress_qs.aggregate(
+            total_attempts=Sum('total_attempts'),
+            total_points=Sum('total_points'),
+            avg_score=Avg('best_score'),
+        )
+
+        challenges_attempted = progress_qs.count()
+        challenges_mastered = progress_qs.filter(mastered=True).count()
+
+        # Get category breakdown
+        categories = progress_qs.values('challenge__category').annotate(
+            count=Count('id'),
+            mastered=Count('id', filter=models.Q(mastered=True)),
+            avg_score=Avg('best_score')
+        )
+
+        return Response({
+            'total_challenges': total_challenges,
+            'challenges_attempted': challenges_attempted,
+            'challenges_mastered': challenges_mastered,
+            'total_attempts': stats['total_attempts'] or 0,
+            'total_points': stats['total_points'] or 0,
+            'average_score': round(stats['avg_score'] or 0, 1),
+            'current_streak': 0,  # TODO: Implement streak tracking
+            'categories': list(categories),
+        })
+
+
+class MimicAttemptShareView(APIView):
+    """
+    PATCH /api/v1/children/{child_id}/mimic/attempts/{attempt_id}/share/
+
+    Mark an attempt as shared to family.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, child_id, attempt_id):
+        child = get_object_or_404(Child, id=child_id, user=request.user)
+        attempt = get_object_or_404(
+            PeppiMimicAttempt,
+            id=attempt_id,
+            child=child
+        )
+
+        serializer = MimicShareSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if serializer.validated_data['shared_to_family']:
+            attempt.shared_to_family = True
+            attempt.shared_at = timezone.now()
+            attempt.save(update_fields=['shared_to_family', 'shared_at'])
+
+        return Response({
+            'id': attempt.id,
+            'shared_to_family': attempt.shared_to_family,
+            'shared_at': attempt.shared_at,
+        })
+
+
+class AudioUploadView(APIView):
+    """
+    POST /api/v1/speech/upload-audio/
+
+    Upload audio recording for mimic attempts.
+    Stores audio and returns URL for STT processing.
+
+    Request: multipart/form-data
+    - audio: Audio file (webm, wav, mp3)
+    - child_id: Child UUID (for organizing files)
+
+    Response:
+    {
+        "audio_url": "https://storage.example.com/mimic-recordings/xxx.webm"
+    }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from django.core.files.storage import default_storage
+        from django.core.files.base import ContentFile
+        import uuid
+        import os
+
+        audio_file = request.FILES.get('audio')
+        child_id = request.data.get('child_id')
+
+        if not audio_file:
+            return Response(
+                {'detail': 'Audio file is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate file type
+        allowed_types = ['audio/webm', 'audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/ogg']
+        content_type = audio_file.content_type
+
+        # Some browsers send different content types
+        if content_type not in allowed_types and not content_type.startswith('audio/'):
+            return Response(
+                {'detail': f'Invalid audio format. Allowed: {allowed_types}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate file size (max 10MB)
+        if audio_file.size > 10 * 1024 * 1024:
+            return Response(
+                {'detail': 'Audio file too large (max 10MB)'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Generate unique filename
+            ext = os.path.splitext(audio_file.name)[1] or '.webm'
+            unique_id = uuid.uuid4().hex[:12]
+            filename = f"mimic_recordings/{child_id or 'anon'}/{unique_id}{ext}"
+
+            # Save file
+            saved_path = default_storage.save(filename, ContentFile(audio_file.read()))
+
+            # Get the URL
+            if hasattr(default_storage, 'url'):
+                audio_url = default_storage.url(saved_path)
+            else:
+                # Fallback for local storage
+                audio_url = f"/media/{saved_path}"
+
+            # Make URL absolute if needed
+            if audio_url.startswith('/'):
+                from django.conf import settings
+                base_url = getattr(settings, 'SITE_URL', '')
+                if base_url:
+                    audio_url = f"{base_url.rstrip('/')}{audio_url}"
+
+            logger.info(f"Audio uploaded: {saved_path}")
+
+            return Response({
+                'audio_url': audio_url,
+                'filename': saved_path,
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            logger.error(f"Error uploading audio: {e}")
+            return Response(
+                {'detail': f'Error uploading audio: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

@@ -1,6 +1,7 @@
-"""Speech models for TTS caching."""
+"""Speech models for TTS caching and Peppi Mimic pronunciation practice."""
 import uuid
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from apps.core.models import TimeStampedModel
 
 
@@ -104,6 +105,232 @@ class AudioCache(TimeStampedModel):
         """Increment access count (called when audio is served)"""
         self.access_count += 1
         self.save(update_fields=['access_count', 'last_accessed_at'])
+
+
+class PeppiMimicChallenge(TimeStampedModel):
+    """
+    Pronunciation challenges for Peppi Mimic feature.
+    Kids listen to Peppi say a word, then record their own pronunciation.
+    """
+
+    class Category(models.TextChoices):
+        GREETING = 'GREETING', 'Greetings'
+        FAMILY = 'FAMILY', 'Family Words'
+        FOOD = 'FOOD', 'Food & Drink'
+        NUMBERS = 'NUMBERS', 'Numbers'
+        COLORS = 'COLORS', 'Colors'
+        ANIMALS = 'ANIMALS', 'Animals'
+        FESTIVAL = 'FESTIVAL', 'Festival Words'
+        DAILY = 'DAILY', 'Daily Words'
+        ACTIONS = 'ACTIONS', 'Action Words'
+        BODY = 'BODY', 'Body Parts'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # Content
+    word = models.CharField(max_length=100, help_text="Word in native script")
+    romanization = models.CharField(max_length=100, help_text="Transliteration")
+    meaning = models.CharField(max_length=200, help_text="English meaning")
+    language = models.CharField(max_length=20, choices=AudioCache.Language.choices)
+
+    # Audio - reference pronunciation
+    audio_url = models.URLField(blank=True, help_text="Peppi's pronunciation audio URL")
+    audio_cache = models.ForeignKey(
+        'AudioCache',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='mimic_challenges',
+        help_text="Link to cached audio"
+    )
+
+    # Metadata
+    category = models.CharField(max_length=20, choices=Category.choices)
+    difficulty = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(3)],
+        help_text="1=Easy, 2=Medium, 3=Hard"
+    )
+    display_order = models.IntegerField(default=0)
+    points_reward = models.PositiveIntegerField(default=25, help_text="Base points for completing")
+
+    # Peppi Scripts - what Peppi says
+    peppi_intro = models.TextField(
+        blank=True,
+        help_text="What Peppi says before (e.g., 'Listen carefully!')"
+    )
+    peppi_perfect = models.TextField(
+        blank=True,
+        help_text="3-star response (e.g., 'PERFECT! You're amazing!')"
+    )
+    peppi_good = models.TextField(
+        blank=True,
+        help_text="2-star response (e.g., 'Very good! Almost there!')"
+    )
+    peppi_try_again = models.TextField(
+        blank=True,
+        help_text="1-star or less response (e.g., 'Good try! Let's practice more!')"
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'peppi_mimic_challenges'
+        ordering = ['category', 'difficulty', 'display_order']
+        indexes = [
+            models.Index(fields=['language', 'category']),
+            models.Index(fields=['language', 'difficulty']),
+            models.Index(fields=['is_active']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['word', 'language'],
+                name='unique_word_per_language'
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.word} ({self.romanization}) - {self.language}"
+
+
+class PeppiMimicAttempt(TimeStampedModel):
+    """Record of a child's pronunciation attempt."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    child = models.ForeignKey(
+        'children.Child',
+        on_delete=models.CASCADE,
+        related_name='mimic_attempts'
+    )
+    challenge = models.ForeignKey(
+        PeppiMimicChallenge,
+        on_delete=models.CASCADE,
+        related_name='attempts'
+    )
+
+    # Recording
+    audio_url = models.URLField(help_text="Child's recording URL")
+    duration_ms = models.PositiveIntegerField(default=0, help_text="Recording duration in ms")
+
+    # Scoring (from STT analysis)
+    stt_transcription = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="What STT heard"
+    )
+    stt_confidence = models.FloatField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+        help_text="STT confidence 0-1"
+    )
+    text_match_score = models.FloatField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Text similarity score 0-100"
+    )
+    final_score = models.FloatField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Combined final score 0-100"
+    )
+    stars = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[MaxValueValidator(3)],
+        help_text="Star rating 0-3"
+    )
+
+    # Points
+    points_earned = models.PositiveIntegerField(default=0)
+    is_personal_best = models.BooleanField(default=False)
+
+    # Sharing
+    shared_to_family = models.BooleanField(default=False)
+    shared_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'peppi_mimic_attempts'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['child', 'challenge']),
+            models.Index(fields=['child', 'created_at']),
+            models.Index(fields=['stars']),
+        ]
+
+    def __str__(self):
+        return f"{self.child.name} - {self.challenge.word} ({self.stars} stars)"
+
+
+class PeppiMimicProgress(TimeStampedModel):
+    """Track child's overall progress on each challenge."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    child = models.ForeignKey(
+        'children.Child',
+        on_delete=models.CASCADE,
+        related_name='mimic_progress'
+    )
+    challenge = models.ForeignKey(
+        PeppiMimicChallenge,
+        on_delete=models.CASCADE,
+        related_name='child_progress'
+    )
+
+    # Best Performance
+    best_score = models.FloatField(default=0)
+    best_stars = models.PositiveSmallIntegerField(default=0)
+    best_attempt = models.ForeignKey(
+        PeppiMimicAttempt,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+'
+    )
+
+    # Stats
+    total_attempts = models.PositiveIntegerField(default=0)
+    total_points = models.PositiveIntegerField(default=0)
+
+    # Mastery
+    mastered = models.BooleanField(default=False, help_text="3 stars achieved")
+    mastered_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'peppi_mimic_progress'
+        unique_together = ['child', 'challenge']
+        indexes = [
+            models.Index(fields=['child', 'mastered']),
+        ]
+
+    def __str__(self):
+        status = "Mastered" if self.mastered else f"{self.best_stars} stars"
+        return f"{self.child.name} - {self.challenge.word}: {status}"
+
+    def update_from_attempt(self, attempt: PeppiMimicAttempt) -> bool:
+        """
+        Update progress from a new attempt.
+        Returns True if this was a personal best.
+        """
+        from django.utils import timezone
+
+        self.total_attempts += 1
+        self.total_points += attempt.points_earned
+
+        is_personal_best = attempt.final_score > self.best_score
+
+        if is_personal_best:
+            self.best_score = attempt.final_score
+            self.best_stars = attempt.stars
+            self.best_attempt = attempt
+
+        # Check for mastery (3 stars)
+        if attempt.stars == 3 and not self.mastered:
+            self.mastered = True
+            self.mastered_at = timezone.now()
+
+        self.save()
+        return is_personal_best
 
 
 class TTSUsageLog(TimeStampedModel):

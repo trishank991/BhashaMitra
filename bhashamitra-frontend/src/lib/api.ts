@@ -11,8 +11,22 @@ import {
   TTSResponse,
   LanguageCode,
   Festival,
+  FestivalActivity,
+  FestivalProgress,
+  FestivalProgressSummary,
+  FestivalsByReligion,
+  FestivalReligion,
   PeppiGender,
-  PeppiAddressing
+  PeppiAddressing,
+  // Mimic types
+  PeppiMimicChallenge,
+  PeppiMimicChallengeWithProgress,
+  PeppiMimicAttemptResult,
+  PeppiMimicProgressSummary,
+  MimicAttemptSubmitRequest,
+  MimicCategory,
+  MimicDifficulty,
+  MimicChallengeFilters
 } from '@/types';
 
 // Response types matching backend
@@ -322,6 +336,36 @@ class ApiClient {
     return { success: false, error: response.error, data: [] };
   }
 
+  /**
+   * Get vocabulary words for games - fetches from the first available theme
+   * Returns words in a format ready for game use
+   */
+  async getGameVocabulary(childId: string, limit: number = 10): Promise<ApiResponse<GameWord[]>> {
+    // First get themes
+    const themesRes = await this.getVocabularyThemes(childId);
+    if (!themesRes.success || !themesRes.data || themesRes.data.length === 0) {
+      return { success: false, error: 'No vocabulary themes found', data: [] };
+    }
+
+    // Get words from the first theme (usually Family or Colors - beginner friendly)
+    const firstTheme = themesRes.data[0];
+    const wordsRes = await this.getThemeWords(childId, firstTheme.id);
+
+    if (!wordsRes.success || !wordsRes.data) {
+      return { success: false, error: 'No words found', data: [] };
+    }
+
+    // Transform to game format
+    const gameWords: GameWord[] = wordsRes.data.slice(0, limit).map(w => ({
+      word: w.word,
+      romanized: w.romanization,
+      english: w.translation,
+      audioUrl: w.pronunciation_audio_url,
+    }));
+
+    return { success: true, data: gameWords };
+  }
+
   async getFlashcardsDue(childId: string, limit?: number): Promise<ApiResponse<Flashcard[]>> {
     const params = limit ? `?limit=${limit}` : '';
     return this.request<Flashcard[]>(`/children/${childId}/curriculum/vocabulary/flashcards/due/${params}`);
@@ -380,25 +424,143 @@ class ApiClient {
   // FESTIVAL ENDPOINTS
   // ========================================
 
-  async getFestivals(religion?: string): Promise<ApiResponse<Festival[]>> {
-    const params = religion ? `?religion=${religion}` : '';
-    const response = await this.request<{ data: Festival[] }>(`/festivals/${params}`);
+  async getFestivals(params?: {
+    religion?: FestivalReligion;
+    month?: number;
+    language?: LanguageCode;
+  }): Promise<ApiResponse<Festival[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.religion) queryParams.append('religion', params.religion);
+    if (params?.month) queryParams.append('month', params.month.toString());
+    if (params?.language) queryParams.append('language', params.language);
+
+    const queryString = queryParams.toString();
+    const response = await this.request<Festival[]>(`/festivals/festivals/${queryString ? `?${queryString}` : ''}`);
     if (response.success && response.data) {
-      return { success: true, data: response.data.data || [] };
+      return { success: true, data: response.data || [] };
     }
     return { success: false, error: response.error, data: [] };
   }
 
-  async getFestival(id: string): Promise<ApiResponse<Festival>> {
-    return this.request<Festival>(`/festivals/${id}/`);
+  async getFestival(id: string, language?: LanguageCode): Promise<ApiResponse<Festival>> {
+    const params = language ? `?language=${language}` : '';
+    return this.request<Festival>(`/festivals/festivals/${id}/${params}`);
+  }
+
+  async getUpcomingFestivals(): Promise<ApiResponse<Festival[]>> {
+    const response = await this.request<Festival[]>('/festivals/festivals/upcoming/');
+    if (response.success && response.data) {
+      return { success: true, data: response.data || [] };
+    }
+    return { success: false, error: response.error, data: [] };
+  }
+
+  async getFestivalsByReligion(): Promise<ApiResponse<FestivalsByReligion>> {
+    return this.request<FestivalsByReligion>('/festivals/festivals/by-religion/');
   }
 
   async getFestivalStories(festivalId: string): Promise<ApiResponse<Story[]>> {
-    const response = await this.request<{ data: Story[] }>(`/festivals/${festivalId}/stories/`);
+    const response = await this.request<Story[]>(`/festivals/festivals/${festivalId}/stories/`);
     if (response.success && response.data) {
-      return { success: true, data: response.data.data || [] };
+      return { success: true, data: response.data || [] };
     }
     return { success: false, error: response.error, data: [] };
+  }
+
+  async getFestivalActivities(
+    festivalId: string,
+    params?: { age?: number; type?: string }
+  ): Promise<ApiResponse<FestivalActivity[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.age) queryParams.append('age', params.age.toString());
+    if (params?.type) queryParams.append('type', params.type);
+
+    const queryString = queryParams.toString();
+    const response = await this.request<FestivalActivity[]>(
+      `/festivals/festivals/${festivalId}/activities/${queryString ? `?${queryString}` : ''}`
+    );
+    if (response.success && response.data) {
+      return { success: true, data: response.data || [] };
+    }
+    return { success: false, error: response.error, data: [] };
+  }
+
+  // ========================================
+  // FESTIVAL ACTIVITY ENDPOINTS
+  // ========================================
+
+  async getAllFestivalActivities(params?: {
+    festival?: string;
+    type?: string;
+    age?: number;
+  }): Promise<ApiResponse<FestivalActivity[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.festival) queryParams.append('festival', params.festival);
+    if (params?.type) queryParams.append('type', params.type);
+    if (params?.age) queryParams.append('age', params.age.toString());
+
+    const queryString = queryParams.toString();
+    const response = await this.request<FestivalActivity[]>(
+      `/festivals/festival-activities/${queryString ? `?${queryString}` : ''}`
+    );
+    if (response.success && response.data) {
+      return { success: true, data: response.data || [] };
+    }
+    return { success: false, error: response.error, data: [] };
+  }
+
+  async getFestivalActivity(id: string): Promise<ApiResponse<FestivalActivity>> {
+    return this.request<FestivalActivity>(`/festivals/festival-activities/${id}/`);
+  }
+
+  // ========================================
+  // FESTIVAL PROGRESS ENDPOINTS
+  // ========================================
+
+  async getFestivalProgress(params?: {
+    child?: string;
+    festival?: string;
+    completed?: boolean;
+  }): Promise<ApiResponse<FestivalProgress[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.child) queryParams.append('child', params.child);
+    if (params?.festival) queryParams.append('festival', params.festival);
+    if (params?.completed !== undefined) queryParams.append('completed', params.completed.toString());
+
+    const queryString = queryParams.toString();
+    const response = await this.request<FestivalProgress[]>(
+      `/festivals/festival-progress/${queryString ? `?${queryString}` : ''}`
+    );
+    if (response.success && response.data) {
+      return { success: true, data: response.data || [] };
+    }
+    return { success: false, error: response.error, data: [] };
+  }
+
+  async createFestivalProgress(data: {
+    child: string;
+    festival: string;
+    activity?: string;
+    story?: string;
+  }): Promise<ApiResponse<FestivalProgress>> {
+    return this.request<FestivalProgress>('/festivals/festival-progress/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async completeFestivalProgress(progressId: string): Promise<ApiResponse<{
+    message: string;
+    points_earned: number;
+    progress: FestivalProgress;
+  }>> {
+    return this.request(`/festivals/festival-progress/${progressId}/complete/`, {
+      method: 'POST',
+    });
+  }
+
+  async getFestivalProgressSummary(childId: string): Promise<ApiResponse<FestivalProgressSummary>> {
+    return this.request<FestivalProgressSummary>(`/festivals/festival-progress/summary/?child=${childId}`);
   }
 
   // ========================================
@@ -428,6 +590,139 @@ class ApiClient {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
+  }
+
+  // ========================================
+  // PEPPI MIMIC ENDPOINTS
+  // ========================================
+
+  /**
+   * Get list of mimic challenges with child's progress.
+   * @param childId Child UUID
+   * @param filters Optional filters for category, difficulty, mastered status
+   */
+  async getMimicChallenges(
+    childId: string,
+    filters?: MimicChallengeFilters
+  ): Promise<ApiResponse<PeppiMimicChallengeWithProgress[]>> {
+    const params = new URLSearchParams();
+    if (filters?.category) params.append('category', filters.category);
+    if (filters?.difficulty) params.append('difficulty', filters.difficulty.toString());
+    if (filters?.mastered !== undefined) params.append('mastered', filters.mastered.toString());
+
+    const queryString = params.toString();
+    const response = await this.request<PeppiMimicChallengeWithProgress[]>(
+      `/children/${childId}/mimic/challenges/${queryString ? `?${queryString}` : ''}`
+    );
+    if (response.success && response.data) {
+      return { success: true, data: response.data || [] };
+    }
+    return { success: false, error: response.error, data: [] };
+  }
+
+  /**
+   * Get a single challenge with full details and Peppi scripts.
+   * @param childId Child UUID
+   * @param challengeId Challenge UUID
+   */
+  async getMimicChallenge(
+    childId: string,
+    challengeId: string
+  ): Promise<ApiResponse<PeppiMimicChallenge & { progress: { best_score: number; best_stars: number; total_attempts: number; mastered: boolean; mastered_at: string | null } }>> {
+    return this.request(`/children/${childId}/mimic/challenges/${challengeId}/`);
+  }
+
+  /**
+   * Submit a pronunciation attempt for scoring.
+   * @param childId Child UUID
+   * @param challengeId Challenge UUID
+   * @param data Audio URL and duration
+   */
+  async submitMimicAttempt(
+    childId: string,
+    challengeId: string,
+    data: MimicAttemptSubmitRequest
+  ): Promise<ApiResponse<PeppiMimicAttemptResult>> {
+    return this.request<PeppiMimicAttemptResult>(
+      `/children/${childId}/mimic/challenges/${challengeId}/attempt/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  /**
+   * Get overall mimic progress summary for a child.
+   * @param childId Child UUID
+   */
+  async getMimicProgress(
+    childId: string
+  ): Promise<ApiResponse<PeppiMimicProgressSummary>> {
+    return this.request<PeppiMimicProgressSummary>(`/children/${childId}/mimic/progress/`);
+  }
+
+  /**
+   * Mark an attempt as shared to family.
+   * @param childId Child UUID
+   * @param attemptId Attempt UUID
+   */
+  async shareMimicAttempt(
+    childId: string,
+    attemptId: string
+  ): Promise<ApiResponse<{ success: boolean; shared_at: string }>> {
+    return this.request(`/children/${childId}/mimic/attempts/${attemptId}/share/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ shared_to_family: true }),
+    });
+  }
+
+  /**
+   * Upload audio recording for mimic attempt.
+   * Uses FormData for file upload.
+   * Returns the URL of the uploaded audio.
+   */
+  async uploadMimicAudio(
+    childId: string,
+    audioBlob: Blob,
+    filename: string = 'recording.webm'
+  ): Promise<ApiResponse<{ audio_url: string }>> {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, filename);
+    formData.append('child_id', childId);
+
+    const url = `${this.baseUrl}/speech/upload-audio/`;
+    const headers: Record<string, string> = {};
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.detail || data.message || 'Failed to upload audio',
+        };
+      }
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      };
+    }
   }
 }
 
@@ -544,6 +839,13 @@ export interface ExerciseResult {
   correct_answer: string;
   explanation: string;
   points_earned: number;
+}
+
+export interface GameWord {
+  word: string;
+  romanized: string;
+  english: string;
+  audioUrl?: string;
 }
 
 export const api = new ApiClient(API_BASE_URL);

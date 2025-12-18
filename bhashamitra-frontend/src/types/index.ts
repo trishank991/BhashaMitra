@@ -218,14 +218,34 @@ export interface TTSResponse {
 }
 
 // Festival types
+export type FestivalReligion = 'HINDU' | 'MUSLIM' | 'SIKH' | 'CHRISTIAN' | 'JAIN' | 'BUDDHIST';
+
+export type FestivalActivityType =
+  | 'STORY'
+  | 'CRAFT'
+  | 'COOKING'
+  | 'SONG'
+  | 'GAME'
+  | 'VOCABULARY'
+  | 'QUIZ'
+  | 'VIDEO';
+
 export interface Festival {
   id: string;
   name: string;
   name_native: string;
-  religion: 'HINDU' | 'MUSLIM' | 'SIKH' | 'CHRISTIAN' | 'JAIN' | 'BUDDHIST';
+  localized_name?: string;
+  religion: FestivalReligion;
   description: string;
+  significance?: string;
   typical_month: number;
+  is_lunar_calendar?: boolean;
+  image_url?: string;
+  is_active?: boolean;
+  activity_count?: number;
+  story_count?: number;
   stories?: Story[];
+  activities?: FestivalActivity[];
 }
 
 export interface FestivalStory {
@@ -235,3 +255,67 @@ export interface FestivalStory {
   is_primary: boolean;
   story?: Story;
 }
+
+export interface FestivalActivity {
+  id: string;
+  festival: string;
+  festival_name?: string;
+  title: string;
+  activity_type: FestivalActivityType;
+  description: string;
+  instructions: string;
+  materials_needed?: string[];
+  min_age: number;
+  max_age: number;
+  duration_minutes: number;
+  difficulty_level: number;
+  points_reward: number;
+  image_url?: string;
+  video_url?: string;
+  is_active: boolean;
+  is_age_appropriate?: boolean;
+}
+
+export interface FestivalProgress {
+  id: string;
+  child: string;
+  child_name?: string;
+  festival: string;
+  festival_name?: string;
+  activity?: string;
+  activity_title?: string;
+  story?: string;
+  story_title?: string;
+  is_completed: boolean;
+  completed_at?: string;
+  points_earned: number;
+  notes?: string;
+  created_at: string;
+}
+
+export interface FestivalProgressSummary {
+  total_items: number;
+  completed_items: number;
+  completion_rate: number;
+  total_points: number;
+  festivals: {
+    festival__name: string;
+    total: number;
+    completed: number;
+  }[];
+}
+
+export interface FestivalsByReligion {
+  [key: string]: {
+    name: string;
+    count: number;
+    festivals: Festival[];
+  };
+}
+
+// Re-export types from feature modules
+export * from './offline';
+export * from './family';
+export * from './parent';
+export * from './teacher';
+export * from './mimic';

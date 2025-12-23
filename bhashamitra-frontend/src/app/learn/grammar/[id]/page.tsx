@@ -4,139 +4,12 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useAuthStore } from '@/stores';
+import { useAuthStore, usePeppiStore } from '@/stores';
 import { MainLayout } from '@/components/layout';
 import { Card, Loading, Button, SpeakerButton } from '@/components/ui';
 import { fadeInUp, staggerContainer } from '@/lib/constants';
-import api, { GrammarRule } from '@/lib/api';
+import api, { GrammarRule, GrammarTopic, GrammarExample } from '@/lib/api';
 import { useAudio } from '@/hooks/useAudio';
-
-// Mock grammar rules data
-const mockGrammarRules: Record<string, { topic: string; topicNative: string; rules: GrammarRule[] }> = {
-  '1': {
-    topic: 'Sentence Structure',
-    topicNative: 'वाक्य रचना',
-    rules: [
-      {
-        id: '1',
-        title: 'Subject-Object-Verb (SOV) Order',
-        explanation: 'Hindi follows SOV word order, unlike English which uses SVO. The verb comes at the end of the sentence.',
-        formula: 'Subject + Object + Verb',
-        examples: [
-          'मैं सेब खाता हूँ। (I apple eat = I eat an apple)',
-          'राम किताब पढ़ता है। (Ram book reads = Ram reads a book)',
-        ],
-        tips: 'Remember: The verb always comes at the end!',
-      },
-      {
-        id: '2',
-        title: 'Postpositions',
-        explanation: 'Hindi uses postpositions instead of prepositions. They come after the noun.',
-        formula: 'Noun + Postposition',
-        examples: [
-          'मेज पर (table on = on the table)',
-          'घर में (house in = in the house)',
-        ],
-        tips: 'Think of it as the opposite of English prepositions.',
-      },
-    ],
-  },
-  '2': {
-    topic: 'Gender',
-    topicNative: 'लिंग',
-    rules: [
-      {
-        id: '1',
-        title: 'Masculine Nouns',
-        explanation: 'Most nouns ending in आ (aa) are masculine. Verbs and adjectives must agree with the gender.',
-        examples: [
-          'लड़का (boy) - masculine',
-          'कमरा (room) - masculine',
-          'बड़ा लड़का (big boy)',
-        ],
-      },
-      {
-        id: '2',
-        title: 'Feminine Nouns',
-        explanation: 'Most nouns ending in ई (ee) or इ (i) are feminine.',
-        examples: [
-          'लड़की (girl) - feminine',
-          'किताब (book) - feminine',
-          'बड़ी लड़की (big girl)',
-        ],
-      },
-    ],
-  },
-  '3': {
-    topic: 'Pronouns',
-    topicNative: 'सर्वनाम',
-    rules: [
-      {
-        id: '1',
-        title: 'Personal Pronouns',
-        explanation: 'Hindi has different pronouns for formal and informal situations.',
-        examples: [
-          'मैं (I)',
-          'तू (you - very informal)',
-          'तुम (you - informal)',
-          'आप (you - formal)',
-          'वह (he/she - informal)',
-          'वे (they/he/she - formal)',
-        ],
-        tips: 'Use आप with elders and strangers to show respect.',
-      },
-    ],
-  },
-  '4': {
-    topic: 'Verbs',
-    topicNative: 'क्रिया',
-    rules: [
-      {
-        id: '1',
-        title: 'Verb Root + Ending',
-        explanation: 'Hindi verbs change based on gender, number, and tense. Start with the verb root and add appropriate endings.',
-        formula: 'Verb Root + Gender/Number Ending + Tense Marker',
-        examples: [
-          'खा (eat root) → खाता (eats - masculine) → खाती (eats - feminine)',
-          'जा (go root) → जाता है (goes) → गया (went)',
-        ],
-      },
-      {
-        id: '2',
-        title: 'Present Tense',
-        explanation: 'Add ता/ती/ते to the verb root, then add auxiliary verb.',
-        examples: [
-          'मैं खाता हूँ (I eat - male speaker)',
-          'मैं खाती हूँ (I eat - female speaker)',
-          'वह खाता है (He eats)',
-        ],
-      },
-    ],
-  },
-  '5': {
-    topic: 'Numbers',
-    topicNative: 'संख्या',
-    rules: [
-      {
-        id: '1',
-        title: 'Cardinal Numbers 1-10',
-        explanation: 'Learn the basic Hindi numbers from 1 to 10.',
-        examples: [
-          '१ - एक (ek) - one',
-          '२ - दो (do) - two',
-          '३ - तीन (teen) - three',
-          '४ - चार (chaar) - four',
-          '५ - पाँच (paanch) - five',
-          '६ - छह (chhah) - six',
-          '७ - सात (saat) - seven',
-          '८ - आठ (aath) - eight',
-          '९ - नौ (nau) - nine',
-          '१० - दस (das) - ten',
-        ],
-      },
-    ],
-  },
-};
 
 export default function GrammarTopicDetailPage() {
   const router = useRouter();
@@ -144,35 +17,89 @@ export default function GrammarTopicDetailPage() {
   const topicId = params.id as string;
 
   const [isHydrated, setIsHydrated] = useState(false);
+  const [topic, setTopic] = useState<GrammarTopic | null>(null);
   const [rules, setRules] = useState<GrammarRule[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expandedRule, setExpandedRule] = useState<string | null>(null);
   const { isAuthenticated, activeChild } = useAuthStore();
+  const { speakWithAnimation } = usePeppiStore();
 
-  const topicData = mockGrammarRules[topicId];
+  // Get current language from active child
+  const currentLanguage = activeChild?.language
+    ? (typeof activeChild.language === 'string' ? activeChild.language : activeChild.language.code)
+    : 'HINDI';
 
-  // Audio playback hook
-  const { isPlaying, isLoading: audioLoading, playAudio, stopAudio } = useAudio({
-    language: 'HINDI',
+  // Audio playback hook - use current language
+  const { isPlaying, isLoading: audioLoading, error: audioError, playAudio, stopAudio } = useAudio({
+    language: currentLanguage,
     voiceStyle: 'kid_friendly',
   });
 
   // State to track which text is currently playing
   const [playingText, setPlayingText] = useState<string | null>(null);
 
-  // Handle playing text audio - extract Hindi text from examples
-  const handlePlayExample = (example: string) => {
-    // Extract Hindi text before any parentheses or equals sign
-    const hindiMatch = example.match(/^([^(=]+)/);
-    const hindiText = hindiMatch ? hindiMatch[1].trim() : example;
+  // Track audio error for display
+  const [displayError, setDisplayError] = useState<string | null>(null);
 
-    if (playingText === hindiText && isPlaying) {
+  // Log audio errors for debugging and display
+  useEffect(() => {
+    if (audioError) {
+      console.error('[Grammar] Audio error:', audioError);
+      setDisplayError(audioError);
+      // Clear error after 3 seconds
+      const timer = setTimeout(() => setDisplayError(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [audioError]);
+
+  // Handle playing text audio - extract text from examples
+  const handlePlayExample = async (example: string | GrammarExample) => {
+    // Handle both string and object example formats
+    let textToPlay: string;
+    if (typeof example === 'string') {
+      // Extract text before any parentheses or equals sign
+      const match = example.match(/^([^(=]+)/);
+      textToPlay = match ? match[1].trim() : example;
+    } else {
+      // Object format: { hindi: '...', romanized: '...', english: '...' }
+      textToPlay = example.hindi || example.romanized || '';
+    }
+
+    console.log('[Grammar] handlePlayExample called:', {
+      textToPlay,
+      language: currentLanguage,
+      isPlaying,
+      playingText
+    });
+
+    if (playingText === textToPlay && isPlaying) {
+      console.log('[Grammar] Stopping audio');
       stopAudio();
       setPlayingText(null);
     } else {
-      setPlayingText(hindiText);
-      playAudio(hindiText);
+      console.log('[Grammar] Starting audio playback for:', textToPlay);
+      setPlayingText(textToPlay);
+      try {
+        await playAudio(textToPlay);
+        console.log('[Grammar] playAudio called successfully');
+      } catch (err) {
+        console.error('[Grammar] playAudio error:', err);
+      }
     }
+  };
+
+  // Format example for display
+  const formatExample = (example: string | GrammarExample): string => {
+    if (typeof example === 'string') {
+      return example;
+    }
+    // Object format: { hindi: '...', romanized: '...', english: '...' }
+    const parts: string[] = [];
+    if (example.hindi) parts.push(example.hindi);
+    if (example.romanized) parts.push(`(${example.romanized})`);
+    if (example.english) parts.push(`= ${example.english}`);
+    return parts.join(' ');
   };
 
   useEffect(() => {
@@ -186,38 +113,52 @@ export default function GrammarTopicDetailPage() {
       return;
     }
 
-    // Try to fetch from API, fall back to mock data
-    const fetchRules = async () => {
+    const fetchTopicAndRules = async () => {
       if (!activeChild?.id) {
-        // Use mock data
-        if (topicData) {
-          setRules(topicData.rules);
-        }
+        setError('Please select a child profile first');
         setLoading(false);
         return;
       }
 
       setLoading(true);
+      setError(null);
+
       try {
-        const response = await api.getTopicRules(activeChild.id, topicId);
-        if (response.success && response.data && response.data.length > 0) {
-          setRules(response.data);
-        } else if (topicData) {
-          // Fall back to mock data
-          setRules(topicData.rules);
+        // Fetch topic details to get the name
+        const topicsResponse = await api.getGrammarTopics(activeChild.id, currentLanguage);
+        if (topicsResponse.success && topicsResponse.data) {
+          const foundTopic = topicsResponse.data.find(t => t.id === topicId);
+          if (foundTopic) {
+            setTopic(foundTopic);
+          }
         }
-      } catch {
-        // Fall back to mock data
-        if (topicData) {
-          setRules(topicData.rules);
+
+        // Fetch rules for this topic
+        const rulesResponse = await api.getTopicRules(activeChild.id, topicId);
+        if (rulesResponse.success && rulesResponse.data) {
+          setRules(rulesResponse.data);
+          console.log('[GrammarTopicDetail] Loaded', rulesResponse.data.length, 'rules');
+        } else {
+          console.log('[GrammarTopicDetail] No rules returned:', rulesResponse.error);
+          setRules([]);
         }
+      } catch (err) {
+        console.error('[GrammarTopicDetail] Error:', err);
+        setError('Failed to load grammar rules');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRules();
-  }, [isHydrated, isAuthenticated, activeChild, topicId, router, topicData]);
+    fetchTopicAndRules();
+  }, [isHydrated, isAuthenticated, activeChild?.id, topicId, router, currentLanguage]);
+
+  // Peppi greeting when rules load
+  useEffect(() => {
+    if (isHydrated && !loading && topic && rules.length > 0) {
+      speakWithAnimation(`Let's learn about ${topic.name}!`, 'explanation');
+    }
+  }, [isHydrated, loading, topic, rules.length, speakWithAnimation]);
 
   if (!isHydrated || !isAuthenticated) {
     return (
@@ -227,7 +168,7 @@ export default function GrammarTopicDetailPage() {
     );
   }
 
-  if (!topicData) {
+  if (!loading && !topic && error) {
     return (
       <MainLayout headerTitle="Topic Not Found">
         <div className="flex flex-col items-center justify-center py-12">
@@ -258,10 +199,21 @@ export default function GrammarTopicDetailPage() {
             </svg>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{topicData.topic}</h1>
-            <p className="text-gray-500">{topicData.topicNative}</p>
+            <h1 className="text-2xl font-bold text-gray-900">{topic?.name || 'Grammar Topic'}</h1>
+            <p className="text-gray-500">{topic?.name_native || ''}</p>
           </div>
         </motion.div>
+
+        {/* Audio Error Toast */}
+        {displayError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm"
+          >
+            🔊 Audio error: {displayError}
+          </motion.div>
+        )}
 
         {/* Stats */}
         <motion.div variants={fadeInUp} className="grid grid-cols-2 gap-3">
@@ -330,6 +282,7 @@ export default function GrammarTopicDetailPage() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         className="mt-4 pt-4 border-t border-gray-100 space-y-4"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         {/* Explanation */}
                         <div>
@@ -350,18 +303,27 @@ export default function GrammarTopicDetailPage() {
                           <h4 className="text-sm font-semibold text-gray-700 mb-2">Examples</h4>
                           <div className="space-y-2">
                             {rule.examples.map((example, i) => {
-                              const hindiMatch = example.match(/^([^(=]+)/);
-                              const hindiText = hindiMatch ? hindiMatch[1].trim() : example;
+                              // Extract text for audio playback - handle both string and object formats
+                              let textToPlay: string;
+                              if (typeof example === 'string') {
+                                const match = example.match(/^([^(=]+)/);
+                                textToPlay = match ? match[1].trim() : example;
+                              } else {
+                                textToPlay = example.hindi || example.romanized || '';
+                              }
                               return (
                                 <div
                                   key={i}
                                   className="p-3 bg-gray-50 rounded-lg text-sm text-gray-700 flex items-center justify-between gap-3"
                                 >
-                                  <span className="flex-1">{example}</span>
+                                  <span className="flex-1">{formatExample(example)}</span>
                                   <SpeakerButton
-                                    isPlaying={playingText === hindiText && isPlaying}
-                                    isLoading={playingText === hindiText && audioLoading}
-                                    onClick={() => handlePlayExample(example)}
+                                    isPlaying={playingText === textToPlay && isPlaying}
+                                    isLoading={playingText === textToPlay && audioLoading}
+                                    onClick={() => {
+                                      console.log('[Grammar] Playing audio for:', textToPlay);
+                                      handlePlayExample(example);
+                                    }}
                                     size="sm"
                                   />
                                 </div>

@@ -136,8 +136,8 @@ export default function GamesPage() {
                 <SubscriptionBadge tier={subscriptionTier} />
               </div>
               <div className="space-y-2 text-sm text-gray-500 mb-6">
-                <p><strong>Standard ($12/month)</strong>: 8 stories, games & quizzes</p>
-                <p><strong>Premium ($20/month)</strong>: Unlimited stories, premium voices</p>
+                <p><strong>Standard (NZD $20/month)</strong>: Unlimited games, L1-L10 curriculum</p>
+                <p><strong>Premium (NZD $30/month)</strong>: Live classes, premium voices</p>
               </div>
               <Link href="/profile">
                 <Button variant="primary" size="lg">

@@ -27,7 +27,9 @@ urlpatterns = [
     path('api/v1/children/', include('apps.children.urls', namespace='children')),
     path('api/v1/stories/', include('apps.stories.urls', namespace='stories')),
     path('api/v1/speech/', include('apps.speech.urls', namespace='speech')),
+    path('api/v1/peppi/', include('apps.speech.peppi_urls', namespace='peppi')),
     path('api/v1/festivals/', include('apps.festivals.urls')),
+    path('api/v1/curriculum/', include('apps.curriculum.urls', namespace='curriculum-global')),
 
     # Parent dashboard API
     path('api/v1/parent/', include('apps.parent_engagement.urls', namespace='parent_engagement')),
@@ -35,8 +37,9 @@ urlpatterns = [
     # Child-specific nested routes
     path('api/v1/children/<uuid:child_id>/progress/', include('apps.progress.urls', namespace='progress')),
     path('api/v1/children/<uuid:child_id>/', include('apps.gamification.urls', namespace='gamification')),
-    path('api/v1/children/<uuid:child_id>/curriculum/', include('apps.curriculum.urls', namespace='curriculum')),
+    path('api/v1/children/<uuid:child_id>/curriculum/', include('apps.curriculum.urls', namespace='curriculum-child')),
     path('api/v1/children/<uuid:child_id>/mimic/', include('apps.speech.mimic_urls', namespace='mimic')),
+    path('api/v1/children/<uuid:child_id>/peppi-chat/', include('apps.peppi_chat.urls', namespace='peppi_chat')),
 ]
 
 # Debug toolbar (development only)

@@ -75,3 +75,6 @@ Thumbs.db
 *.key
 secrets.json
 credentials.json
+
+# Google Cloud Service Account credentials
+google-tts-credentials.json

@@ -13,6 +13,7 @@ from apps.curriculum.serializers.vocabulary import (
     WordProgressSerializer,
 )
 from apps.curriculum.services.srs_service import SRSService
+from apps.core.validators import safe_level, safe_limit, safe_int
 
 
 class VocabularyThemeListView(APIView):
@@ -34,7 +35,7 @@ class VocabularyThemeListView(APIView):
         )
 
         if level:
-            themes = themes.filter(level__lte=int(level))
+            themes = themes.filter(level__lte=safe_level(level))
 
         themes = themes.order_by('level', 'order')
         serializer = VocabularyThemeSerializer(themes, many=True)
@@ -166,7 +167,7 @@ class FlashcardsDueView(APIView):
             return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
 
         theme_id = request.query_params.get('theme_id')
-        limit = int(request.query_params.get('limit', 20))
+        limit = safe_limit(request.query_params.get('limit'), default=20, max_limit=50)
 
         due_words = SRSService.get_due_words(str(child.id), theme_id, limit)
 
@@ -217,6 +218,17 @@ class FlashcardReviewView(APIView):
             )
 
         result = SRSService.record_review(str(child.id), word_id, int(quality))
+
+        # Award points for correct answers (quality >= 3)
+        points_earned = 0
+        if result['correct']:
+            points_earned = 5  # 5 XP per correct review
+            child.total_points += points_earned
+            child.save(update_fields=['total_points'])
+
+        result['points_earned'] = points_earned
+        result['total_points'] = child.total_points
+
         return Response({'data': result})
 
 
@@ -232,7 +244,7 @@ class FlashcardSessionView(APIView):
             return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
 
         theme_id = request.query_params.get('theme_id')
-        count = int(request.query_params.get('count', 10))
+        count = safe_limit(request.query_params.get('count'), default=10, max_limit=30)
 
         if not theme_id:
             return Response(

@@ -20,23 +20,32 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'role', 'created_at', 'subscription_tier', 'subscription_expires_at']
 
     def get_subscription_info(self, obj):
-        """Return subscription details."""
-        tier_prices = {
-            'FREE': '$0',
-            'STANDARD': 'NZD $12/month',
-            'PREMIUM': 'NZD $20/month',
-        }
-        tier_descriptions = {
-            'FREE': 'Pre-cached curriculum audio only',
-            'STANDARD': 'Unlimited Svara TTS (AI voices)',
-            'PREMIUM': 'Sarvam AI human-like voices',
-        }
+        """Return subscription details with full tier features."""
+        from apps.users.tier_config import get_tier_pricing, get_tier_features
+
+        pricing = get_tier_pricing(obj.subscription_tier)
+        features = get_tier_features(obj.subscription_tier)
+
         return {
             'tier': obj.subscription_tier,
-            'price': tier_prices.get(obj.subscription_tier, 'Unknown'),
-            'description': tier_descriptions.get(obj.subscription_tier, 'Unknown'),
+            'display_name': pricing['display_name'],
+            'price_monthly': f"NZD ${pricing['monthly']}",
+            'price_yearly': f"NZD ${pricing['yearly']}",
+            'tagline': pricing['tagline'],
             'is_active': obj.is_subscription_active,
             'expires_at': obj.subscription_expires_at,
+            # Content Limits
+            'story_limit': obj.story_limit,
+            'daily_game_limit': obj.daily_game_limit,
+            'child_profile_limit': obj.child_profile_limit,
+            # Feature Access
+            'has_curriculum_progression': obj.can_access_curriculum_progression,
+            'has_peppi_ai_chat': obj.can_access_peppi_ai_chat,
+            'has_peppi_narration': obj.can_access_peppi_narration,
+            'has_live_classes': obj.can_access_live_classes,
+            'free_live_classes_remaining': obj.free_live_classes_remaining,
+            'content_access_mode': obj.content_access_mode,
+            'tts_provider': obj.tts_provider,
         }
 
     def get_tts_provider(self, obj):

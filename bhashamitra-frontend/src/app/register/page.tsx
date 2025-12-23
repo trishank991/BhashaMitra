@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores';
 import { Button, Input, Card } from '@/components/ui';
-import { PeppiAvatar } from '@/components/peppi';
+import { PeppiMascot } from '@/components/peppi';
 import { fadeInUp } from '@/lib/constants';
 
 export default function RegisterPage() {
@@ -72,7 +72,7 @@ export default function RegisterPage() {
             variants={fadeInUp}
             className="flex justify-center mb-6"
           >
-            <PeppiAvatar size="lg" showBubble={false} />
+            <PeppiMascot size="sm" showSpeechBubble speechText="Let's get started!" />
           </motion.div>
 
           <motion.h1

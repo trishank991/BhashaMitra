@@ -4,6 +4,9 @@ import { ReactNode } from 'react';
 import { BottomNav } from './BottomNav';
 import { Header } from './Header';
 import { PeppiAssistant } from '@/components/peppi';
+import { PeppiChatButton, PeppiChatPanel } from '@/components/peppi-chat';
+import { useAuthStore } from '@/stores';
+import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 
 interface MainLayoutProps {
@@ -12,6 +15,7 @@ interface MainLayoutProps {
   showProgress?: boolean;
   showNav?: boolean;
   showPeppi?: boolean;
+  showPeppiChat?: boolean;
   headerTitle?: string;
   showBack?: boolean;
   onBack?: () => void;
@@ -24,11 +28,18 @@ export function MainLayout({
   showProgress = true,
   showNav = true,
   showPeppi = true,
+  showPeppiChat = true,
   headerTitle,
   showBack = false,
   onBack,
   className,
 }: MainLayoutProps) {
+  const { activeChild } = useAuthStore();
+  const subscription = useSubscription();
+
+  // Show Peppi chat for paid tier users
+  const shouldShowPeppiChat = showPeppiChat && subscription.isPaidTier && subscription.isActive && activeChild?.id;
+
   return (
     <div className="min-h-screen bg-background">
       {showHeader && (
@@ -52,7 +63,16 @@ export function MainLayout({
 
       {showNav && <BottomNav />}
 
-      {showPeppi && <PeppiAssistant />}
+      {/* Peppi Assistant (basic) - for free users */}
+      {showPeppi && !shouldShowPeppiChat && <PeppiAssistant />}
+
+      {/* Peppi Chat (full) - for paid tier users */}
+      {shouldShowPeppiChat && activeChild?.id && (
+        <>
+          <PeppiChatButton childId={activeChild.id} />
+          <PeppiChatPanel childId={activeChild.id} />
+        </>
+      )}
     </div>
   );
 }

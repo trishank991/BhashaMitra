@@ -2,20 +2,28 @@
 BhashaMitra TTS Service
 Tier-based architecture with subscription-aware provider routing.
 
-Tier Strategy (Updated Dec 2024):
-- FREE ($0): Svara TTS for all content (alphabet, vocabulary, stories)
-- STANDARD ($12/month): Svara TTS for all content
-- PREMIUM ($20/month): Sarvam AI Bulbul V2 (manisha/abhilash human-like voices)
+TTS Strategy (Dec 2024):
+- PREMIUM ($30/month): Google Cloud TTS WaveNet (on-demand, highest quality)
+- STANDARD ($20/month): Cache only (pre-cached content)
+- FREE ($0): Cache only (pre-cached content)
 
-Fallback chain:
-1. Cache (instant, free)
-2. Sarvam AI (Premium tier only)
-3. Svara TTS (FREE/Standard tier, or Premium fallback)
+Fallback chain for Premium tier:
+1. Cache (instant, free) - checked first for all tiers
+2. Google TTS WaveNet (Premium tier only - highest quality)
+3. Google TTS Standard (Premium fallback if WaveNet fails)
+4. Sarvam AI (fallback if Google fails - high quality Indian voices)
+5. Svara TTS (emergency backup - free, lower quality)
+
+Cost Strategy:
+- Pre-cache curriculum content → Standard/Free tiers use cached audio
+- On-demand requests use Google TTS for Premium tier only
+- Sarvam AI and Svara as fallbacks if Google fails
 
 Feature restrictions by tier:
-- Stories: FREE=4, STANDARD=8, PREMIUM=unlimited
+- Stories: FREE=5, STANDARD=unlimited, PREMIUM=unlimited
 - Games/Quizzes: STANDARD and PREMIUM only
-- Cultural Videos: STANDARD and PREMIUM only
+- Live Classes: PREMIUM only
+- Real-time TTS: PREMIUM only
 """
 import hashlib
 import logging
@@ -40,13 +48,13 @@ class TTSServiceError(Exception):
 
 class TTSService:
     """
-    Hybrid TTS Service with three-tier fallback.
+    Hybrid TTS Service with multi-tier fallback.
 
     Priority:
     1. Local cache (instant, free) - 80% of requests
-    2. Replicate.com (fast, cheap) - dynamic content
-    3. Google Cloud TTS (reliable) - fallback
-    4. Svara TTS (legacy) - last resort if others fail
+    2. Google Cloud TTS (primary for paid tiers)
+    3. Sarvam AI (first fallback - high quality Indian voices)
+    4. Svara TTS (emergency backup - free, lower quality)
 
     NO BHASHINI - works internationally without Indian registration.
     """
@@ -89,8 +97,8 @@ class TTSService:
 
         Provider Routing:
             - FREE tier: Cache only (raises error if not cached)
-            - STANDARD tier: Cache → Svara TTS
-            - PREMIUM tier: Cache → Sarvam AI → Svara TTS (fallback)
+            - STANDARD tier: Cache → Google TTS → Sarvam AI → Svara TTS
+            - PREMIUM tier: Cache → Google WaveNet → Google Standard → Sarvam AI → Svara TTS
 
         Returns:
             Tuple of (audio_bytes, provider_name, was_cached)
@@ -129,8 +137,40 @@ class TTSService:
                 )
                 return cached_audio, 'cache', True
 
-        # FREE tier: Cache only - reject if not cached
+        # FREE tier: Cache only - try Svara as fallback for basic content
         if user_tier == 'cache_only':
+            # For FREE tier, attempt to generate using Svara for short alphabet/vocab content
+            # This provides basic pronunciation for learning while limiting costs
+            if len(text) <= 50:  # Short content like letters, words
+                try:
+                    from apps.speech.services.mms_provider import SvaraTTSProvider
+                    if SvaraTTSProvider.is_available():
+                        audio_bytes, duration_ms = SvaraTTSProvider.text_to_speech(
+                            text=text,
+                            language=language,
+                        )
+                        cls._save_to_cache(
+                            cache_key=cache_key,
+                            text=text,
+                            language=language,
+                            voice_profile=voice_profile,
+                            audio_bytes=audio_bytes,
+                            duration_ms=duration_ms,
+                            provider='svara_free',
+                        )
+                        cls._log_usage(
+                            text_length=len(text),
+                            language=language,
+                            provider='svara_free',
+                            voice_profile=voice_profile,
+                            was_cached=False,
+                            response_time_ms=int((time.time() - start_time) * 1000),
+                        )
+                        return audio_bytes, 'svara_free', False
+                except Exception as e:
+                    logger.warning(f"Free tier Svara TTS failed: {e}")
+
+            # If still not available, reject with helpful message
             cls._log_usage(
                 text_length=len(text),
                 language=language,
@@ -142,12 +182,86 @@ class TTSService:
                 error_message="Content not available for free tier",
             )
             raise TTSServiceError(
-                "This audio is not available for free users. "
-                "Upgrade to Standard ($12/month) for unlimited content."
+                "Audio not available. For unlimited pronunciation practice, "
+                "upgrade to Standard ($12/month)."
             )
 
-        # PREMIUM tier: Try Sarvam AI first
-        if user_tier == 'sarvam':
+        # PREMIUM tier: Try Google TTS WaveNet first (highest quality)
+        if user_tier == 'google_wavenet':
+            try:
+                from apps.speech.services.google_provider import GoogleTTSProvider
+
+                if GoogleTTSProvider.is_available():
+                    try:
+                        audio_bytes, duration_ms = GoogleTTSProvider.text_to_speech(
+                            text=text,
+                            language=language,
+                            voice_profile=voice_profile,  # Pass voice profile for song/story SSML
+                            use_wavenet=True,  # Premium gets WaveNet voices
+                        )
+                        cls._save_to_cache(
+                            cache_key=cache_key,
+                            text=text,
+                            language=language,
+                            voice_profile=voice_profile,
+                            audio_bytes=audio_bytes,
+                            duration_ms=duration_ms,
+                            provider='google_wavenet',
+                        )
+                        cls._log_usage(
+                            text_length=len(text),
+                            language=language,
+                            provider='google_wavenet',
+                            voice_profile=voice_profile,
+                            was_cached=False,
+                            response_time_ms=int((time.time() - start_time) * 1000),
+                            estimated_cost=GoogleTTSProvider.estimate_cost(text, use_wavenet=True),
+                        )
+                        return audio_bytes, 'google_wavenet', False
+                    except Exception as e:
+                        logger.warning(f"Google WaveNet TTS failed, falling back to Standard: {e}")
+            except ImportError:
+                logger.warning("Google provider not available, falling back to Standard")
+
+        # STANDARD tier (or PREMIUM fallback): Use Google TTS Standard voices
+        if user_tier in ['google', 'google_wavenet']:
+            try:
+                from apps.speech.services.google_provider import GoogleTTSProvider
+
+                if GoogleTTSProvider.is_available():
+                    try:
+                        audio_bytes, duration_ms = GoogleTTSProvider.text_to_speech(
+                            text=text,
+                            language=language,
+                            voice_profile=voice_profile,  # Pass voice profile for song/story SSML
+                            use_wavenet=False,  # Standard voices
+                        )
+                        cls._save_to_cache(
+                            cache_key=cache_key,
+                            text=text,
+                            language=language,
+                            voice_profile=voice_profile,
+                            audio_bytes=audio_bytes,
+                            duration_ms=duration_ms,
+                            provider='google',
+                        )
+                        cls._log_usage(
+                            text_length=len(text),
+                            language=language,
+                            provider='google',
+                            voice_profile=voice_profile,
+                            was_cached=False,
+                            response_time_ms=int((time.time() - start_time) * 1000),
+                            estimated_cost=GoogleTTSProvider.estimate_cost(text),
+                        )
+                        return audio_bytes, 'google', False
+                    except Exception as e:
+                        logger.warning(f"Google TTS failed, falling back to Sarvam AI: {e}")
+            except ImportError:
+                logger.warning("Google provider not available, falling back to Sarvam AI")
+
+        # Sarvam AI fallback for paid tiers if Google fails (high quality Indian voices)
+        if user_tier in ['google', 'google_wavenet', 'sarvam']:
             try:
                 from apps.speech.services.sarvam_provider import SarvamAIProvider
 
@@ -164,25 +278,28 @@ class TTSService:
                             voice_profile=voice_profile,
                             audio_bytes=audio_bytes,
                             duration_ms=duration_ms,
-                            provider='sarvam',
+                            provider='sarvam_fallback',
                         )
                         cls._log_usage(
                             text_length=len(text),
                             language=language,
-                            provider='sarvam',
+                            provider='sarvam_fallback',
                             voice_profile=voice_profile,
                             was_cached=False,
                             response_time_ms=int((time.time() - start_time) * 1000),
                             estimated_cost=SarvamAIProvider.estimate_cost(text),
                         )
-                        return audio_bytes, 'sarvam', False
+                        logger.info(f"Sarvam AI fallback succeeded for: {text[:30]}...")
+                        return audio_bytes, 'sarvam_fallback', False
                     except Exception as e:
-                        logger.warning(f"Sarvam AI TTS failed, falling back to Svara: {e}")
+                        logger.warning(f"Sarvam AI fallback failed, trying Svara: {e}")
+                else:
+                    logger.warning("Sarvam AI not available (no API key), trying Svara")
             except ImportError:
                 logger.warning("Sarvam provider not available, falling back to Svara")
 
-        # STANDARD tier (or PREMIUM fallback): Use Svara TTS
-        if user_tier in ['svara', 'sarvam']:
+        # Svara emergency backup for paid tiers if both Google and Sarvam fail
+        if user_tier in ['google', 'google_wavenet', 'svara', 'sarvam']:
             try:
                 from apps.speech.services.mms_provider import SvaraTTSProvider
 
@@ -199,19 +316,19 @@ class TTSService:
                             voice_profile=voice_profile,
                             audio_bytes=audio_bytes,
                             duration_ms=duration_ms,
-                            provider='svara',
+                            provider='svara_fallback',
                         )
                         cls._log_usage(
                             text_length=len(text),
                             language=language,
-                            provider='svara',
+                            provider='svara_fallback',
                             voice_profile=voice_profile,
                             was_cached=False,
                             response_time_ms=int((time.time() - start_time) * 1000),
                         )
-                        return audio_bytes, 'svara', False
+                        return audio_bytes, 'svara_fallback', False
                     except Exception as e:
-                        logger.error(f"Svara TTS failed: {e}")
+                        logger.error(f"Svara fallback TTS failed: {e}")
             except ImportError:
                 logger.error("Svara provider not available")
 
@@ -345,7 +462,7 @@ class TTSService:
         """Get list of supported languages."""
         # Combined from all providers
         return [
-            'HINDI', 'TAMIL', 'TELUGU', 'GUJARATI', 'PUNJABI',
+            'FIJI_HINDI', 'HINDI', 'TAMIL', 'TELUGU', 'GUJARATI', 'PUNJABI',
             'MALAYALAM', 'BENGALI', 'KANNADA', 'MARATHI'
         ]
 
@@ -429,26 +546,45 @@ class TTSService:
         """Check if the TTS service is healthy."""
         providers = []
 
-        # Check Sarvam AI (Premium tier)
+        # Check Google TTS (Standard & Premium tier)
+        try:
+            from apps.speech.services.google_provider import GoogleTTSProvider
+            google_available = GoogleTTSProvider.is_available()
+            providers.append({
+                'name': 'google',
+                'available': google_available,
+                'tier': 'standard',
+                'description': 'Google Cloud TTS - High quality Standard voices',
+            })
+            providers.append({
+                'name': 'google_wavenet',
+                'available': google_available,
+                'tier': 'premium',
+                'description': 'Google Cloud TTS WaveNet - Highest quality voices',
+            })
+        except ImportError:
+            pass
+
+        # Check Sarvam AI (first fallback - high quality)
         try:
             from apps.speech.services.sarvam_provider import SarvamAIProvider
             providers.append({
                 'name': 'sarvam',
                 'available': SarvamAIProvider.is_available(),
-                'tier': 'premium',
-                'description': 'Sarvam AI Bulbul V2 - Human-like voices',
+                'tier': 'fallback_primary',
+                'description': 'Sarvam AI - High quality Indian voices (first fallback)',
             })
         except ImportError:
             pass
 
-        # Check Svara TTS (Standard tier)
+        # Check Svara TTS (emergency backup)
         try:
             from apps.speech.services.mms_provider import SvaraTTSProvider
             providers.append({
                 'name': 'svara',
                 'available': SvaraTTSProvider.is_available(),
-                'tier': 'standard',
-                'description': 'Svara TTS - AI-generated voices',
+                'tier': 'emergency_backup',
+                'description': 'Svara TTS - Free emergency backup voices',
             })
         except ImportError:
             pass
@@ -461,8 +597,8 @@ class TTSService:
             'supported_languages': cls.get_supported_languages(),
             'cache_stats': cls.get_cache_stats(),
             'tier_info': {
-                'free': {'provider': 'cache_only', 'description': 'Pre-cached content only'},
-                'standard': {'provider': 'svara', 'price': 'NZD $12/month', 'description': 'Unlimited Svara TTS'},
-                'premium': {'provider': 'sarvam', 'price': 'NZD $20/month', 'description': 'Sarvam AI human-like voices'},
+                'free': {'provider': 'cache_only', 'description': 'Pre-cached curriculum content'},
+                'standard': {'provider': 'google', 'price': 'NZD $20/month', 'description': 'Google TTS Standard voices'},
+                'premium': {'provider': 'google_wavenet', 'price': 'NZD $30/month', 'description': 'Google TTS WaveNet + Live classes'},
             }
         }

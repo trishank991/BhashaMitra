@@ -10,9 +10,8 @@ import { cn } from '@/lib/utils';
 
 interface PeppiNarratorProps {
   storyId: string;
-  pageNumber: number;
+  storyTitle?: string;
   language: LanguageCode;
-  text: string;
   defaultGender?: PeppiGender;
   subscriptionTier: SubscriptionTier;
   onComplete?: () => void;
@@ -21,6 +20,7 @@ interface PeppiNarratorProps {
 // Language-specific gender labels
 const GENDER_LABELS: Record<LanguageCode, { male: string; female: string }> = {
   HINDI: { male: 'पेप्पी भैया', female: 'पेप्पी दीदी' },
+  FIJI_HINDI: { male: 'पेप्पी भैया', female: 'पेप्पी दीदी' },
   TAMIL: { male: 'பெப்பி அண்ணா', female: 'பெப்பி அக்கா' },
   TELUGU: { male: 'పెప్పి అన్న', female: 'పెప్పి అక్క' },
   GUJARATI: { male: 'પેપ્પી ભાઈ', female: 'પેપ્પી બેન' },
@@ -36,9 +36,8 @@ const GENDER_LABELS: Record<LanguageCode, { male: string; female: string }> = {
 
 export function PeppiNarrator({
   storyId,
-  pageNumber,
+  storyTitle,
   language,
-  text,
   defaultGender = 'female',
   subscriptionTier,
   onComplete,
@@ -54,11 +53,10 @@ export function PeppiNarrator({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { setMood } = usePeppiStore();
 
-  // Check if Peppi narration is available
+  // Check if Peppi narration is available (Standard and Premium tiers)
   const isPeppiAvailable = subscriptionTier === 'STANDARD' || subscriptionTier === 'PREMIUM';
-  const isPremiumVoice = subscriptionTier === 'PREMIUM';
 
-  // Fetch narration when page changes
+  // Fetch full story narration when component mounts or gender changes
   useEffect(() => {
     if (!isPeppiAvailable) {
       setShowUpgrade(true);
@@ -71,8 +69,8 @@ export function PeppiNarrator({
       setMood('thinking');
 
       try {
-        // Try to get cached narration first
-        const response = await api.generatePeppiNarration(text, language, gender);
+        // Get full story narration (continuous playback)
+        const response = await api.getPeppiNarration(storyId, language, gender);
 
         if (response.success && response.data) {
           setAudioUrl(response.data.audio_url);
@@ -82,7 +80,7 @@ export function PeppiNarrator({
           setMood('sleepy');
         }
       } catch (err) {
-        console.error('[PeppiNarrator] Error fetching narration:', err);
+        console.error('[PeppiNarrator] Error fetching full story narration:', err);
         setError('Unable to load narration');
         setMood('sleepy');
       } finally {
@@ -91,7 +89,7 @@ export function PeppiNarrator({
     };
 
     fetchNarration();
-  }, [storyId, pageNumber, gender, language, text, isPeppiAvailable, setMood]);
+  }, [storyId, gender, language, isPeppiAvailable, setMood]);
 
   // Handle audio playback
   const handlePlayPause = () => {
@@ -150,7 +148,7 @@ export function PeppiNarrator({
     };
   }, [onComplete, setMood]);
 
-  // Stop audio when component unmounts or page changes
+  // Stop audio when component unmounts
   useEffect(() => {
     return () => {
       if (audioRef.current) {
@@ -160,7 +158,7 @@ export function PeppiNarrator({
       setIsPlaying(false);
       setMood('happy');
     };
-  }, [pageNumber, setMood]);
+  }, [setMood]);
 
   // Upgrade prompt for FREE tier
   if (showUpgrade && !isPeppiAvailable) {
@@ -225,14 +223,14 @@ export function PeppiNarrator({
               </select>
             </div>
 
-            {/* Premium Badge */}
-            {isPremiumVoice && (
+            {/* Peppi Voice Badge - shown for all paid tiers */}
+            {isPeppiAvailable && (
               <div className="mb-2">
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-full text-xs font-bold">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-400 to-pink-400 text-white rounded-full text-xs font-bold">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
-                  Premium Voice (Sarvam AI)
+                  {gender === 'female' ? (GENDER_LABELS[language]?.female || 'Peppi Didi') : (GENDER_LABELS[language]?.male || 'Peppi Bhaiya')} Voice
                 </span>
               </div>
             )}

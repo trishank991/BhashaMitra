@@ -46,6 +46,30 @@ from .assessment import (
     CertificateListView,
     CertificateDetailView,
 )
+from .level import (
+    CurriculumLevelListView,
+    CurriculumLevelDetailView,
+    CurriculumModuleListView,
+    CurriculumModuleDetailView,
+    LessonListView,
+    LessonDetailView,
+    LessonProgressUpdateView,
+    ChildLevelProgressView,
+    ChildHomepageProgressView,
+)
+from .songs import (
+    song_list,
+    song_detail,
+    songs_by_level,
+)
+from .peppi import (
+    peppi_greeting,
+    peppi_teach_word,
+    peppi_feedback,
+    peppi_context,
+)
+from .teacher import TeacherListView, TeacherDetailView, TeacherByCharacterView
+from .classroom import ClassroomListView, ClassroomDetailView, ClassroomByLevelView
 
 __all__ = [
     # Alphabet
@@ -90,4 +114,30 @@ __all__ = [
     'AttemptDetailView',
     'CertificateListView',
     'CertificateDetailView',
+    # Curriculum Hierarchy
+    'CurriculumLevelListView',
+    'CurriculumLevelDetailView',
+    'CurriculumModuleListView',
+    'CurriculumModuleDetailView',
+    'LessonListView',
+    'LessonDetailView',
+    'LessonProgressUpdateView',
+    'ChildLevelProgressView',
+    'ChildHomepageProgressView',
+    # Songs
+    'song_list',
+    'song_detail',
+    'songs_by_level',
+    # Peppi
+    'peppi_greeting',
+    'peppi_teach_word',
+    'peppi_feedback',
+    'peppi_context',
+    # Teacher & Classroom
+    'TeacherListView',
+    'TeacherDetailView',
+    'TeacherByCharacterView',
+    'ClassroomListView',
+    'ClassroomDetailView',
+    'ClassroomByLevelView',
 ]

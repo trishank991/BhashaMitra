@@ -52,7 +52,12 @@ export function useAudio(options: UseAudioOptions = {}): UseAudioReturn {
   }, []);
 
   const playAudio = useCallback(async (text: string) => {
-    if (!text.trim()) return;
+    if (!text.trim()) {
+      console.log('[useAudio] Empty text, skipping');
+      return;
+    }
+
+    console.log('[useAudio] playAudio called:', { text, language, voiceStyle });
 
     // Stop any currently playing audio
     stopAudio();
@@ -61,7 +66,9 @@ export function useAudio(options: UseAudioOptions = {}): UseAudioReturn {
     setError(null);
 
     try {
+      console.log('[useAudio] Calling api.getAudio...');
       const result = await api.getAudio(text, language, voiceStyle);
+      console.log('[useAudio] api.getAudio result:', { success: result.success, hasAudioUrl: !!result.audioUrl, error: result.error });
 
       if (!result.success || !result.audioUrl) {
         setError(result.error || 'Failed to generate audio');

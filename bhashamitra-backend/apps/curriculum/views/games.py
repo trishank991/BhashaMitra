@@ -12,10 +12,12 @@ from apps.curriculum.serializers.games import (
     GameLeaderboardSerializer,
 )
 from apps.curriculum.services.game_service import GameService
+from apps.users.tier_config import get_daily_game_limit
+from apps.core.validators import safe_level, safe_limit
 
 
 class GameListView(APIView):
-    """List available games (paid tiers only)."""
+    """List available games for all tiers (with daily limits for FREE)."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, child_id):
@@ -24,26 +26,21 @@ class GameListView(APIView):
         except Child.DoesNotExist:
             return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Check if user can access games (paid tiers only)
-        can_access = getattr(request.user, 'can_access_games', False)
-        if not can_access:
-            return Response({
-                'data': [],
-                'meta': {
-                    'recommended': [],
-                    'access_restricted': True,
-                    'message': 'Games and quizzes are available for Standard and Premium subscribers.',
-                    'upgrade_required': True,
-                    'subscription_tier': getattr(request.user, 'subscription_tier', 'FREE'),
-                }
-            })
+        # Get subscription tier and daily limit
+        subscription_tier = getattr(request.user, 'subscription_tier', 'FREE')
+        daily_limit = get_daily_game_limit(subscription_tier)
+
+        # Check daily games remaining (for FREE tier)
+        can_play, games_played, games_remaining = GameService.can_play_more_games(
+            str(child.id), daily_limit
+        )
 
         language = request.query_params.get('language', child.language)
         level = request.query_params.get('level', child.level)
         game_type = request.query_params.get('game_type')
         skill_focus = request.query_params.get('skill_focus')
 
-        games = GameService.get_available_games(language, int(level))
+        games = GameService.get_available_games(language, safe_level(level, default=child.level))
 
         if game_type:
             games = [g for g in games if g.game_type == game_type]
@@ -61,7 +58,11 @@ class GameListView(APIView):
             'meta': {
                 'recommended': recommended_serializer.data,
                 'access_restricted': False,
-                'subscription_tier': getattr(request.user, 'subscription_tier', 'FREE'),
+                'subscription_tier': subscription_tier,
+                'daily_limit': daily_limit,
+                'games_played_today': games_played,
+                'games_remaining_today': games_remaining,
+                'can_play_more': can_play,
             }
         })
 
@@ -102,7 +103,7 @@ class GameDetailView(APIView):
 
 
 class GameStartView(APIView):
-    """Start a new game session (paid tiers only)."""
+    """Start a new game session (all tiers with daily limits)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, child_id, pk):
@@ -111,13 +112,22 @@ class GameStartView(APIView):
         except Child.DoesNotExist:
             return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Check if user can access games (paid tiers only)
-        can_access = getattr(request.user, 'can_access_games', False)
-        if not can_access:
+        # Get subscription tier and daily limit
+        subscription_tier = getattr(request.user, 'subscription_tier', 'FREE')
+        daily_limit = get_daily_game_limit(subscription_tier)
+
+        # Check if daily limit reached (for FREE tier)
+        can_play, games_played, games_remaining = GameService.can_play_more_games(
+            str(child.id), daily_limit
+        )
+
+        if not can_play:
             return Response({
-                'detail': 'Games and quizzes are available for Standard and Premium subscribers only.',
-                'error_code': 'subscription_required',
-                'subscription_tier': getattr(request.user, 'subscription_tier', 'FREE'),
+                'detail': f'Daily game limit reached ({daily_limit} games per day for Free tier). Upgrade to unlock unlimited games!',
+                'error_code': 'daily_limit_reached',
+                'subscription_tier': subscription_tier,
+                'games_played_today': games_played,
+                'daily_limit': daily_limit,
             }, status=status.HTTP_403_FORBIDDEN)
 
         try:
@@ -137,7 +147,8 @@ class GameStartView(APIView):
                     'lives': game.lives,
                     'points_per_correct': game.points_per_correct,
                     'bonus_completion': game.bonus_completion,
-                }
+                },
+                'games_remaining_today': games_remaining - 1 if games_remaining != -1 else -1,
             }
         }, status=status.HTTP_201_CREATED)
 
@@ -194,7 +205,7 @@ class GameLeaderboardView(APIView):
         except Child.DoesNotExist:
             return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        limit = int(request.query_params.get('limit', 10))
+        limit = safe_limit(request.query_params.get('limit'), default=10, max_limit=100)
         leaderboard = GameService.get_game_leaderboard(str(pk), limit)
 
         return Response({'data': leaderboard})
@@ -211,7 +222,7 @@ class GlobalLeaderboardView(APIView):
             return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
 
         language = request.query_params.get('language', child.language)
-        limit = int(request.query_params.get('limit', 10))
+        limit = safe_limit(request.query_params.get('limit'), default=10, max_limit=100)
 
         leaderboard = GameService.get_global_leaderboard(language, limit)
 
@@ -229,7 +240,7 @@ class GameHistoryView(APIView):
             return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
 
         game_id = request.query_params.get('game_id')
-        limit = int(request.query_params.get('limit', 20))
+        limit = safe_limit(request.query_params.get('limit'), default=20, max_limit=100)
 
         history = GameService.get_child_game_history(str(child.id), game_id, limit)
         stats = GameService.get_child_game_stats(str(child.id))

@@ -11,22 +11,47 @@ import { fadeInUp, staggerContainer } from '@/lib/constants';
 import api from '@/lib/api';
 import type { Festival } from '@/types';
 
-// Religion filter options with icons
-const RELIGION_FILTERS = [
-  { value: '', label: 'All Festivals', icon: '🎉' },
-  { value: 'HINDU', label: 'Hindu', icon: '🕉️' },
-  { value: 'MUSLIM', label: 'Muslim', icon: '☪️' },
-  { value: 'SIKH', label: 'Sikh', icon: '🙏' },
-  { value: 'CHRISTIAN', label: 'Christian', icon: '✝️' },
-  { value: 'JAIN', label: 'Jain', icon: '☸️' },
-  { value: 'BUDDHIST', label: 'Buddhist', icon: '☸️' },
-];
-
 // Month names for display
 const MONTH_NAMES = [
   '', 'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
+
+// Festival icons based on name (inclusive, not religion-based)
+const getFestivalIcon = (name: string): string => {
+  const lowerName = name.toLowerCase();
+  // Hindu festivals
+  if (lowerName.includes('diwali') || lowerName.includes('deepavali')) return '🪔';
+  if (lowerName.includes('holi')) return '🎨';
+  if (lowerName.includes('navratri') || lowerName.includes('durga')) return '💃';
+  if (lowerName.includes('dussehra') || lowerName.includes('vijayadashami')) return '🏹';
+  if (lowerName.includes('ganesh')) return '🐘';
+  if (lowerName.includes('raksha') || lowerName.includes('rakhi')) return '🧵';
+  if (lowerName.includes('janmashtami') || lowerName.includes('krishna')) return '🎺';
+  if (lowerName.includes('pongal') || lowerName.includes('makar') || lowerName.includes('sankranti')) return '🌾';
+  if (lowerName.includes('ugadi') || lowerName.includes('gudi padwa')) return '📅';
+  if (lowerName.includes('onam')) return '🚣';
+  // Muslim festivals
+  if (lowerName.includes('eid')) return '🌙';
+  if (lowerName.includes('ramadan') || lowerName.includes('ramzan')) return '🕌';
+  if (lowerName.includes('muharram')) return '🖤';
+  if (lowerName.includes('milad')) return '📖';
+  // Sikh festivals
+  if (lowerName.includes('baisakhi') || lowerName.includes('vaisakhi')) return '🌻';
+  if (lowerName.includes('lohri')) return '🔥';
+  if (lowerName.includes('gobind')) return '⚔️';
+  if (lowerName.includes('guru') || lowerName.includes('nanak')) return '📿';
+  // Christian festivals
+  if (lowerName.includes('christmas')) return '🎄';
+  if (lowerName.includes('easter')) return '🐰';
+  if (lowerName.includes('good friday')) return '✝️';
+  // Jain festivals
+  if (lowerName.includes('mahavir')) return '🙏';
+  if (lowerName.includes('paryushana')) return '🧘';
+  // Buddhist festivals
+  if (lowerName.includes('buddha') || lowerName.includes('vesak')) return '🪷';
+  return '🎉'; // Default celebration icon
+};
 
 export default function FestivalsPage() {
   const router = useRouter();
@@ -34,9 +59,13 @@ export default function FestivalsPage() {
   const [festivals, setFestivals] = useState<Festival[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedReligion, setSelectedReligion] = useState('');
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, activeChild } = useAuthStore();
   const { speakWithAnimation } = usePeppiStore();
+
+  // Get current language from active child, default to Hindi
+  const currentLanguage = activeChild?.language
+    ? (typeof activeChild.language === 'string' ? activeChild.language : activeChild.language.code)
+    : 'HINDI';
 
   useEffect(() => {
     setIsHydrated(true);
@@ -54,7 +83,9 @@ export default function FestivalsPage() {
       setError(null);
 
       try {
-        const response = await api.getFestivals(selectedReligion || undefined);
+        // Fetch festivals for the current language
+        console.log('[FestivalsPage] Fetching festivals for language:', currentLanguage);
+        const response = await api.getFestivals({ language: currentLanguage as 'HINDI' | 'TAMIL' | 'PUNJABI' | 'GUJARATI' | 'TELUGU' | 'MALAYALAM' | 'BENGALI' });
         if (response.success && response.data) {
           setFestivals(response.data);
         } else {
@@ -71,7 +102,7 @@ export default function FestivalsPage() {
     };
 
     fetchFestivals();
-  }, [isHydrated, isAuthenticated, router, selectedReligion]);
+  }, [isHydrated, isAuthenticated, router, currentLanguage]);
 
   // Peppi greeting on page load
   useEffect(() => {
@@ -105,7 +136,7 @@ export default function FestivalsPage() {
           </Link>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900">Festival Stories</h1>
-            <p className="text-gray-500">Learn about Indian festivals through stories</p>
+            <p className="text-gray-500">Celebrate together through stories</p>
           </div>
         </motion.div>
 
@@ -119,29 +150,11 @@ export default function FestivalsPage() {
               <div>
                 <h3 className="font-bold text-gray-900">Story Time with Peppi!</h3>
                 <p className="text-sm text-gray-600">
-                  Pick a festival and I will tell you its story!
+                  Every festival has a beautiful story. Pick one and let us celebrate together!
                 </p>
               </div>
             </div>
           </Card>
-        </motion.div>
-
-        {/* Religion Filter */}
-        <motion.div variants={fadeInUp} className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
-          {RELIGION_FILTERS.map((filter) => (
-            <button
-              key={filter.value}
-              onClick={() => setSelectedReligion(filter.value)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
-                selectedReligion === filter.value
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <span>{filter.icon}</span>
-              <span>{filter.label}</span>
-            </button>
-          ))}
         </motion.div>
 
         {/* Loading State */}
@@ -172,9 +185,7 @@ export default function FestivalsPage() {
               <Card className="text-center py-8">
                 <p className="text-4xl mb-4">📚</p>
                 <p className="text-gray-500">No festivals found.</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  {selectedReligion ? 'Try selecting a different filter.' : 'Check back soon!'}
-                </p>
+                <p className="text-sm text-gray-400 mt-2">Check back soon!</p>
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -185,28 +196,18 @@ export default function FestivalsPage() {
                       className="h-full hover:shadow-lg transition-shadow"
                     >
                       <div className="flex items-start gap-4">
-                        {/* Festival Icon */}
+                        {/* Festival Icon - based on festival name, not religion */}
                         <div className="w-14 h-14 bg-gradient-to-br from-warning-100 to-warning-200 rounded-xl flex items-center justify-center flex-shrink-0">
                           <span className="text-2xl">
-                            {festival.religion === 'HINDU' && '🪔'}
-                            {festival.religion === 'MUSLIM' && '🌙'}
-                            {festival.religion === 'SIKH' && '🙏'}
-                            {festival.religion === 'CHRISTIAN' && '⭐'}
-                            {festival.religion === 'JAIN' && '🪷'}
-                            {festival.religion === 'BUDDHIST' && '🪷'}
+                            {getFestivalIcon(festival.name)}
                           </span>
                         </div>
 
                         {/* Festival Info */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-gray-900 truncate">
-                              {festival.name}
-                            </h3>
-                            <Badge variant="secondary" size="sm">
-                              {festival.religion.charAt(0) + festival.religion.slice(1).toLowerCase()}
-                            </Badge>
-                          </div>
+                          <h3 className="font-bold text-gray-900 truncate mb-1">
+                            {festival.name}
+                          </h3>
                           <p className="text-sm text-primary-600 font-medium mb-1">
                             {festival.name_native}
                           </p>
@@ -214,9 +215,9 @@ export default function FestivalsPage() {
                             {festival.description}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs text-gray-400">
+                            <Badge variant="secondary" size="sm">
                               {MONTH_NAMES[festival.typical_month]}
-                            </span>
+                            </Badge>
                             {festival.stories && festival.stories.length > 0 && (
                               <span className="text-xs text-primary-500 font-medium">
                                 {festival.stories.length} {festival.stories.length === 1 ? 'story' : 'stories'}

@@ -1,0 +1,8 @@
+"""App configuration for certifications."""
+from django.apps import AppConfig
+
+
+class CertificationsConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'apps.certifications'
+    verbose_name = 'Certifications'

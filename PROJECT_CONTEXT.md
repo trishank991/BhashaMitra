@@ -238,12 +238,14 @@ Before recommending any solution or making architectural decisions:
 ## Tech Stack
 
 ### Backend (`/bhashamitra-backend`)
-- **Framework**: Django 6.0 + Django REST Framework 3.16
-- **Database**: SQLite (dev) / PostgreSQL (prod via Supabase)
+- **Framework**: Django 5.x + Django REST Framework 3.14+
+- **Database**: SQLite (dev) / PostgreSQL (prod via Render)
 - **Auth**: JWT (SimpleJWT)
-- **Cache**: Redis (optional)
+- **Cache**: Redis (django-redis)
 - **Storage**: Cloudflare R2 / AWS S3 (production)
-- **TTS**: HuggingFace Spaces (Svara TTS + Parler TTS fallback)
+- **TTS**: Svara TTS (free/standard) + Sarvam AI Bulbul V2 (premium)
+- **Async Tasks**: Celery + Redis (optional)
+- **Monitoring**: Sentry
 
 ### Frontend (`/bhashamitra-frontend`)
 - **Framework**: Next.js 14.2 (App Router)
@@ -391,10 +393,10 @@ cd ~/BhashaMitra/bhashamitra-frontend && npm run dev
 
 | Language | Script | Priority | Status |
 |----------|--------|----------|--------|
-| Hindi | Devanagari | Phase 1 (MVP) | In Progress |
-| Tamil | Tamil | Phase 2 | Planned |
+| Hindi | Devanagari | Phase 1 (MVP) | ✅ Implemented (L1-L2) |
+| Punjabi | Gurmukhi | Phase 1 (MVP) | ✅ Implemented (L1-L2) |
+| Tamil | Tamil | Phase 1 (MVP) | ✅ Implemented (L1-L2) |
 | Gujarati | Gujarati | Phase 3 | Planned |
-| Punjabi | Gurmukhi | Phase 3 | Planned |
 | Telugu | Telugu | Phase 4 | Planned |
 | Malayalam | Malayalam | Phase 4 | Planned |
 
@@ -402,12 +404,14 @@ cd ~/BhashaMitra/bhashamitra-frontend && npm run dev
 
 | Service | Purpose | Config Location |
 |---------|---------|-----------------|
-| HuggingFace Spaces | TTS (Svara TTS + Parler fallback) | `HUGGINGFACE_API_TOKEN` in .env |
+| Render PostgreSQL | Production database | `DATABASE_URL` in Render dashboard |
+| HuggingFace Spaces | TTS (Svara TTS - free/standard) | `HUGGINGFACE_API_TOKEN` in .env |
+| Sarvam AI | TTS (Bulbul V2 - premium tier) | `SARVAM_API_KEY` in .env |
 | StoryWeaver | 53K+ CC-licensed stories | Public API |
-| Supabase | PostgreSQL database (prod) | `DB_*` vars in .env |
 | Cloudflare R2 | Media storage | `R2_*` vars in .env |
 | Resend | Email service | `RESEND_API_KEY` in .env |
 | Sentry | Error tracking | `SENTRY_DSN` in .env |
+| Redis | Caching + Celery broker | `REDIS_URL` in .env |
 
 ## Environment Variables
 
@@ -478,6 +482,10 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 | `/register` | User registration | Implemented |
 | `/home` | **Child Dashboard** - Shows stats, streak, quick actions | Implemented |
 | `/learn` | **Curriculum Dashboard** - Main learning hub | Implemented |
+| `/learn/levels` | **Curriculum Levels** - L1-L10 learning journey | Implemented |
+| `/learn/levels/[id]` | **Level Detail** - Modules within a level | Implemented |
+| `/learn/modules/[id]` | **Module Detail** - Lessons within a module | Implemented |
+| `/learn/lessons/[id]` | **Lesson Detail** - Lesson content and progress | Implemented |
 | `/learn/alphabet` | **Alphabet Learning** - Hindi Devanagari letters | Implemented |
 | `/learn/vocabulary` | **Vocabulary** - Word themes and flashcards | Implemented |
 | `/learn/grammar` | **Grammar** - Grammar topics and rules | Implemented |
@@ -564,6 +572,17 @@ Grammar lessons:
 - [x] **Voice Samples Downloaded** - 15 Hindi voice samples for IndicF5 reference audio
 - [x] **IndicF5 Integration Test** - Successfully generated TTS with 3 different voices
 
+### Recently Completed (Dec 19, 2024) - Curriculum Architecture
+- [x] **Curriculum Hierarchy Models** - CurriculumLevel, CurriculumModule, Lesson, LessonContent
+- [x] **Progress Tracking Models** - LevelProgress, ModuleProgress, LessonProgress
+- [x] **L1-L10 Levels Seeded** - All 10 levels with Hindi names, emojis, theme colors
+- [x] **Curriculum API Endpoints** - Full CRUD for levels, modules, lessons, progress
+- [x] **Frontend Curriculum Types** - TypeScript interfaces for curriculum hierarchy
+- [x] **Frontend Curriculum Components** - ProgressRing, LevelCard, ModuleCard, LessonCard
+- [x] **Frontend Curriculum Pages** - /learn/levels, /learn/levels/[id], /learn/modules/[id], /learn/lessons/[id]
+- [x] **Child Model Update** - Extended level support from L1-L5 to L1-L10
+- [x] **Learn Page Update** - Added "My Journey" link to /learn/levels
+
 ## TTS System
 
 The TTS system uses a multi-provider approach via HuggingFace Spaces:
@@ -612,58 +631,57 @@ Features:
 - Cost tracking and optimization
 - No local GPU required (uses Gradio client)
 
-### TTS Strategy Decision (Dec 2024)
+### TTS Strategy Decision (Updated Dec 2024)
 
-**3-Tier Membership Model with Different TTS Providers:**
+**Current TTS Strategy:**
 
 | Tier | Price | TTS Provider | Features |
 |------|-------|--------------|----------|
-| **Free** | $0 | Pre-cached Svara | Limited content, pre-generated audio only |
-| **Standard** | $12/month | Svara TTS | All content, real-time generation |
-| **Premium** | $20/month | Sarvam AI Bulbul V2 | Human-like voices, highest quality |
+| **Free** | $0 | Cache only | Pre-cached curriculum content only |
+| **Standard** | $20/month | Cache only | Pre-cached curriculum content only |
+| **Premium** | $30/month | Google Cloud TTS WaveNet | Real-time on-demand generation, highest quality |
+
+**Provider Routing:**
+- **Premium tier**: Google TTS WaveNet → Google Standard → Sarvam AI → Svara TTS (fallback chain)
+- **Standard/Free tiers**: Cache only (pre-warmed curriculum audio)
+
+**Fallback Chain (Premium only):**
+1. Cache (instant, free) - checked first for all tiers
+2. Google TTS WaveNet - highest quality voices
+3. Google TTS Standard - fallback if WaveNet fails
+4. Sarvam AI - fallback if Google fails
+5. Svara TTS - emergency backup
 
 **Provider Details:**
 
-1. **Svara TTS (Tier 1 & 2)**: HuggingFace Space `kenpath/svara-tts`
-   - Free tier: Only serves pre-cached content (alphabet, vocabulary, stories)
-   - Standard tier: Real-time generation for any content
-   - ~50-70s per generation, good quality AI voice
-   - Supports 12 Indian languages
+1. **Google Cloud TTS (Premium tier)**:
+   - API: Google Cloud Text-to-Speech
+   - WaveNet voices: High quality, natural sounding
+   - Cost: ~$16 per million characters (WaveNet)
+   - Languages: Hindi, Tamil, Telugu, Gujarati, Malayalam, Bengali, Kannada, Marathi, Punjabi, Fiji Hindi (uses Hindi voice)
 
-2. **Sarvam AI Bulbul V2 (Tier 3 Premium)**:
-   - API: `https://api.sarvam.ai/text-to-speech`
-   - Model: `bulbul:v2`
-   - Human-like voice quality, ~1.5s generation (40x faster than Svara)
-   - Languages: Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Punjabi, Odia
-   - Cost: ~NZD $1.80/user/month estimated, ~$0.36 with 80% cache hit rate
-   - **Selected Voices (Dec 2024):**
-     - Female: **manisha** (clear, energetic) - primary voice for curriculum
-     - Male: **abhilash** (friendly teacher voice)
-   - Available voices (all tested, can switch anytime):
-     - Female: anushka (warm), manisha (clear), vidya (expressive), arya (friendly)
-     - Male: abhilash (friendly), karun (professional), hitesh (casual)
+2. **Cache (Standard/Free tiers)**:
+   - Pre-cached using `python manage.py prewarm_curriculum_audio`
+   - All curriculum content (alphabet, vocabulary, stories) pre-generated
+   - Instant playback, no generation delay
 
-**Unit Economics Analysis:**
-- Average kid reads 3 stories/day × 5 pages × 50 words = 750 words/day
-- Monthly: 750 × 30 = 22,500 words
-- With 80% cache hit rate: 4,500 new words/month
-- Sarvam cost: ~4,500 chars × $0.0001/char = ~$0.45/user/month
-
-**Future Vision (Post-MVP Validation):**
-- Move to ElevenLabs voice cloning ($11/month for 100,000 chars)
-- Hire professional Indian voice actors (male + female per language)
-- Clone voices for authentic, culturally appropriate pronunciation
-- Target: Miss Rachel-style engaging educational voices
+**Supported Languages:**
+- Hindi, Tamil, Telugu, Gujarati, Punjabi, Malayalam, Bengali, Kannada, Marathi
+- **Fiji Hindi** (uses Hindi TTS voice - hi-IN)
 
 **Environment Variables:**
 ```bash
-# Sarvam AI TTS (Tier 3 - Premium)
+# Google Cloud TTS (Premium tier)
+GOOGLE_TTS_API_KEY=your_key_here
+
+# Sarvam AI TTS (fallback)
 SARVAM_API_KEY=your_key_here
 ```
 
 **Provider Files:**
-- `apps/speech/services/mms_provider.py` - Svara TTS provider
-- `apps/speech/services/sarvam_provider.py` - Sarvam AI provider (to be created)
+- `apps/speech/services/google_provider.py` - Google Cloud TTS (primary for Premium)
+- `apps/speech/services/sarvam_provider.py` - Sarvam AI (fallback)
+- `apps/speech/services/mms_provider.py` - Svara TTS (emergency backup)
 - `apps/speech/services/tts_service.py` - Main TTS service with tier routing
 
 ### Language Purity Rule (Dec 2024)
@@ -712,12 +730,49 @@ Full documentation is in `/docs/`:
 
 ## Database Content (as of Dec 2024)
 
-| Content Type | Count | Details |
-|--------------|-------|---------|
-| **Stories** | 12 total | Hindi: 5, Tamil: 3, Gujarati: 2, Punjabi: 2 |
-| **Alphabets** | 49 letters | Hindi Devanagari script only |
-| **Vocabulary** | 80 words | 8 themes (Family, Colors, Numbers, Animals, Food, Body Parts, Greetings, Actions) |
-| **Grammar** | 6 rules | 5 topics (Sentence Structure, Gender, Pronouns, Verbs, Numbers) |
+| Content Type | Hindi | Punjabi | Tamil | Gujarati | Total |
+|--------------|-------|---------|-------|----------|-------|
+| **Stories** | 42 | 18 | 21 | 7 | 88 |
+| **Alphabets** | 49 letters | 55 letters | 37 letters | 48 letters | 189 |
+| **Matras** | 12 | 10 | 12 | 12 | 46 |
+| **Vocabulary** | 110 words | 70 words | 70 words | - | 250 |
+| **Grammar Topics** | 6 | 5 | 5 | - | 16 |
+| **Grammar Rules** | 20 | 14 | 28 | - | 62 |
+| **Grammar Exercises** | 21 | 19 | 31 | - | 71 |
+| **Songs** | 5 | 5 | 5 | - | 15 |
+| **Games** | 5 | 5 | 5 | - | 15 |
+| **Assessments** | 2 | 2 | 2 | - | 6 |
+| **Peppi Phrases** | 49 | 12 | 12 | - | 73 |
+| **Festival Stories** | 3 | 2 | 2 | 2 | 9 |
+
+### Seeded Content Details
+
+**Hindi L1-L2:**
+- `python manage.py seed_l1_l2_curriculum` - Modules, lessons, exercises
+- `python manage.py seed_l1_content` - Vocabulary, stories, songs
+
+**Punjabi L1-L2:**
+- `python manage.py seed_punjabi_l1_l2` - Complete curriculum with Gurmukhi script
+
+**Tamil L1-L2:**
+- `python manage.py seed_tamil_l1_l2 --clear` - Complete curriculum with Tamil script
+
+**Grammar Content (All Languages):**
+- `python manage.py seed_grammar_content` - Seed grammar for all languages (Hindi, Tamil, Punjabi)
+- `python manage.py seed_grammar_content --language TAMIL` - Seed specific language
+- `python manage.py seed_grammar_content --clear` - Clear existing before seeding
+- Content: Topics (Sentence Structure, Gender/Case, Pronouns, Numbers, Verb Conjugation) with rules and exercises
+
+**Stories (All Languages):**
+- `python manage.py seed_stories` - Seed stories for all languages (Hindi, Tamil, Punjabi, Gujarati)
+- `python manage.py seed_stories --language HINDI` - Seed specific language
+- `python manage.py seed_stories --clear` - Clear existing before seeding
+- Content: Regular stories + festival stories (Diwali, Holi, Pongal, Navratri, Raksha Bandhan, Vaisakhi)
+
+**Audio Caching (All Languages):**
+- `python manage.py cache_all_audio` - Cache audio for all curriculum content
+- `python manage.py cache_all_audio --language TAMIL` - Cache for specific language
+- `python manage.py cache_all_audio --dry-run` - Preview what would be cached
 
 **Note**: StoryWeaver API currently returns 403 Forbidden. Sample stories were manually created. When API access is restored, run: `python manage.py sync_stories --language=HINDI --limit=50`
 
@@ -783,30 +838,65 @@ Reference audio requirements:
 | Gujarati | Peppi Bhai (પેપ્પી ભાઈ) | Peppi Ben (પેપ્પી બેન) |
 | Punjabi | Peppi Veerji (ਪੈਪੀ ਵੀਰਜੀ) | Peppi Bhainji (ਪੈਪੀ ਭੈਣਜੀ) |
 
-### Peppi Voice Configuration
+### Peppi Voice Configuration (Updated Dec 2024)
 
-Uses Sarvam AI Bulbul V2 voices for premium quality narration:
+**Voice Progression Strategy:**
+- **L1-L5 Levels**: Same Peppi voice (Google TTS WaveNet, child-friendly female)
+- **L6+ Levels**: New voice to be introduced (TBD) - marks progression to advanced levels
 
+The same Peppi voice is used throughout the entire course from L1 to L5 for consistency and familiarity. A new voice will be introduced starting from L6 to mark the learner's progression to advanced levels.
+
+**Tier-Based Voice & Content Access (NZD Pricing):**
+
+| Feature | Free ($0) | Standard ($20/mo) | Premium ($30/mo) |
+|---------|-----------|-------------------|------------------|
+| **Curriculum Levels** | Basic alphabets only | L1-L10 (full CBSE/ICSE) | L1-L10 (full CBSE/ICSE) |
+| **Stories** | 5 stories | Unlimited | Unlimited |
+| **Games** | 2 per day | Unlimited | Unlimited |
+| **Child Profiles** | 1 | 3 | 5 |
+| **Peppi AI Chat** | ❌ | ✅ | ✅ |
+| **Peppi Story Narration** | ❌ | ✅ Google WaveNet | ✅ Google WaveNet |
+| **Progress Reports** | ❌ | ✅ | ✅ |
+| **Live Classes** | ❌ | ❌ | 2 FREE/month |
+| **Premium Voices** | Pre-cached only | Pre-cached | Real-time Google TTS |
+| **Offline Downloads** | ❌ | ❌ | ✅ |
+| **Priority Support** | ❌ | ❌ | ✅ |
+
+**Key Points:**
+- **Peppi voice is consistent for paid tiers** - Always uses Google TTS WaveNet for narration
+- **Free tier is browse mode** - Limited access to test the platform
+- **Standard unlocks full curriculum** - Complete L1-L10 journey with Peppi chat and narration
+- **Premium adds live classes and extras** - Real-time TTS, offline downloads, priority support
+
+**Google TTS WaveNet Configuration (Peppi Voice):**
 ```python
-PEPPI_VOICE_CONFIG = {
-    'hindi': {
-        'male': {'speaker': 'arvind', 'pitch': 0.4, 'pace': 0.85, 'model': 'bulbul:v2'},
-        'female': {'speaker': 'meera', 'pitch': 0.3, 'pace': 0.85, 'model': 'bulbul:v2'}
+# apps/speech/services/google_provider.py
+VOICE_MAPPING = {
+    'HINDI': {
+        'language_code': 'hi-IN',
+        'voice_name': 'hi-IN-Standard-A',      # Female, child-friendly (Peppi)
+        'wavenet_voice': 'hi-IN-Wavenet-A',    # High quality female (Peppi)
     },
-    'tamil': {
-        'male': {'speaker': 'kumar', 'pitch': 0.4, 'pace': 0.85, 'model': 'bulbul:v2'},
-        'female': {'speaker': 'manisha', 'pitch': 0.3, 'pace': 0.85, 'model': 'bulbul:v2'}
+    'TAMIL': {
+        'language_code': 'ta-IN',
+        'voice_name': 'ta-IN-Standard-D',
+        'wavenet_voice': 'ta-IN-Wavenet-D',
     },
-    'gujarati': {
-        'male': {'speaker': 'arvind', 'pitch': 0.4, 'pace': 0.85, 'model': 'bulbul:v2'},
-        'female': {'speaker': 'meera', 'pitch': 0.3, 'pace': 0.85, 'model': 'bulbul:v2'}
+    'PUNJABI': {
+        'language_code': 'pa-IN',
+        'voice_name': 'pa-IN-Standard-B',
+        'wavenet_voice': 'pa-IN-Wavenet-D',
     },
-    'punjabi': {
-        'male': {'speaker': 'arvind', 'pitch': 0.4, 'pace': 0.85, 'model': 'bulbul:v2'},
-        'female': {'speaker': 'meera', 'pitch': 0.3, 'pace': 0.85, 'model': 'bulbul:v2'}
-    }
+    # ... other languages follow similar pattern
 }
 ```
+
+**Peppi Narration Endpoints:**
+- `GET /api/v1/peppi/narrate/story/{story_id}/` - Full story narration
+- `GET /api/v1/peppi/narrate/story/{story_id}/page/{page_number}/` - Single page narration
+- `POST /api/v1/peppi/narrate/` - Arbitrary text narration
+
+**Implementation Note:** Peppi narration always uses Google TTS WaveNet regardless of user subscription tier. This ensures consistent, high-quality voice for the mascot character.
 
 ### Peppi Home Page Story Time Feature (Dec 2024)
 
@@ -980,10 +1070,85 @@ For premium users, pre-generate Peppi narrations:
 - `src/app/festivals/[id]/page.tsx` - Festival detail page
 - `src/stores/peppiStore.ts` - Update with narration state
 
+---
+
+## Strategy v3.0 Gap Features (Dec 2024)
+
+The following features are planned for implementation based on the v3.0 Strategy document:
+
+### Gap 1: Offline Mode (PWA)
+- **Status**: Not implemented
+- **Apps**: `apps/offline/` (new)
+- **Models**: `OfflinePackage`, `ChildOfflineContent`
+- **Frontend**: Service workers, IndexedDB, background sync
+
+### Gap 2: Parent Engagement System
+- **Status**: Not implemented
+- **Apps**: `apps/parent_engagement/` (new)
+- **Models**: `ParentPreferences`, `LearningGoal`, `WeeklyReport`, `ParentChildActivity`
+- **Frontend**: `/family/` pages for goals, reports, settings
+
+### Gap 3: Live Classes & Moderation
+- **Status**: Not implemented
+- **Apps**: `apps/live_classes/` (new)
+- **Models**: `Teacher`, `LiveSession`, `SessionRating`, `SessionModerationLog`
+- **External**: Daily.co or similar for WebRTC
+
+### Gap 4: Teacher QA System
+- **Status**: Not implemented
+- **Models**: `TeacherCertification`, `TeacherQualityAudit`, `TeacherPerformanceMetrics`
+- **Features**: Random audits, performance tiers, automatic probation
+
+### Gap 5: Localization (NZ/AU/IN/UK/US)
+- **Status**: Not implemented
+- **Apps**: `apps/localization/` (new)
+- **Models**: `MarketConfig`, `FestivalCalendar`
+- **Features**: Multi-currency, regional pricing, local payment methods
+
+### Gap 6: Referral System
+- **Status**: Not implemented
+- **Apps**: `apps/referrals/` (new)
+- **Models**: `ReferralCode`, `Referral`, `AmbassadorProgram`
+- **Features**: Viral referral loops, ambassador tiers
+
+### Gap 7: Certification System
+- **Status**: Not implemented
+- **Apps**: `apps/certifications/` (new)
+- **Models**: `CertificateTemplate`, `Certificate`, `AnnualProgressReport`
+- **Features**: Shareable certificates, annual reports
+
+### Gap 8: Age-Adaptive Peppi
+- **Status**: Partially planned (Peppi exists, age variants don't)
+- **Models**: `PeppiAgeVariant` (Junior 4-6, Standard 7-10, Teen 11-14)
+- **Features**: Age-specific prompts, voice modifiers, personality traits
+
+### Gap 9: Analytics Engine
+- **Status**: Not implemented
+- **Apps**: `apps/analytics/` (new)
+- **Models**: `LessonAnalytics`, `CohortAnalytics`, `PeppiAnalytics`, `EventLog`
+- **Features**: Founder dashboard, retention metrics, cost tracking
+
+### Gap 10: Multi-Child Family Features
+- **Status**: Not implemented
+- **Apps**: `apps/family/` (new)
+- **Models**: `Family`, `FamilyLeaderboard`, `SiblingChallenge`
+- **Features**: Family discounts, sibling competitions, combined stats
+
+### Subscription Tiers (Strategy v3.0)
+
+| Tier | NZ Price | Features |
+|------|----------|----------|
+| **Free** | $0 | Pre-cached content, limited AI |
+| **Standard** | $14.99/mo | All content, Svara TTS, unlimited Peppi |
+| **Premium** | $24.99/mo | Sarvam AI voices, priority support |
+| **Elite** | $49.99/mo | Live classes, premium teachers |
+
+---
+
 ## Development Notes
 
 - When working on backend, always check if venv is activated
-- Backend uses Django 6.0 (upgraded from 5.x)
+- Backend uses Django 5.x
 - Frontend uses Next.js 14 App Router (not Pages Router)
 - The project targets children, so UI should be colorful and engaging
 - StoryWeaver API currently blocked (403) - using manual sample stories
@@ -995,3 +1160,1118 @@ For premium users, pre-generate Peppi narrations:
 - **HuggingFace Pro membership** is configured - use `huggingface_hub.login()` with token from .env
 - **IndicF5 requires reference audio** - use samples from `/voice_samples/hindi/`
 - **After completing any task, update this CLAUDE.md file** to avoid repeating work
+
+---
+
+## Implementation Roadmap (Dec 2024)
+
+### Critical Analysis Summary (Dec 18, 2024)
+
+**Overall Project Status:**
+- Backend: 65% structurally complete, 65% functionally complete
+- Frontend: 60% structurally complete, 30% functionally complete
+- Production Ready: NO
+
+**Critical Blockers Identified:**
+1. Games don't work (models exist, no gameplay logic)
+2. Audio not integrated (TTS APIs ready, useAudio hook unused)
+3. 8 apps are skeletons (models but no views/serializers)
+4. Zero interactive exercises (0/8 types implemented)
+5. Content validation missing (no VerifiedLetter/Word models)
+6. Parent Dashboard missing (store drafted, no UI)
+7. Age variants missing (one UI for ages 4-14)
+8. Peppi not teaching (avatar on home page only)
+
+### Week 1 Implementation (CRITICAL - MVP Blockers)
+
+**Total: 21 hours**
+
+| Day | Task | Status | Owner |
+|-----|------|--------|-------|
+| Day 1 | Audio Pre-generation System | 🔄 In Progress | Backend |
+| Day 2 | Audio Integration in Frontend | ⏳ Pending | Frontend |
+| Day 3 | ListenAndTap Exercise Component | ⏳ Pending | Frontend |
+| Day 4 | Peppi Integration in Lessons | ⏳ Pending | Frontend |
+| Day 5 | Marketing Fixes + Testing | ⏳ Pending | Both |
+
+**Week 1 Success Criteria:**
+- [ ] All 50 Hindi letters have audio files
+- [ ] 100 core vocabulary words have audio files
+- [ ] Letters play audio when tapped
+- [ ] Words play audio when tapped
+- [ ] ListenAndTap exercise is functional
+- [ ] Peppi appears in lesson intro/outro
+- [ ] Marketing claims updated (no false promises)
+
+### Week 2 Implementation (MVP Completion)
+
+**Total: 67 hours**
+
+| Day | Task | Status | Owner |
+|-----|------|--------|-------|
+| Day 1-2 | Letter Match Game (Memory Game) | ⏳ Pending | Frontend |
+| Day 2-3 | Parent Dashboard MVP - Backend | ⏳ Pending | Backend |
+| Day 3-4 | Parent Dashboard MVP - Frontend | ⏳ Pending | Frontend |
+| Day 4 | Match Pairs Exercise | ⏳ Pending | Frontend |
+| Day 4-5 | Content Validation System | ⏳ Pending | Backend |
+| Day 5 | Age-Adaptive UI Polish | ⏳ Pending | Frontend |
+
+**Week 2 Success Criteria:**
+- [ ] Letter Match game fully playable
+- [ ] Parent can see child's progress summary
+- [ ] Parent can see recent activity
+- [ ] Match Pairs exercise functional
+- [ ] VerifiedWord model exists and enforced
+- [ ] Hindi letters verified in database
+- [ ] Age-specific UI differences visible
+
+### Files Created/Modified This Sprint
+
+**Backend (Week 1):**
+- `apps/speech/management/commands/generate_audio_cache.py` - Audio generation command
+- `apps/speech/services/tts_service.py` - TTS service with caching
+- `apps/speech/views.py` - Audio URL API endpoints
+- `apps/speech/urls.py` - URL routes for audio
+
+**Frontend (Week 1):**
+- `src/hooks/useAudio.ts` - Audio playback hook (updated)
+- `src/hooks/useAgeConfig.ts` - Age-appropriate configuration hook (new)
+- `src/components/ui/AudioButton.tsx` - Audio button component
+- `src/components/curriculum/LetterCard.tsx` - Letter card with audio
+- `src/components/curriculum/WordCard.tsx` - Word card with audio
+- `src/components/exercises/ListenAndTap.tsx` - ListenAndTap exercise
+- `src/components/exercises/ExerciseWrapper.tsx` - Exercise wrapper
+- `src/components/peppi/PeppiAvatar.tsx` - Peppi avatar component
+- `src/components/peppi/PeppiSpeech.tsx` - Peppi speech bubble
+- `src/data/peppi-scripts.ts` - Peppi's pre-written scripts
+
+**Backend (Week 2):**
+- `apps/games/models.py` - Game models
+- `apps/games/views.py` - Game API views
+- `apps/parent_engagement/views.py` - Parent dashboard APIs
+- `apps/curriculum/models/verified_content.py` - Verified content models
+- `apps/curriculum/management/commands/seed_verified_hindi.py` - Hindi seed data
+
+**Frontend (Week 2):**
+- `src/components/games/LetterMatchGame.tsx` - Memory game
+- `src/app/(main)/parent/dashboard/page.tsx` - Parent dashboard
+- `src/components/exercises/MatchPairs.tsx` - Match pairs exercise
+- `src/components/layout/AgeThemeProvider.tsx` - Age theme provider
+
+---
+
+## Curriculum Hierarchy Architecture (Dec 2024)
+
+### L1-L10 Curriculum Levels - IMPLEMENTED
+
+The curriculum follows an NCERT-aligned structure adapted for diaspora learners (ages 4-14).
+
+**Hierarchy:** `Level → Module → Lesson → LessonContent`
+
+### Curriculum Levels (L1-L10)
+
+| Level | Hindi Name | English Name | Age Range | Emoji | Theme Color |
+|-------|------------|--------------|-----------|-------|-------------|
+| L1 | अंकुर (Ankur) | Sprout | 4-5 | 🌱 | #86efac |
+| L2 | पौधा (Paudha) | Seedling | 5-6 | 🌿 | #4ade80 |
+| L3 | वृक्ष (Vriksh) | Tree | 6-7 | 🌳 | #22c55e |
+| L4 | पुष्प (Pushp) | Flower | 7-8 | 🌻 | #fbbf24 |
+| L5 | तारा (Tara) | Star | 8-9 | ⭐ | #facc15 |
+| L6 | ज्योति (Jyoti) | Light | 9-10 | 🔥 | #fb923c |
+| L7 | शिखर (Shikhar) | Peak | 10-11 | 🏔️ | #60a5fa |
+| L8 | उड़ान (Udaan) | Flight | 11-12 | 🚀 | #3b82f6 |
+| L9 | रत्न (Ratna) | Gem | 12-13 | 💎 | #8b5cf6 |
+| L10 | मुकुट (Mukut) | Crown | 13-14 | 👑 | #a855f7 |
+
+### Module Types
+
+Each level contains modules of these types:
+- `LISTENING` - Listening & Recognition (👂)
+- `SPEAKING` - Speaking & Pronunciation (🗣️)
+- `VOCABULARY` - Vocabulary Building (📚)
+- `ALPHABET` - Alphabet & Letters (🔤)
+- `READING` - Reading Practice (📖)
+- `GRAMMAR` - Grammar Concepts (📝)
+- `STORIES` - Story Time (📕)
+- `SONGS` - Songs & Rhymes (🎵)
+- `GAMES` - Games & Activities (🎮)
+- `CULTURE` - Cultural Learning (🏛️)
+
+### Backend Models
+
+**Location:** `apps/curriculum/models/`
+
+| Model | File | Description |
+|-------|------|-------------|
+| `CurriculumLevel` | `level.py` | L1-L10 levels with learning objectives |
+| `CurriculumModule` | `level.py` | Modules within levels |
+| `Lesson` | `level.py` | Individual lessons |
+| `LessonContent` | `level.py` | Links lessons to content (vocabulary, grammar, etc.) |
+| `LevelProgress` | `progress.py` | Child's level progress tracking |
+| `ModuleProgress` | `progress.py` | Child's module progress tracking |
+| `LessonProgress` | `progress.py` | Child's lesson progress tracking |
+
+**Key Fields:**
+- All models use UUID primary keys
+- `TimeStampedModel` base class for created_at/updated_at
+- Progress models have `update_progress(score)` method that cascades completion
+
+### Backend API Endpoints
+
+**Base URL:** `/api/v1/curriculum/`
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/levels/` | GET | List all curriculum levels |
+| `/levels/<id>/` | GET | Get level details |
+| `/levels/<id>/modules/` | GET | Get modules in a level |
+| `/modules/<id>/` | GET | Get module details |
+| `/modules/<id>/lessons/` | GET | Get lessons in a module |
+| `/lessons/<id>/` | GET | Get lesson details |
+| `/lessons/<id>/progress/` | POST | Update lesson progress |
+| `/progress/levels/` | GET | Get child's curriculum progress |
+
+**Query Parameters:**
+- `?child_id=<uuid>` - Include child's progress in responses
+
+### Frontend Types
+
+**Location:** `src/types/curriculum.ts`
+
+```typescript
+// Core types
+interface CurriculumLevel {
+  id: string;
+  code: string; // L1, L2, etc.
+  name_english: string;
+  name_hindi: string;
+  name_romanized: string;
+  min_age: number;
+  max_age: number;
+  emoji: string;
+  theme_color: string;
+  learning_objectives: string[];
+  peppi_welcome: string;
+  peppi_completion: string;
+  progress?: LevelProgress;
+}
+
+interface CurriculumModule {
+  id: string;
+  level: string;
+  code: string; // L1.M1, etc.
+  module_type: ModuleType;
+  name_english: string;
+  name_hindi: string;
+  emoji: string;
+  peppi_intro: string;
+  progress?: ModuleProgress;
+}
+
+interface Lesson {
+  id: string;
+  module: string;
+  code: string; // L1.M1.LS1, etc.
+  title_english: string;
+  title_hindi: string;
+  points_available: number;
+  mastery_threshold: number;
+  peppi_intro: string;
+  peppi_success: string;
+  progress?: LessonProgress;
+}
+```
+
+### Frontend Components
+
+**Location:** `src/components/curriculum/`
+
+| Component | Description |
+|-----------|-------------|
+| `ProgressRing.tsx` | Circular progress indicator |
+| `LevelCard.tsx` | Curriculum level card with progress |
+| `ModuleCard.tsx` | Module card with type info |
+| `LessonCard.tsx` | Lesson card with stars |
+| `index.ts` | Exports all components |
+
+### Frontend Pages
+
+| Route | Description |
+|-------|-------------|
+| `/learn/levels` | List all L1-L10 curriculum levels |
+| `/learn/levels/[id]` | Level detail with modules |
+| `/learn/modules/[id]` | Module detail with lessons |
+| `/learn/lessons/[id]` | Lesson detail page |
+
+### API Methods
+
+**Location:** `src/lib/api.ts`
+
+```typescript
+// Curriculum API methods
+api.getCurriculumLevels(childId?)
+api.getCurriculumLevel(levelId, childId?)
+api.getLevelModules(levelId, childId?)
+api.getCurriculumModule(moduleId, childId?)
+api.getModuleLessons(moduleId, childId?)
+api.getLesson(lessonId, childId?)
+api.updateLessonProgress(lessonId, childId, score)
+api.getChildCurriculumProgress(childId)
+```
+
+### Database Migrations
+
+```bash
+# Migrations created
+children.0004_alter_child_level  # Extended level from 1-5 to 1-10
+curriculum.0002_curriculumlevel_curriculummodule_lesson_and_more  # All curriculum models
+```
+
+### Seed Command
+
+```bash
+# Seed all 10 curriculum levels
+python manage.py seed_curriculum_levels --settings=config.settings.dev
+```
+
+### Child Model Update
+
+**Changed:** `apps/children/models.py`
+- `level` field: `MaxValueValidator(5)` → `MaxValueValidator(10)`
+
+### URL Configuration
+
+**Changed:** `config/urls.py`
+```python
+# Added global curriculum endpoint
+path('api/v1/curriculum/', include('apps.curriculum.urls', namespace='curriculum-global')),
+```
+
+---
+
+## L1-L2 Hindi Curriculum Implementation (Dec 2024)
+
+### Overview
+
+Comprehensive L1-L2 Hindi curriculum has been implemented with full lesson content, vocabulary, and stories. The curriculum uses a proficiency-based approach (Discovery → Building Blocks) rather than age-based naming for clearer learning progression.
+
+### Curriculum Structure
+
+**L1 - Discovery (Beginners):**
+- **Age Range:** 4-7 years
+- **Focus:** Introduction to Hindi, basic sounds, simple words
+- **Modules:** 4 modules, 16 lessons
+- **Free Tier:** Yes (fully free)
+
+| Module | Name | Lessons | Focus |
+|--------|------|---------|-------|
+| M1 | Meet Hindi | 3 | Introduction, Devanagari basics |
+| M2 | Vowels (स्वर) | 5 | All 13 vowels with pronunciation |
+| M3 | First Words | 4 | Basic vocabulary (20 words) |
+| M4 | Listening Fun | 4 | Audio recognition exercises |
+
+**L2 - Building Blocks (Elementary):**
+- **Age Range:** 6-9 years
+- **Focus:** Consonants, matras, reading basics
+- **Modules:** 8 modules, 28 lessons
+- **Free Tier:** No (Standard/Premium only)
+
+| Module | Name | Lessons | Focus |
+|--------|------|---------|-------|
+| M1 | Ka-Group (क-वर्ग) | 3 | क ख ग घ ङ consonants |
+| M2 | Cha-Group (च-वर्ग) | 3 | च छ ज झ ञ consonants |
+| M3 | Ta-Retroflex (ट-वर्ग) | 3 | ट ठ ड ढ ण consonants |
+| M4 | Ta-Dental (त-वर्ग) | 3 | त थ द ध न consonants |
+| M5 | Pa-Group (प-वर्ग) | 3 | प फ ब भ म consonants |
+| M6 | Matras (मात्राएँ) | 6 | All 12 matra signs |
+| M7 | Remaining Consonants | 4 | य र ल व श ष स ह |
+| M8 | Reading & Sentences | 3 | Simple sentence formation |
+
+### Lesson Content Structure
+
+Each lesson now has a rich `content` JSON field containing:
+
+```json
+{
+  "introduction": "English introduction text",
+  "introduction_hindi": "Hindi introduction text",
+  "sections": [
+    {
+      "title": "Section Title",
+      "items": ["Point 1", "Point 2", "..."]
+    }
+  ],
+  "exercises": [
+    {
+      "type": "multiple_choice|fill_blank|true_false|pronunciation",
+      "question": "Question text",
+      "question_hindi": "Hindi question (optional)",
+      "options": ["A", "B", "C", "D"],
+      "correct": 0
+    }
+  ],
+  "summary": ["Key takeaway 1", "Key takeaway 2"]
+}
+```
+
+### Model Changes (Dec 2024)
+
+**CurriculumLevel:** Added fields:
+- `min_xp_required` - XP needed to unlock level
+- `xp_reward` - XP earned on completion
+- `is_free` - Available in free tier
+
+**CurriculumModule:** Added fields:
+- `objectives` - List of learning objectives
+- `xp_reward` - XP earned on completion
+
+**Lesson:** Added fields:
+- `lesson_type` - INTRODUCTION, LEARNING, PRACTICE, REVIEW, STORY, ASSESSMENT
+- `content` - JSONField for lesson content (sections, exercises, summary)
+- `is_free` - Available in free tier
+
+### Seed Command
+
+```bash
+# Seed all L1-L2 curriculum content
+python manage.py seed_l1_l2_curriculum
+```
+
+**What it seeds:**
+- 2 curriculum levels (L1 Discovery, L2 Building Blocks)
+- 12 modules total (4 L1 + 8 L2)
+- 44 lessons with full content JSON
+- 70 vocabulary words (20 L1 + 50 L2)
+- 10 stories with pages (3 L1 + 7 L2)
+
+**Files:**
+- `apps/curriculum/management/commands/seed_l1_l2_curriculum.py` - Comprehensive seed command
+
+### Frontend Components
+
+**LessonContentView.tsx** - New component that renders lesson content JSON:
+- Stage-based progression: Introduction → Learning → Practice → Summary → Complete
+- Interactive exercises (multiple choice, true/false)
+- Audio playback for Hindi text
+- Score tracking and star ratings
+- Smooth animations with Framer Motion
+
+**Location:** `src/components/curriculum/LessonContentView.tsx`
+
+**Usage in lesson page:**
+```tsx
+<LessonContentView
+  content={lesson.content}
+  lessonType={lesson.lesson_type}
+  language={activeChild?.language}
+  onComplete={(score) => handleCompleteLesson()}
+/>
+```
+
+### Type Definitions
+
+**Location:** `src/types/curriculum.ts`
+
+```typescript
+type LessonType = 'INTRODUCTION' | 'LEARNING' | 'PRACTICE' | 'REVIEW' | 'STORY' | 'ASSESSMENT';
+
+interface LessonContentSection {
+  title: string;
+  items: string[];
+}
+
+interface LessonExercise {
+  type: 'multiple_choice' | 'fill_blank' | 'matching' | 'pronunciation' | 'listen_repeat' | 'true_false';
+  question: string;
+  question_hindi?: string;
+  options?: string[];
+  correct?: string | number;
+  audio_text?: string;
+  blank_answer?: string;
+  pairs?: { hindi: string; english: string }[];
+}
+
+interface LessonContentJSON {
+  introduction?: string;
+  introduction_hindi?: string;
+  sections?: LessonContentSection[];
+  exercises?: LessonExercise[];
+  summary?: string[];
+}
+```
+
+### API Serializer Updates
+
+**LessonDetailSerializer** now includes:
+- `module` - Parent module UUID
+- `lesson_type` - Type of lesson
+- `content` - Full lesson content JSON
+- `is_free` - Free tier availability
+
+**CurriculumLevelSerializer** now includes:
+- `min_xp_required` - XP required to unlock
+- `xp_reward` - XP reward on completion
+- `is_free` - Free tier availability
+
+**CurriculumModuleSerializer** now includes:
+- `objectives` - Learning objectives array
+- `xp_reward` - XP reward on completion
+
+### Vocabulary Themes Seeded
+
+| Theme | L1 Words | L2 Words |
+|-------|----------|----------|
+| Family (परिवार) | 5 | 5 |
+| Colors (रंग) | 5 | 5 |
+| Numbers (संख्याएँ) | 5 | 5 |
+| Animals (जानवर) | 5 | 5 |
+| Actions (क्रियाएँ) | 0 | 5 |
+| Body Parts (शरीर) | 0 | 5 |
+| Food (खाना) | 0 | 5 |
+| Nature (प्रकृति) | 0 | 5 |
+| Greetings (अभिवादन) | 0 | 10 |
+
+### Stories Seeded
+
+**L1 Stories (Free, Simple):**
+1. The Colorful Garden (रंगीन बाग़)
+2. My Family (मेरा परिवार)
+3. Counting Stars (तारे गिनना)
+
+**L2 Stories (Standard/Premium):**
+1. The Helpful Elephant (मददगार हाथी)
+2. The Rainbow Fish (इंद्रधनुषी मछली)
+3. A Day at School (स्कूल में एक दिन)
+4. The Brave Mouse (बहादुर चूहा)
+5. The Magic Garden (जादुई बगीचा)
+6. The Little Cloud (छोटा बादल)
+7. The Dancing Peacock (नाचता मोर)
+
+### Implementation Notes
+
+1. **Overlap Prevention:** Seed command uses `update_or_create` to safely update existing data
+2. **Module Codes:** Use format `L1_M1_MODULE_NAME` for unique identification
+3. **Lesson Codes:** Use format `L1_M1_L1` for hierarchical organization
+4. **Content Quality:** Each lesson has 2-5 learning sections and 2-4 exercises
+5. **Progressive Difficulty:** L1 exercises use English options, L2 introduces Hindi options
+
+### Next Steps for L3-L10
+
+The same structure can be extended:
+- Create `seed_l3_l4_curriculum.py` following the same pattern
+- Each level adds more complex content (grammar, compound words, reading)
+- L6+ introduces Gyan (owl) as teacher for advanced learners
+
+---
+
+## L1-L2 Punjabi Curriculum Implementation (Dec 2024)
+
+### Overview
+
+Comprehensive L1-L2 Punjabi curriculum has been implemented following the same structure as Hindi. The curriculum includes Gurmukhi script, vocabulary, stories, songs, and games.
+
+### Curriculum Structure
+
+**L1 - Discovery (ਖੋਜ):**
+- **Age Range:** 4-5 years
+- **Focus:** Introduction to Punjabi, Gurmukhi script basics
+- **Modules:** 4 modules, 16 lessons
+- **Free Tier:** Yes (fully free)
+
+**L2 - Building Blocks (ਨੀਂਹ):**
+- **Age Range:** 5-6 years
+- **Focus:** Consonants, matras, basic reading
+- **Modules:** 8 modules, 28 lessons
+- **Free Tier:** No (Standard/Premium only)
+
+### Gurmukhi Script Content
+
+| Category | Count | Examples |
+|----------|-------|----------|
+| Vowel Holders (ਮਾਤਰਾ ਵਾਹਕ) | 3 | ੳ, ਅ, ੲ |
+| Vowels (ਸਵਰ) | 10 | ਆ, ਇ, ਈ, ਉ, ਊ, ਏ, ਐ, ਓ, ਔ, ਅੰ |
+| Consonants (ਵਿਅੰਜਨ) | 32 | ਸ, ਹ, ਕ, ਖ, ਗ... |
+| Matras (ਲਗਾਂ) | 10 | ਾ, ਿ, ੀ, ੁ, ੂ, ੇ, ੈ, ੋ, ੌ, ੰ |
+
+### Vocabulary Themes Seeded
+
+| Theme | L1 Words | L2 Words |
+|-------|----------|----------|
+| Family (ਪਰਿਵਾਰ) | 5 | 5 |
+| Colors (ਰੰਗ) | 5 | 5 |
+| Numbers (ਗਿਣਤੀ) | 5 | 5 |
+| Animals (ਜਾਨਵਰ) | 5 | 5 |
+| Body Parts (ਸਰੀਰ) | 0 | 5 |
+| Actions (ਕਿਰਿਆਵਾਂ) | 0 | 5 |
+| Food (ਖਾਣਾ) | 0 | 5 |
+| Nature (ਕੁਦਰਤ) | 0 | 5 |
+| Greetings (ਸਤਿਕਾਰ) | 0 | 5 |
+
+**Total: 70 words**
+
+### Stories Seeded
+
+**L1 Stories (Free, Simple):**
+1. Peppi's New Friend (ਪੈੱਪੀ ਦਾ ਨਵਾਂ ਦੋਸਤ)
+2. The Red Apple (ਲਾਲ ਸੇਬ)
+3. My Family (ਮੇਰਾ ਪਰਿਵਾਰ)
+
+**L2 Stories (Standard/Premium):**
+1. Vaisakhi Fair (ਵਿਸਾਖੀ ਦਾ ਮੇਲਾ)
+2. The Clever Fox (ਚਤੁਰ ਲੂੰਬੜੀ)
+3. Lohri Festival (ਲੋਹੜੀ ਦੀ ਰਾਤ)
+4. Day at Farm (ਖੇਤ ਦਾ ਦਿਨ)
+5. The Thirsty Crow (ਪਿਆਸਾ ਕਾਂ)
+6. Guru Nanak's Birthday (ਗੁਰਪੁਰਬ)
+7. Auckland Zoo (ਆਕਲੈਂਡ ਚਿੜੀਆਘਰ)
+
+**Total: 12 stories** (including 2 pre-seeded stories)
+
+### Songs Seeded
+
+1. Hide and Seek (ਅੱਖ ਮਿਚੌਲੀ)
+2. Uncle Moon (ਚੰਦਾ ਮਾਮਾ)
+3. Alphabet Song (ਵਰਣਮਾਲਾ ਗੀਤ)
+4. Colors Song (ਰੰਗ ਗੀਤ)
+5. Lohri Song (ਲੋਹੜੀ ਗੀਤ)
+
+### Peppi Punjabi Phrases
+
+| Context | Punjabi | Romanized |
+|---------|---------|-----------|
+| Greeting | ਸਤ ਸ੍ਰੀ ਅਕਾਲ! | Sat Sri Akal! |
+| Encouragement | ਬਹੁਤ ਵਧੀਆ! | Bahut vadiya! |
+| Well Done | ਸ਼ਾਬਾਸ਼! | Shabash! |
+| Let's Learn | ਚੱਲੋ ਸਿੱਖੀਏ! | Chalo sikhiye! |
+| Try Again | ਫੇਰ ਕੋਸ਼ਿਸ਼ ਕਰੋ! | Pher koshish karo! |
+
+### Seed Command
+
+```bash
+# Seed all Punjabi L1-L2 curriculum content
+python manage.py seed_punjabi_l1_l2
+```
+
+**Files:**
+- `apps/curriculum/management/commands/seed_punjabi_l1_l2.py` - Complete seed command
+
+### Language Selector Update
+
+Punjabi is now available in the language selector (moved from "Coming Soon"):
+- File: `src/components/ui/LanguageSelector.tsx`
+- Available languages: `['HINDI', 'PUNJABI', 'TAMIL']`
+
+### Gurmukhi Keyboard Layout
+
+The IndianLanguageKeyboard has been enhanced with complete Gurmukhi support:
+- **Vowel Holders:** ੳ, ਅ, ੲ (unique to Gurmukhi)
+- **Extended Consonants:** ੜ, ਸ਼, ਖ਼, ਗ਼, ਜ਼, ਫ਼, ਲ਼
+- **Special Characters:** ੴ (Ik Onkar - sacred symbol)
+- **Complete Matras:** Including ੰ (tippi) and ੱ (addak)
+
+File: `src/components/ui/IndianLanguageKeyboard.tsx`
+
+---
+
+## L1-L2 Tamil Curriculum Implementation (Dec 2024)
+
+### Overview
+
+Comprehensive L1-L2 Tamil curriculum has been implemented following the same structure as Hindi and Punjabi. The curriculum includes Tamil script, vocabulary, stories, songs, and games.
+
+### Curriculum Structure
+
+**L1 - Discovery (கண்டுபிடிப்பு):**
+- **Age Range:** 4-5 years
+- **Focus:** Introduction to Tamil, script basics
+- **Modules:** 4 modules, 16 lessons
+- **Free Tier:** Yes (fully free)
+
+**L2 - Building Blocks (அடித்தளம்):**
+- **Age Range:** 5-6 years
+- **Focus:** Consonants, matras, basic reading
+- **Modules:** 8 modules, 28 lessons
+- **Free Tier:** No (Standard/Premium only)
+
+### Tamil Script Content
+
+| Category | Count | Examples |
+|----------|-------|----------|
+| Vowels (உயிர் எழுத்துக்கள்) | 12 | அ, ஆ, இ, ஈ, உ, ஊ, எ, ஏ, ஐ, ஒ, ஓ, ஔ |
+| Consonants (மெய் எழுத்துக்கள்) | 18 | க, ங, ச, ஞ, ட, ண, த, ந, ப, ம, ய, ர, ல, வ, ழ, ள, ற, ன |
+| Grantha Letters | 6 | ஜ, ஷ, ஸ, ஹ, க்ஷ, ஶ்ரீ |
+| Special (அஃது) | 1 | ஃ (Aytham) |
+| Matras (உயிர்மெய்) | 12 | ா, ி, ீ, ு, ூ, ெ, ே, ை, ொ, ோ, ௌ, ் |
+
+### Vocabulary Themes Seeded
+
+| Theme | Words | Examples |
+|-------|-------|----------|
+| Family (குடும்பம்) | 6 | அம்மா, அப்பா, தாத்தா, பாட்டி |
+| Colors (நிறங்கள்) | 5 | சிவப்பு, நீலம், மஞ்சள் |
+| Numbers (எண்கள்) | 10 | ஒன்று, இரண்டு, மூன்று |
+| Animals (விலங்குகள்) | 6 | நாய், பூனை, பசு |
+| Body Parts (உடல் உறுப்புகள்) | 7 | தலை, கண், மூக்கு |
+| Actions (செயல்கள்) | 6 | சாப்பிடு, குடி, தூங்கு |
+| Food (உணவு) | 5 | பால், இட்லி, சாதம் |
+| Nature (இயற்கை) | 5 | சூரியன், நிலா, மரம் |
+| Home (வீடு) | 6 | வீடு, அறை, கதவு |
+| Greetings (வாழ்த்துக்கள்) | 5 | வணக்கம், நன்றி |
+
+**Total: 70 words**
+
+### Stories Seeded
+
+**L1 Stories (Free, Simple):**
+1. Peppi's New Friend (பெப்பியின் புதிய நண்பன்)
+2. The Red Apple (சிவப்பு ஆப்பிள்)
+3. My Family (என் குடும்பம்)
+
+**L2 Stories (Standard/Premium):**
+1. Pongal Festival (பொங்கல் திருநாள்)
+2. The Clever Crow (புத்திசாலி காகம்)
+3. Diwali Night (தீபாவளி இரவு)
+4. Day at Beach (கடற்கரை பயணம்)
+5. The Thirsty Crow (தாகமுள்ள காகம்)
+6. Onam Festival (ஓணம் பண்டிகை)
+7. Auckland Zoo (ஆக்லாந்து உயிரியல் பூங்கா)
+
+**Total: 10 stories**
+
+### Songs Seeded
+
+1. Moon Song (நிலா நிலா) - Classic nursery rhyme
+2. Tamil Alphabet Song (தமிழ் அகராதி) - Letter learning
+3. Colors Song (வண்ணங்கள் பாடல்) - Color vocabulary
+4. Numbers Song (எண்கள் பாடல்) - Counting 1-10
+5. Thirukkural Song (திருக்குறள் பாடல்) - Classic poetry
+
+### Peppi Tamil Phrases
+
+| Context | Tamil | Romanized |
+|---------|-------|-----------|
+| Greeting | வணக்கம்! | Vanakkam! |
+| Encouragement | மிக நல்லது! | Miga nalladu! |
+| Well Done | சபாஷ்! | Shabash! |
+| Let's Go | வா போகலாம்! | Vaa pogalam! |
+| Try Again | மறுபடியும் முயற்சி செய்! | Marupadiyum muyarchi sei! |
+| Thanks | நன்றி! | Nandri! |
+
+### Seed Command
+
+```bash
+# Seed all Tamil L1-L2 curriculum content
+python manage.py seed_tamil_l1_l2 --clear
+```
+
+**Files:**
+- `apps/curriculum/management/commands/seed_tamil_l1_l2.py` - Complete seed command (1135 lines)
+
+### Language Selector Update
+
+Tamil is now available in the language selector (moved from "Coming Soon"):
+- File: `src/components/ui/LanguageSelector.tsx`
+- Available languages: `['HINDI', 'PUNJABI', 'TAMIL']`
+
+---
+
+## Audio Caching System (Dec 2024)
+
+### Overview
+
+Multi-language audio caching command to pre-generate TTS audio for all curriculum content using Svara TTS (free tier via HuggingFace Spaces).
+
+### Command Usage
+
+```bash
+# Cache all languages
+python manage.py cache_all_audio
+
+# Cache specific language
+python manage.py cache_all_audio --language TAMIL
+
+# Dry run to see what would be cached
+python manage.py cache_all_audio --dry-run
+
+# Force regenerate (overwrite cached)
+python manage.py cache_all_audio --force
+
+# Adjust delay between API calls
+python manage.py cache_all_audio --delay 0.5
+```
+
+### Content Types Cached
+
+| Type | Description |
+|------|-------------|
+| Letters | Each letter character + example word |
+| Matras | Each matra symbol + example with consonant |
+| Vocabulary | All vocabulary words |
+| Peppi Phrases | Peppi feedback phrases (Hindi only) |
+
+### Total Items by Language
+
+| Language | Letters | Matras | Vocab | Peppi | Total |
+|----------|---------|--------|-------|-------|-------|
+| HINDI | 66 | 24 | 110 | 49 | 249 |
+| PUNJABI | 89 | 20 | 70 | 0 | 179 |
+| TAMIL | 42 | 24 | 70 | 0 | 136 |
+
+**Grand Total: ~564 audio items**
+
+### TTS Provider
+
+Uses Svara TTS via HuggingFace Spaces (`kenpath/svara-tts`):
+- Free tier (no API key required)
+- Supports 12 Indian languages
+- ~50-120 seconds per generation
+- Requires `gradio-client` package
+
+### Files
+
+- `apps/speech/management/commands/cache_all_audio.py` - Main command
+- `apps/speech/services/mms_provider.py` - Svara TTS provider
+- `requirements/base.txt` - Added `gradio-client>=2.0.0`
+
+---
+
+## Bug Fixes and Improvements (Dec 2024)
+
+### Backend Fixes
+
+1. **Homepage Progress AttributeError Fix**
+   - Fixed `AttributeError: 'CurriculumLevel' object has no attribute 'name'`
+   - Changed to use correct field names: `name_english`, `name_hindi`, `title_english`, `title_hindi`
+   - File: `apps/curriculum/views/level.py` (line 475)
+
+2. **Peppi AI Google Gemini Integration**
+   - Fixed invalid model ID `gemini-2.5-flash` to `gemini-2.0-flash-exp`
+   - Made model settings configurable via Django settings
+   - Added dynamic configuration from `.env` file
+   - File: `apps/peppi_chat/services/gemini_service.py`
+
+   **Required .env settings:**
+   ```env
+   GOOGLE_GEMINI_API_KEY=your-actual-api-key
+   GEMINI_MODEL_ID=gemini-2.0-flash-exp
+   PEPPI_CHAT_MAX_TOKENS=1024
+   PEPPI_CHAT_TEMPERATURE=0.7
+   ```
+
+### Frontend Fixes
+
+1. **Learn Page Dynamic Stats**
+   - Removed hardcoded stats (49/80/5)
+   - Now fetches real data from API for letters, words, grammar topics
+   - Added loading state with `-` placeholder
+   - File: `src/app/learn/page.tsx`
+
+2. **Serializer Updates**
+   - Updated `LessonDetailSerializer` to include `content`, `lesson_type`, `is_free`
+   - Updated `CurriculumLevelSerializer` to include `min_xp_required`, `xp_reward`, `is_free`
+   - Updated `CurriculumModuleSerializer` to include `objectives`, `xp_reward`
+   - File: `apps/curriculum/serializers/level.py`
+
+---
+
+## Indian Language Keyboard (Dec 2024)
+
+### Overview
+
+A digital Indian language keyboard component supporting 7 languages for typing practice in Peppi chat and other input areas.
+
+### Supported Languages
+
+| Language | Script | Native Name | Flag |
+|----------|--------|-------------|------|
+| Hindi | Devanagari | हिंदी | 🇮🇳 |
+| Tamil | Tamil Script | தமிழ் | 🇮🇳 |
+| Telugu | Telugu Script | తెలుగు | 🇮🇳 |
+| Gujarati | Gujarati Script | ગુજરાતી | 🇮🇳 |
+| Punjabi | Gurmukhi | ਪੰਜਾਬੀ | 🇮🇳 |
+| Bengali | Bengali Script | বাংলা | 🇮🇳 |
+| Malayalam | Malayalam Script | മലയാളം | 🇮🇳 |
+| **Fiji Hindi** | Devanagari | फ़िजी हिंदी | 🇫🇯 |
+
+### Component Location
+
+`src/components/ui/IndianLanguageKeyboard.tsx`
+
+### Features
+
+- **Tab-based layout:** Consonants, Vowels, Matras, Numbers
+- **Language switching:** Click globe icon to switch languages
+- **Matra preview:** Shows matras applied to a base consonant (क)
+- **Smooth animations:** Framer Motion for transitions
+- **Delete key:** Backspace functionality
+- **Space and punctuation:** Available in Numbers tab
+
+### Keyboard Layout Structure
+
+Each language has:
+- `vowels[]` - All vowel characters
+- `consonants[][]` - Consonants organized in rows (vargas)
+- `matras[]` - Combining vowel signs
+- `numbers[]` - Native numerals
+- `punctuation[]` - Common punctuation marks
+
+### Integration with Peppi Chat
+
+The keyboard is integrated into `PeppiChatInput.tsx`:
+- Keyboard toggle button (keyboard icon)
+- Language indicator shows current typing language
+- Characters inserted at cursor position
+- Delete removes last character
+
+### Usage Example
+
+```tsx
+import { IndianLanguageKeyboard } from '@/components/ui';
+
+<IndianLanguageKeyboard
+  language="HINDI"
+  onInput={(char) => setInput(prev => prev + char)}
+  onDelete={() => setInput(prev => prev.slice(0, -1))}
+  onClose={() => setShowKeyboard(false)}
+  onLanguageChange={(lang) => setLanguage(lang)}
+  isOpen={showKeyboard}
+/>
+```
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `language` | LanguageCode | Current keyboard language |
+| `onInput` | (char: string) => void | Called when a key is pressed |
+| `onDelete` | () => void | Called when delete is pressed |
+| `onClose` | () => void | Called when close button clicked |
+| `onLanguageChange` | (lang: LanguageCode) => void | Called when language changed |
+| `isOpen` | boolean | Whether keyboard is visible |
+| `onPlaySound` | (char: string) => void | Optional audio callback |
+
+---
+
+## Fiji Hindi Language Support (Dec 2024)
+
+### Overview
+
+Fiji Hindi is a unique dialect spoken by the Indo-Fijian community, descendants of Indian indentured laborers (Girmitiya) who arrived in Fiji from 1879-1916. It has distinctive features that differentiate it from Standard Hindi.
+
+### Key Linguistic Features
+
+| Feature | Standard Hindi | Fiji Hindi |
+|---------|----------------|------------|
+| "Two" | दो (do) | दुइ (dui) |
+| "Mother" | माँ (maa) | माई (maai) |
+| "He/She" | वह (vah) | ऊ (oo) |
+| "This" | यह (yah) | ई (ee) |
+| "How are you?" | कैसे हो? | कइसे बा? |
+| Past tense (masc.) | गया (gaya) | गइस (gais) |
+| Past tense (fem.) | गई (gayi) | गइन (gain) |
+| Copula "is" | है (hai) | बा (ba) |
+
+### Fijian Loanwords
+
+| Word | Romanized | Meaning |
+|------|-----------|---------|
+| बुला | bula | Hello (Fijian greeting) |
+| विनाका | vinaka | Thank you (Fijian) |
+| दालो | daalo | Taro root |
+| कासावा | kaasava | Cassava |
+| याकोना | yaakona | Kava drink |
+
+### Curriculum Content
+
+- **Vocabulary Themes**: 16 (107+ words)
+- **Stories**: 15 (including Girmit history, Fiji Day, Diwali in Fiji)
+- **Songs**: 5 (counting, greetings, family)
+- **Grammar Topics**: 5 (unique Fiji Hindi features)
+- **Games**: 5
+- **Peppi Phrases**: 14 (with Fijian greetings)
+
+### TTS Configuration
+
+Fiji Hindi uses Hindi TTS voice (hi-IN) since it's based on Devanagari script:
+```python
+'FIJI_HINDI': {
+    'language_code': 'hi-IN',
+    'voice_name': 'hi-IN-Standard-D',
+    'wavenet_voice': 'hi-IN-Wavenet-D',
+}
+```
+
+### Seed Command
+
+```bash
+python manage.py seed_fiji_hindi          # Seed Fiji Hindi curriculum
+python manage.py seed_fiji_hindi --clear  # Clear and reseed
+```
+
+### Files
+
+- `apps/curriculum/management/commands/seed_fiji_hindi.py` - Seed command
+- `apps/children/models.py` - FIJI_HINDI in Language choices
+- `apps/speech/services/google_provider.py` - TTS voice mapping
+
+---
+
+## Grammar Content System (Dec 2024)
+
+### Overview
+
+Comprehensive grammar content has been seeded for Hindi, Tamil, and Punjabi languages. Each language has topics, rules, and exercises designed for children ages 4-14.
+
+### Grammar Topics by Language
+
+| Language | Topics | Rules | Exercises |
+|----------|--------|-------|-----------|
+| **Hindi** | 6 | 20 | 21 |
+| **Tamil** | 5 | 28 | 31 |
+| **Punjabi** | 5 | 14 | 19 |
+| **Total** | 16 | 62 | 71 |
+
+### Grammar Topics Structure
+
+**Common Topics Across Languages:**
+1. **Sentence Structure** (वाक्य संरचना / வாக்கிய அமைப்பு / ਵਾਕ ਬਣਤਰ)
+   - Basic sentence order (Subject-Object-Verb in Indian languages)
+   - Simple and complex sentences
+
+2. **Gender/Case Markers** (लिंग / பால் / ਲਿੰਗ)
+   - Masculine/Feminine distinctions
+   - Case markers and postpositions
+
+3. **Pronouns** (सर्वनाम / பிரதிபெயர்கள் / ਪੜਨਾਂਵ)
+   - Personal pronouns (I, you, he, she, we, they)
+   - Respectful vs. informal forms
+
+4. **Numbers** (संख्याएँ / எண்கள் / ਗਿਣਤੀ)
+   - Counting 1-100
+   - Ordinal numbers
+
+5. **Verb Conjugation** (क्रियाएँ / வினைச்சொற்கள் / ਕਿਰਿਆਵਾਂ)
+   - Present, past, future tenses
+   - Basic verb forms
+
+### Seed Command
+
+```bash
+# Seed all languages
+python manage.py seed_grammar_content
+
+# Seed specific language
+python manage.py seed_grammar_content --language TAMIL
+
+# Clear and reseed
+python manage.py seed_grammar_content --clear
+```
+
+**File:** `apps/curriculum/management/commands/seed_grammar_content.py`
+
+---
+
+## Stories Content System (Dec 2024)
+
+### Overview
+
+Stories have been seeded for all 4 languages (Hindi, Tamil, Punjabi, Gujarati), including regular stories and festival-specific stories linked to the festivals system.
+
+### Stories by Language
+
+| Language | Total Stories | BhashaMitra Stories | Festival Stories |
+|----------|---------------|---------------------|------------------|
+| **Hindi** | 42 | 13 | 3 (Diwali, Holi, Raksha Bandhan) |
+| **Tamil** | 21 | 11 | 2 (Pongal, Diwali) |
+| **Punjabi** | 18 | 8 | 2 (Vaisakhi, Diwali) |
+| **Gujarati** | 7 | 7 | 2 (Navratri, Diwali) |
+| **Total** | 88 | 39 | 9 |
+
+### Regular Stories
+
+**Available for all languages:**
+1. **Peppi's New Friend** - Peppi the parrot makes a new friend in the garden
+2. **The Red Apple** - A child finds a red apple and shares it with friends
+3. **My Family** - A child introduces their loving family members
+4. **The Thirsty Crow** - Classic fable about a clever crow (Level 2)
+5. **The Clever Fox** - A fox uses wit to escape trouble (Level 2)
+6. **The Greedy Dog** (Tamil only) - Classic fable about greed
+
+### Festival Stories
+
+Stories are linked to festivals via the `FestivalStory` junction table:
+
+| Festival | Languages | Primary Story |
+|----------|-----------|---------------|
+| **Diwali** | Hindi, Tamil, Punjabi, Gujarati | Lights celebration |
+| **Holi** | Hindi | Colors celebration |
+| **Pongal** | Tamil | Harvest festival |
+| **Navratri** | Gujarati | Garba and Dandiya |
+| **Raksha Bandhan** | Hindi | Sibling bond |
+| **Vaisakhi** | Punjabi | Harvest festival (story created, festival not linked*) |
+
+*Note: Vaisakhi festival needs to be seeded separately for linking.
+
+### Story Structure
+
+Each story includes:
+- `storyweaver_id`: Unique identifier (format: `bm-{lang}-{number}`)
+- `title`: Native script title
+- `title_translit`: Romanized title
+- `language`: HINDI, TAMIL, PUNJABI, or GUJARATI
+- `level`: 1-5 difficulty
+- `page_count`: Number of pages
+- `tier`: FREE, STANDARD, or PREMIUM
+- `categories`: JSON array of tags (e.g., `['friendship', 'animals']`)
+- `is_l1_content`: Boolean for L1 curriculum content
+
+### Story Pages
+
+Each story has multiple `StoryPage` records with:
+- `page_number`: Sequential page number
+- `text_content`: Native script text
+- `text_romanized`: Romanized pronunciation guide
+
+### Seed Command
+
+```bash
+# Seed all languages
+python manage.py seed_stories
+
+# Seed specific language
+python manage.py seed_stories --language GUJARATI
+
+# Clear and reseed
+python manage.py seed_stories --clear
+```
+
+**File:** `apps/stories/management/commands/seed_stories.py`
+
+---
+
+## Recently Completed (Dec 22, 2024)
+
+### Grammar Content Seeding
+- [x] Created `seed_grammar_content.py` management command
+- [x] Seeded 6 Hindi grammar topics with 20 rules and 21 exercises
+- [x] Seeded 5 Tamil grammar topics with 28 rules and 31 exercises
+- [x] Seeded 5 Punjabi grammar topics with 14 rules and 19 exercises
+- [x] Total: 16 topics, 62 rules, 71 exercises across 3 languages
+
+### Stories Content Seeding
+- [x] Created `seed_stories.py` management command
+- [x] Seeded 8 Hindi stories (5 regular + 3 festival)
+- [x] Seeded 8 Tamil stories (6 regular + 2 festival)
+- [x] Seeded 6 Punjabi stories (4 regular + 2 festival)
+- [x] Seeded 5 Gujarati stories (3 regular + 2 festival)
+- [x] Linked festival stories to Festival model
+- [x] Total: 88 stories in database
+
+### Festival Story Linking
+- [x] Diwali linked in all 4 languages
+- [x] Holi linked in Hindi
+- [x] Pongal linked in Tamil
+- [x] Navratri linked in Gujarati
+- [x] Raksha Bandhan linked in Hindi
+
+---

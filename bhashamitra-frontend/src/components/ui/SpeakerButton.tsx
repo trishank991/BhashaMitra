@@ -35,11 +35,16 @@ export function SpeakerButton({
     lg: 'w-6 h-6',
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling to parent elements
+    onClick();
+  };
+
   return (
     <motion.button
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
-      onClick={onClick}
+      onClick={handleClick}
       disabled={isLoading}
       className={cn(
         'rounded-full flex items-center justify-center transition-colors',

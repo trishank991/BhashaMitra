@@ -11,4 +11,6 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('me/', views.MeView.as_view(), name='me'),
+    path('subscription-tiers/', views.SubscriptionTiersView.as_view(), name='subscription-tiers'),
+    path('subscription/', views.CurrentSubscriptionDetailView.as_view(), name='subscription-detail'),
 ]

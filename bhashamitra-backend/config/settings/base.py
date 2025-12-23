@@ -38,6 +38,16 @@ LOCAL_APPS = [
     'apps.speech',
     'apps.curriculum',
     'apps.festivals',
+    'apps.peppi_chat',
+    # Strategy v3.0 Gap Features
+    'apps.offline',
+    'apps.parent_engagement',
+    'apps.live_classes',
+    'apps.referrals',
+    'apps.certifications',
+    'apps.analytics',
+    'apps.family',
+    'apps.localization',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -128,9 +138,10 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/hour',
         'user': '1000/hour',
-        'auth': '10/minute',
+        'auth': '5/minute',  # Reduced from 10/minute for brute force protection
         'speech': '20/minute',
         'tts': '20/minute',
+        'tts_anon': '10/hour',  # Stricter limit for anonymous TTS requests
     },
     'EXCEPTION_HANDLER': 'apps.core.exceptions.custom_exception_handler',
 }
@@ -169,8 +180,22 @@ TTS_SPACE_ID = os.getenv('TTS_SPACE_ID', 'parler-tts/parler_tts')
 TTS_CACHE_TTL = int(os.getenv('TTS_CACHE_TTL_SECONDS', 86400))  # 24 hours in Redis
 TTS_DEFAULT_VOICE_STYLE = os.getenv('TTS_DEFAULT_VOICE_STYLE', 'storyteller')
 
+# Google Cloud Text-to-Speech
+# Get API key from: https://console.cloud.google.com/apis/credentials
+GOOGLE_TTS_API_KEY = os.getenv('GOOGLE_TTS_API_KEY', '')
+
 # StoryWeaver API
 STORYWEAVER_BASE_URL = 'https://storyweaver.org.in/api/v1'
+
+# Google Gemini AI (for Peppi Chat)
+# Get API key from: https://aistudio.google.com/app/apikey
+GOOGLE_GEMINI_API_KEY = os.getenv('GOOGLE_GEMINI_API_KEY', '')
+GEMINI_MODEL_ID = os.getenv('GEMINI_MODEL_ID', 'gemini-2.0-flash-exp')
+
+# Peppi Chat Settings
+PEPPI_CHAT_MAX_TOKENS = int(os.getenv('PEPPI_CHAT_MAX_TOKENS', 1024))
+PEPPI_CHAT_TEMPERATURE = float(os.getenv('PEPPI_CHAT_TEMPERATURE', 0.7))
+PEPPI_CHAT_MODERATION_STRICT = os.getenv('PEPPI_CHAT_MODERATION_STRICT', 'true').lower() == 'true'
 
 # ===========================================
 # GAMIFICATION CONFIGURATION

@@ -108,7 +108,7 @@ export default function VocabularyPage() {
 
       try {
         console.log('[VocabularyPage] Fetching themes for child:', activeChild.id, 'language:', currentLanguage);
-        const response = await api.getVocabularyThemes(activeChild.id);
+        const response = await api.getVocabularyThemes(activeChild.id, currentLanguage);
         console.log('[VocabularyPage] API response:', response);
 
         if (response.success && response.data) {

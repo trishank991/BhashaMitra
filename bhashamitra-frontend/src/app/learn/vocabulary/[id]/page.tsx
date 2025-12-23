@@ -36,6 +36,9 @@ export default function VocabularyThemeDetailPage() {
   const [showMeaning, setShowMeaning] = useState(false);
   const [mode, setMode] = useState<'list' | 'flashcard'>('list');
   const [playingWord, setPlayingWord] = useState<string | null>(null);
+  const [reviewedWords, setReviewedWords] = useState<Set<string>>(new Set());
+  const [completionXP, setCompletionXP] = useState<number>(0);
+  const [showCompletion, setShowCompletion] = useState(false);
   const { isAuthenticated, activeChild } = useAuthStore();
 
   // Get current language from active child
@@ -167,10 +170,36 @@ export default function VocabularyThemeDetailPage() {
   const themeNameNative = theme?.name_native || '';
   const themeIcon = theme?.name ? THEME_ICONS[theme.name] || '📖' : '📖';
 
+  // Track word review and update SRS
+  const handleWordReviewed = async (wordId: string, quality: number = 4) => {
+    if (!activeChild?.id || reviewedWords.has(wordId)) return;
+
+    try {
+      // Call flashcard review API (quality 4 = good recall)
+      const response = await api.reviewFlashcard(activeChild.id, wordId, quality);
+      if (response.success) {
+        setReviewedWords(prev => new Set(prev).add(wordId));
+        // Award 5 XP per word reviewed
+        setCompletionXP(prev => prev + 5);
+      }
+    } catch (err) {
+      console.error('[VocabularyDetail] Failed to record review:', err);
+    }
+  };
+
   const handleNextWord = () => {
+    // Mark current word as reviewed when moving to next
+    if (currentWord && showMeaning) {
+      handleWordReviewed(currentWord.id);
+    }
+
     if (currentWordIndex < words.length - 1) {
       setCurrentWordIndex((prev) => prev + 1);
       setShowMeaning(false);
+    } else if (currentWordIndex === words.length - 1 && showMeaning) {
+      // Last word reviewed - mark as complete
+      handleWordReviewed(currentWord.id);
+      setShowCompletion(true);
     }
   };
 
@@ -366,16 +395,36 @@ export default function VocabularyThemeDetailPage() {
               </Button>
             </div>
 
-            {currentWordIndex === words.length - 1 && showMeaning && (
+            {(showCompletion || (currentWordIndex === words.length - 1 && showMeaning)) && (
               <Card className="bg-gradient-to-br from-green-50 to-teal-50 text-center py-6">
-                <span className="text-4xl mb-2 block">Great job!</span>
-                <h3 className="font-bold text-gray-900 mb-2">Well done!</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  You reviewed all {words.length} words!
+                <span className="text-5xl mb-3 block">🎉</span>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Excellent Work!</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  You reviewed all {words.length} words in {themeName}!
                 </p>
-                <Button onClick={() => { setCurrentWordIndex(0); setShowMeaning(false); }}>
-                  Start Over
-                </Button>
+                {completionXP > 0 && (
+                  <div className="bg-yellow-100 rounded-xl py-2 px-4 inline-block mb-4">
+                    <span className="text-2xl mr-2">⭐</span>
+                    <span className="text-lg font-bold text-yellow-700">+{completionXP} XP</span>
+                  </div>
+                )}
+                <div className="flex gap-3 justify-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setCurrentWordIndex(0);
+                      setShowMeaning(false);
+                      setShowCompletion(false);
+                      setReviewedWords(new Set());
+                      setCompletionXP(0);
+                    }}
+                  >
+                    Practice Again
+                  </Button>
+                  <Link href="/learn/vocabulary">
+                    <Button>Back to Vocabulary</Button>
+                  </Link>
+                </div>
               </Card>
             )}
           </motion.div>

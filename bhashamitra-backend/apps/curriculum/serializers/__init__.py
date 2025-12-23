@@ -36,6 +36,29 @@ from .assessment import (
     AssessmentAttemptSerializer,
     CertificateSerializer,
 )
+from .level import (
+    CurriculumLevelSerializer,
+    CurriculumLevelDetailSerializer,
+    CurriculumModuleSerializer,
+    CurriculumModuleDetailSerializer,
+    LessonSerializer,
+    LessonDetailSerializer,
+    LessonContentSerializer,
+    LevelProgressSerializer,
+    ModuleProgressSerializer,
+    LessonProgressSerializer,
+    LessonProgressUpdateSerializer,
+)
+from .songs import SongSerializer, SongListSerializer
+from .peppi import (
+    PeppiPersonalitySerializer,
+    PeppiLearningContextSerializer,
+    PeppiGreetingRequestSerializer,
+    PeppiTeachWordRequestSerializer,
+    PeppiFeedbackRequestSerializer,
+)
+from .teacher import TeacherSerializer, TeacherDetailSerializer
+from .classroom import ClassroomSerializer, ClassroomDetailSerializer
 
 __all__ = [
     # Script
@@ -70,4 +93,30 @@ __all__ = [
     'AssessmentQuestionSerializer',
     'AssessmentAttemptSerializer',
     'CertificateSerializer',
+    # Curriculum Hierarchy
+    'CurriculumLevelSerializer',
+    'CurriculumLevelDetailSerializer',
+    'CurriculumModuleSerializer',
+    'CurriculumModuleDetailSerializer',
+    'LessonSerializer',
+    'LessonDetailSerializer',
+    'LessonContentSerializer',
+    'LevelProgressSerializer',
+    'ModuleProgressSerializer',
+    'LessonProgressSerializer',
+    'LessonProgressUpdateSerializer',
+    # Songs
+    'SongSerializer',
+    'SongListSerializer',
+    # Peppi
+    'PeppiPersonalitySerializer',
+    'PeppiLearningContextSerializer',
+    'PeppiGreetingRequestSerializer',
+    'PeppiTeachWordRequestSerializer',
+    'PeppiFeedbackRequestSerializer',
+    # Teacher & Classroom
+    'TeacherSerializer',
+    'TeacherDetailSerializer',
+    'ClassroomSerializer',
+    'ClassroomDetailSerializer',
 ]

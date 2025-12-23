@@ -139,11 +139,14 @@ class MimicAttemptSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'challenge', 'challenge_word', 'audio_url', 'duration_ms',
             'stt_transcription', 'stt_confidence', 'text_match_score',
+            # V2 acoustic analysis fields
+            'audio_energy_score', 'duration_match_score', 'scoring_version',
             'final_score', 'stars', 'points_earned', 'is_personal_best',
             'shared_to_family', 'shared_at', 'created_at'
         ]
         read_only_fields = [
             'id', 'stt_transcription', 'stt_confidence', 'text_match_score',
+            'audio_energy_score', 'duration_match_score', 'scoring_version',
             'final_score', 'stars', 'points_earned', 'is_personal_best',
             'shared_at', 'created_at'
         ]
@@ -172,6 +175,9 @@ class MimicAttemptResultSerializer(serializers.Serializer):
     peppi_feedback = serializers.CharField()
     share_message = serializers.CharField()
     progress = serializers.DictField()
+    # V2: Detailed scoring breakdown
+    score_breakdown = serializers.DictField(required=False)
+    scoring_version = serializers.IntegerField(required=False)
 
 
 class MimicProgressSerializer(serializers.ModelSerializer):

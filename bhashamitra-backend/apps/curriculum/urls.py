@@ -43,11 +43,48 @@ from .views import (
     AttemptDetailView,
     CertificateListView,
     CertificateDetailView,
+    # Curriculum Hierarchy
+    CurriculumLevelListView,
+    CurriculumLevelDetailView,
+    CurriculumModuleListView,
+    CurriculumModuleDetailView,
+    LessonListView,
+    LessonDetailView,
+    LessonProgressUpdateView,
+    ChildLevelProgressView,
+    ChildHomepageProgressView,
+    # Songs
+    song_list,
+    song_detail,
+    songs_by_level,
+    # Peppi
+    peppi_greeting,
+    peppi_teach_word,
+    peppi_feedback,
+    peppi_context,
+    # Teacher & Classroom
+    TeacherListView,
+    TeacherDetailView,
+    TeacherByCharacterView,
+    ClassroomListView,
+    ClassroomDetailView,
+    ClassroomByLevelView,
 )
 
 app_name = 'curriculum'
 
 urlpatterns = [
+    # ========== CURRICULUM HIERARCHY ==========
+    path('levels/', CurriculumLevelListView.as_view(), name='level-list'),
+    path('levels/<uuid:pk>/', CurriculumLevelDetailView.as_view(), name='level-detail'),
+    path('levels/<uuid:level_id>/modules/', CurriculumModuleListView.as_view(), name='level-modules'),
+    path('modules/<uuid:pk>/', CurriculumModuleDetailView.as_view(), name='module-detail'),
+    path('modules/<uuid:module_id>/lessons/', LessonListView.as_view(), name='module-lessons'),
+    path('lessons/<uuid:pk>/', LessonDetailView.as_view(), name='lesson-detail'),
+    path('lessons/<uuid:lesson_id>/progress/', LessonProgressUpdateView.as_view(), name='lesson-progress'),
+    path('progress/levels/', ChildLevelProgressView.as_view(), name='child-level-progress'),
+    path('children/<uuid:child_id>/homepage-progress/', ChildHomepageProgressView.as_view(), name='child-homepage-progress'),
+
     # ========== ALPHABET ==========
     path('alphabet/scripts/', ScriptListView.as_view(), name='script-list'),
     path('alphabet/scripts/<uuid:pk>/', ScriptDetailView.as_view(), name='script-detail'),
@@ -94,4 +131,25 @@ urlpatterns = [
     path('assessments/<uuid:pk>/start/', AssessmentStartView.as_view(), name='assessment-start'),
     path('assessments/<uuid:pk>/submit/', AssessmentSubmitView.as_view(), name='assessment-submit'),
     path('assessments/attempts/<uuid:pk>/', AttemptDetailView.as_view(), name='attempt-detail'),
+
+    # ========== SONGS ==========
+    path('songs/', song_list, name='song-list'),
+    path('songs/<uuid:song_id>/', song_detail, name='song-detail'),
+    path('songs/level/<str:level_code>/', songs_by_level, name='songs-by-level'),
+
+    # ========== PEPPI AI ==========
+    path('peppi/<uuid:child_id>/greeting/', peppi_greeting, name='peppi-greeting'),
+    path('peppi/<uuid:child_id>/teach-word/', peppi_teach_word, name='peppi-teach-word'),
+    path('peppi/<uuid:child_id>/feedback/', peppi_feedback, name='peppi-feedback'),
+    path('peppi/<uuid:child_id>/context/', peppi_context, name='peppi-context'),
+
+    # ========== TEACHERS ==========
+    path('teachers/', TeacherListView.as_view(), name='teacher-list'),
+    path('teachers/<uuid:pk>/', TeacherDetailView.as_view(), name='teacher-detail'),
+    path('teachers/character/<str:character_type>/', TeacherByCharacterView.as_view(), name='teacher-by-character'),
+
+    # ========== CLASSROOMS ==========
+    path('classrooms/', ClassroomListView.as_view(), name='classroom-list'),
+    path('classrooms/<uuid:pk>/', ClassroomDetailView.as_view(), name='classroom-detail'),
+    path('classrooms/level/<str:level_code>/', ClassroomByLevelView.as_view(), name='classroom-by-level'),
 ]

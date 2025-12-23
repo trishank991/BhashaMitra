@@ -63,7 +63,7 @@ class TextToSpeechView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        valid_languages = ['HINDI', 'TAMIL', 'GUJARATI', 'PUNJABI', 'TELUGU', 'MALAYALAM', 'BENGALI', 'KANNADA', 'MARATHI']
+        valid_languages = ['FIJI_HINDI', 'HINDI', 'TAMIL', 'GUJARATI', 'PUNJABI', 'TELUGU', 'MALAYALAM', 'BENGALI', 'KANNADA', 'MARATHI']
         if language not in valid_languages:
             return Response(
                 {"detail": f"Invalid language. Must be one of: {valid_languages}"},
@@ -546,7 +546,8 @@ class MimicAttemptSubmitView(APIView):
         "mastered": true,
         "peppi_feedback": "WOOOW! Perfect!",
         "share_message": "...",
-        "progress": {...}
+        "progress": {...},
+        "score_breakdown": {...}  // V2: Detailed scoring breakdown
     }
     """
     permission_classes = [IsAuthenticated]
@@ -574,30 +575,37 @@ class MimicAttemptSubmitView(APIView):
                 expected_word=challenge.word  # For mock STT testing
             )
 
-            # Step 2: Score the pronunciation
+            # Step 2: Get expected duration from reference audio (if available)
+            expected_duration_ms = None
+            if challenge.audio_cache and challenge.audio_cache.audio_duration_ms:
+                expected_duration_ms = challenge.audio_cache.audio_duration_ms
+
+            # Step 3: Score the pronunciation with V2 acoustic analysis
             score_result = pronunciation_scorer.score(
                 transcription=stt_result.transcription,
                 expected_word=challenge.word,
                 stt_confidence=stt_result.confidence,
-                expected_romanization=challenge.romanization
+                expected_romanization=challenge.romanization,
+                audio_url=audio_url,  # V2: Pass audio for acoustic analysis
+                expected_duration_ms=expected_duration_ms  # V2: Reference duration
             )
 
-            # Step 3: Get or create progress record
+            # Step 4: Get or create progress record
             progress, created = PeppiMimicProgress.objects.get_or_create(
                 child=child,
                 challenge=challenge
             )
 
-            # Step 4: Check if personal best
+            # Step 5: Check if personal best
             is_personal_best = score_result.final_score > progress.best_score
 
-            # Step 5: Calculate points
+            # Step 6: Calculate points
             points = pronunciation_scorer.get_points(
                 score_result.stars,
                 is_personal_best
             )
 
-            # Step 6: Create attempt record
+            # Step 7: Create attempt record with V2 acoustic fields
             attempt = PeppiMimicAttempt.objects.create(
                 child=child,
                 challenge=challenge,
@@ -608,25 +616,30 @@ class MimicAttemptSubmitView(APIView):
                 text_match_score=score_result.text_match_score,
                 final_score=score_result.final_score,
                 stars=score_result.stars,
+                # V2 acoustic analysis fields
+                audio_energy_score=score_result.energy_score,
+                duration_match_score=score_result.duration_match_score,
+                scoring_version=score_result.scoring_version,
+                # Points and status
                 points_earned=points,
                 is_personal_best=is_personal_best
             )
 
-            # Step 7: Update progress
+            # Step 8: Update progress
             progress.update_from_attempt(attempt)
 
-            # Step 8: Update child's total points
+            # Step 9: Update child's total points
             child.total_points += points
             child.save(update_fields=['total_points'])
 
-            # Step 9: Get Peppi feedback
+            # Step 10: Get Peppi feedback
             peppi_feedback = pronunciation_scorer.get_peppi_feedback(
                 challenge,
                 score_result.feedback_key,
                 child.name
             )
 
-            # Step 10: Generate share message
+            # Step 11: Generate share message
             share_message = pronunciation_scorer.generate_share_message(
                 child_name=child.name,
                 word=challenge.word,
@@ -651,7 +664,10 @@ class MimicAttemptSubmitView(APIView):
                     'best_stars': progress.best_stars,
                     'total_attempts': progress.total_attempts,
                     'mastered': progress.mastered,
-                }
+                },
+                # V2: Include detailed score breakdown
+                'score_breakdown': score_result.score_breakdown,
+                'scoring_version': score_result.scoring_version,
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:

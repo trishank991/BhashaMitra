@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.db.models import Sum, Count
 from typing import List, Optional
+from datetime import date
 from apps.curriculum.models.games import Game, GameSession, GameLeaderboard
 from apps.children.models import Child
 
@@ -197,6 +198,30 @@ class GameService:
             'completion_rate': round((completed_count / total_games * 100), 1),
             'favorite_game': favorite_game,
         }
+
+    @staticmethod
+    def get_games_played_today(child_id: str) -> int:
+        """Get the number of games played today by a child."""
+        today = date.today()
+        return GameSession.objects.filter(
+            child_id=child_id,
+            created_at__date=today
+        ).count()
+
+    @staticmethod
+    def can_play_more_games(child_id: str, daily_limit: int) -> tuple:
+        """
+        Check if a child can play more games today based on daily limit.
+        Returns (can_play, games_played, games_remaining)
+        """
+        if daily_limit == -1:  # Unlimited
+            return (True, 0, -1)
+
+        games_played = GameService.get_games_played_today(child_id)
+        games_remaining = max(0, daily_limit - games_played)
+        can_play = games_played < daily_limit
+
+        return (can_play, games_played, games_remaining)
 
     @staticmethod
     def get_recommended_games(child: Child, language: str, limit: int = 3) -> List[Game]:

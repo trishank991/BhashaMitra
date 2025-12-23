@@ -243,8 +243,8 @@ export default function ProfilePage() {
                 <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl p-4">
                   <p className="font-medium text-gray-900 mb-2">Upgrade for more features</p>
                   <div className="space-y-2 text-sm text-gray-600">
-                    <p>Standard ($12/month): 8 stories, games & quizzes, cultural videos</p>
-                    <p>Premium ($20/month): Unlimited stories, human-like voices</p>
+                    <p>Standard (NZD $20/month): Unlimited games, L1-L10 curriculum, Peppi AI</p>
+                    <p>Premium (NZD $30/month): Live classes, premium voices, priority support</p>
                   </div>
                   <Button
                     variant="primary"

@@ -57,7 +57,7 @@ export const useAuthStore = create<AuthState>()(
               subscription_tier: user.subscription_tier as SubscriptionTier | undefined,
               subscription_expires_at: user.subscription_expires_at,
               subscription_info: user.subscription_info as SubscriptionInfo | undefined,
-              tts_provider: user.tts_provider as 'cache_only' | 'svara' | 'sarvam' | undefined,
+              tts_provider: user.tts_provider as 'cache_only' | 'svara' | 'sarvam' | 'google_wavenet' | undefined,
             },
             tokens,
             isAuthenticated: true,
@@ -99,7 +99,7 @@ export const useAuthStore = create<AuthState>()(
               subscription_tier: user.subscription_tier as SubscriptionTier | undefined || 'FREE',
               subscription_expires_at: user.subscription_expires_at,
               subscription_info: user.subscription_info as SubscriptionInfo | undefined,
-              tts_provider: user.tts_provider as 'cache_only' | 'svara' | 'sarvam' | undefined || 'cache_only',
+              tts_provider: user.tts_provider as 'cache_only' | 'svara' | 'sarvam' | 'google_wavenet' | undefined || 'cache_only',
             },
             tokens,
             isAuthenticated: true,
@@ -273,36 +273,26 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'bhashamitra-auth',
+      // SECURITY FIX: Don't persist tokens to localStorage - only keep in memory
+      // This prevents XSS attacks from stealing JWT tokens
+      // Users will need to log in again after closing browser (security best practice)
       partialize: (state) => ({
-        tokens: state.tokens,
+        // Only persist child preference, NOT tokens or auth status
         activeChild: state.activeChild,
-        isAuthenticated: state.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state, error) => {
+      onRehydrateStorage: () => (_state, error) => {
         if (error) {
           console.error('[authStore] Rehydration error:', error);
           return;
         }
-        // Restore API token after rehydration
-        if (state?.tokens?.access) {
-          console.log('[authStore] Rehydrating with token, setting API token');
-          api.setAccessToken(state.tokens.access);
-          // Fetch fresh children data if authenticated
-          // This ensures activeChild is up-to-date with server
-          if (state.isAuthenticated) {
-            console.log('[authStore] Authenticated, will fetch children');
-            // Use setTimeout to ensure store is fully initialized
-            // Access fetchChildren via useAuthStore.getState() since 'state' only has partial data
-            setTimeout(() => {
-              console.log('[authStore] Fetching children now...');
-              useAuthStore.getState().fetchChildren().then(() => {
-                console.log('[authStore] Children fetched, activeChild:', useAuthStore.getState().activeChild?.name);
-              }).catch((err: Error) => {
-                console.error('[authStore] Failed to fetch children on rehydrate:', err);
-              });
-            }, 100);
-          }
-        }
+        // On rehydration, tokens are gone (memory-only for security)
+        // Clear isAuthenticated since we have no valid tokens
+        console.log('[authStore] Session expired, tokens cleared for security');
+        useAuthStore.setState({
+          isAuthenticated: false,
+          tokens: null,
+          user: null,
+        });
       },
     }
   )

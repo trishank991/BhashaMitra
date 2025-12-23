@@ -117,253 +117,130 @@ export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
       >
+        {/* Peppi SVG - matches landing page design */}
         <svg
-          viewBox="0 0 200 200"
+          viewBox="0 0 100 100"
           width={svg}
           height={svg}
           className="w-full h-full"
         >
-          {/* Body - Cream colored fluffy body */}
-          <ellipse
-            cx="100"
-            cy="130"
-            rx="60"
-            ry="50"
-            fill="#F5E6D3"
-            stroke="#E8D5C4"
-            strokeWidth="2"
-          />
+          {/* Ears */}
+          <path fill="#F5E6D3" d="M20 40 L10 10 L35 30 Z"/>
+          <path fill="#F5E6D3" d="M80 40 L90 10 L65 30 Z"/>
+          <path fill="#E8D4C4" d="M18 32 L12 14 L30 28 Z"/>
+          <path fill="#E8D4C4" d="M82 32 L88 14 L70 28 Z"/>
+          <path fill="#FFCDB8" d="M22 30 L16 18 L32 28 Z"/>
+          <path fill="#FFCDB8" d="M78 30 L84 18 L68 28 Z"/>
 
-          {/* Head - Ragdoll characteristic round face */}
-          <circle
-            cx="100"
-            cy="80"
-            r="55"
-            fill="#F5E6D3"
-            stroke="#E8D5C4"
-            strokeWidth="2"
-          />
+          {/* Head */}
+          <ellipse fill="#F5E6D3" cx="50" cy="50" rx="38" ry="35"/>
 
-          {/* Ears - Pointed with orange tips */}
-          <g>
-            {/* Left ear */}
-            <path
-              d="M55 45 L45 15 L75 35 Z"
-              fill="#F5E6D3"
-              stroke="#E8D5C4"
-              strokeWidth="2"
-            />
-            <path
-              d="M52 38 L48 20 L68 34 Z"
-              fill="#E8A87C"
-            />
-            {/* Right ear */}
-            <path
-              d="M145 45 L155 15 L125 35 Z"
-              fill="#F5E6D3"
-              stroke="#E8D5C4"
-              strokeWidth="2"
-            />
-            <path
-              d="M148 38 L152 20 L132 34 Z"
-              fill="#E8A87C"
-            />
-          </g>
-
-          {/* Face markings - Orange/saffron color points (Ragdoll pattern) */}
-          <ellipse
-            cx="100"
-            cy="95"
-            rx="35"
-            ry="25"
-            fill="#E8A87C"
-            opacity="0.6"
-          />
-
-          {/* Eyes - Big expressive blue eyes */}
-          <g>
-            {/* Left eye white */}
-            <ellipse cx="75" cy="75" rx="18" ry="20" fill="white" />
-            {/* Left eye iris */}
-            <motion.ellipse
-              cx="75"
-              cy="75"
-              rx="12"
-              ry="14"
-              fill="#4A90D9"
-              animate={
-                mood === 'sleepy'
-                  ? { ry: [14, 3, 14] }
-                  : mood === 'excited'
-                  ? { ry: [14, 16, 14] }
-                  : {}
-              }
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-            {/* Left eye pupil */}
-            <motion.ellipse
-              cx="75"
-              cy="75"
-              rx="6"
-              ry="8"
-              fill="#1A1A2E"
-              animate={
-                mood === 'sleepy'
-                  ? { ry: [8, 2, 8] }
-                  : mood === 'excited'
-                  ? { ry: [8, 10, 8] }
-                  : {}
-              }
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-            {/* Left eye shine */}
-            <circle cx="70" cy="70" r="4" fill="white" opacity="0.8" />
-
-            {/* Right eye white */}
-            <ellipse cx="125" cy="75" rx="18" ry="20" fill="white" />
-            {/* Right eye iris */}
-            <motion.ellipse
-              cx="125"
-              cy="75"
-              rx="12"
-              ry="14"
-              fill="#4A90D9"
-              animate={
-                mood === 'sleepy'
-                  ? { ry: [14, 3, 14] }
-                  : mood === 'excited'
-                  ? { ry: [14, 16, 14] }
-                  : {}
-              }
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-            {/* Right eye pupil */}
-            <motion.ellipse
-              cx="125"
-              cy="75"
-              rx="6"
-              ry="8"
-              fill="#1A1A2E"
-              animate={
-                mood === 'sleepy'
-                  ? { ry: [8, 2, 8] }
-                  : mood === 'excited'
-                  ? { ry: [8, 10, 8] }
-                  : {}
-              }
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-            {/* Right eye shine */}
-            <circle cx="120" cy="70" r="4" fill="white" opacity="0.8" />
-          </g>
-
-          {/* Nose - Pink triangular nose */}
-          <path
-            d="M100 95 L94 103 L106 103 Z"
-            fill="#FFB6C1"
-            stroke="#E8A0A8"
-            strokeWidth="1"
-          />
-
-          {/* Mouth - Cute cat smile */}
-          <motion.path
-            d="M94 108 Q100 115 106 108"
-            fill="none"
-            stroke="#8B7355"
-            strokeWidth="2"
-            strokeLinecap="round"
+          {/* Eyes */}
+          <ellipse fill="white" cx="35" cy="48" rx="12" ry="14"/>
+          <ellipse fill="white" cx="65" cy="48" rx="12" ry="14"/>
+          <motion.ellipse
+            fill="#4A90D9"
+            cx="35"
+            cy="50"
+            rx="9"
+            ry="11"
             animate={
-              mood === 'celebrating'
-                ? { d: ['M94 108 Q100 120 106 108', 'M94 108 Q100 115 106 108'] }
-                : mood === 'sleepy'
-                ? { d: 'M94 108 Q100 110 106 108' }
+              mood === 'sleepy'
+                ? { ry: [11, 3, 11] }
+                : mood === 'excited'
+                ? { ry: [11, 13, 11] }
                 : {}
             }
-            transition={{ duration: 0.5, repeat: mood === 'celebrating' ? Infinity : 0 }}
+            transition={{ duration: 3, repeat: Infinity }}
           />
-          {/* Mouth line down */}
-          <path
-            d="M100 103 L100 108"
-            fill="none"
-            stroke="#8B7355"
-            strokeWidth="2"
-            strokeLinecap="round"
+          <motion.ellipse
+            fill="#4A90D9"
+            cx="65"
+            cy="50"
+            rx="9"
+            ry="11"
+            animate={
+              mood === 'sleepy'
+                ? { ry: [11, 3, 11] }
+                : mood === 'excited'
+                ? { ry: [11, 13, 11] }
+                : {}
+            }
+            transition={{ duration: 3, repeat: Infinity }}
           />
+          <motion.ellipse
+            fill="#1a1a1a"
+            cx="35"
+            cy="51"
+            rx="4"
+            ry="5"
+            animate={
+              mood === 'sleepy'
+                ? { ry: [5, 1, 5] }
+                : mood === 'excited'
+                ? { ry: [5, 6, 5] }
+                : {}
+            }
+            transition={{ duration: 3, repeat: Infinity }}
+          />
+          <motion.ellipse
+            fill="#1a1a1a"
+            cx="65"
+            cy="51"
+            rx="4"
+            ry="5"
+            animate={
+              mood === 'sleepy'
+                ? { ry: [5, 1, 5] }
+                : mood === 'excited'
+                ? { ry: [5, 6, 5] }
+                : {}
+            }
+            transition={{ duration: 3, repeat: Infinity }}
+          />
+          {/* Eye shine */}
+          <circle fill="white" cx="38" cy="45" r="3"/>
+          <circle fill="white" cx="68" cy="45" r="3"/>
+
+          {/* Nose */}
+          <path fill="#FF7F50" d="M50 58 L46 65 L54 65 Z"/>
 
           {/* Whiskers */}
-          <g stroke="#8B7355" strokeWidth="1.5" strokeLinecap="round">
-            {/* Left whiskers */}
-            <motion.line
-              x1="60" y1="95" x2="35" y2="90"
-              animate={{ x2: [35, 30, 35] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <motion.line
-              x1="60" y1="100" x2="35" y2="100"
-              animate={{ x2: [35, 28, 35] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0.1 }}
-            />
-            <motion.line
-              x1="60" y1="105" x2="35" y2="110"
-              animate={{ x2: [35, 30, 35] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
-            />
-            {/* Right whiskers */}
-            <motion.line
-              x1="140" y1="95" x2="165" y2="90"
-              animate={{ x2: [165, 170, 165] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <motion.line
-              x1="140" y1="100" x2="165" y2="100"
-              animate={{ x2: [165, 172, 165] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0.1 }}
-            />
-            <motion.line
-              x1="140" y1="105" x2="165" y2="110"
-              animate={{ x2: [165, 170, 165] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
-            />
-          </g>
-
-          {/* Front paws */}
-          <g>
-            <ellipse cx="65" cy="165" rx="15" ry="12" fill="#F5E6D3" stroke="#E8D5C4" strokeWidth="2" />
-            <ellipse cx="135" cy="165" rx="15" ry="12" fill="#F5E6D3" stroke="#E8D5C4" strokeWidth="2" />
-            {/* Paw pads */}
-            <circle cx="60" cy="168" r="3" fill="#FFB6C1" />
-            <circle cx="65" cy="170" r="3" fill="#FFB6C1" />
-            <circle cx="70" cy="168" r="3" fill="#FFB6C1" />
-            <circle cx="130" cy="168" r="3" fill="#FFB6C1" />
-            <circle cx="135" cy="170" r="3" fill="#FFB6C1" />
-            <circle cx="140" cy="168" r="3" fill="#FFB6C1" />
-          </g>
-
-          {/* Tail - Fluffy curved tail */}
-          <motion.path
-            d="M155 140 Q180 130 175 100 Q170 80 160 85"
-            fill="none"
-            stroke="#E8A87C"
-            strokeWidth="12"
-            strokeLinecap="round"
-            animate={
-              mood === 'happy' || mood === 'excited'
-                ? { d: ['M155 140 Q180 130 175 100 Q170 80 160 85', 'M155 140 Q185 125 180 95 Q175 75 165 80'] }
-                : {}
-            }
-            transition={{ duration: 1, repeat: Infinity, repeatType: 'reverse' }}
+          <motion.line
+            stroke="#999"
+            strokeWidth="1"
+            x1="8" y1="52" x2="28" y2="56"
+            animate={{ x1: [8, 5, 8] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <motion.line
+            stroke="#999"
+            strokeWidth="1"
+            x1="8" y1="60" x2="28" y2="60"
+            animate={{ x1: [8, 4, 8] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.1 }}
+          />
+          <motion.line
+            stroke="#999"
+            strokeWidth="1"
+            x1="92" y1="52" x2="72" y2="56"
+            animate={{ x1: [92, 95, 92] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <motion.line
+            stroke="#999"
+            strokeWidth="1"
+            x1="92" y1="60" x2="72" y2="60"
+            animate={{ x1: [92, 96, 92] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.1 }}
           />
 
-          {/* Collar with bell (optional cute accessory) */}
-          <path
-            d="M60 115 Q100 125 140 115"
-            fill="none"
-            stroke="#F97316"
-            strokeWidth="6"
-            strokeLinecap="round"
-          />
-          <circle cx="100" cy="122" r="6" fill="#FFD700" stroke="#DAA520" strokeWidth="1" />
-          <circle cx="100" cy="122" r="2" fill="#DAA520" />
+          {/* Collar */}
+          <ellipse fill="#FF6B35" cx="50" cy="78" rx="22" ry="5"/>
+
+          {/* Bell */}
+          <circle fill="#FFD700" cx="50" cy="83" r="5"/>
+          <circle fill="#FFF8DC" cx="48" cy="81" r="1.5"/>
         </svg>
       </motion.div>
 

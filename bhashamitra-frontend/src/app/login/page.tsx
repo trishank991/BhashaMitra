@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores';
 import { Button, Input, Card } from '@/components/ui';
-import { PeppiAvatar } from '@/components/peppi';
+import { PeppiMascot } from '@/components/peppi';
 import { fadeInUp } from '@/lib/constants';
 
 export default function LoginPage() {
@@ -58,9 +58,9 @@ export default function LoginPage() {
           {/* Peppi greeting */}
           <motion.div
             variants={fadeInUp}
-            className="flex justify-center mb-6"
+            className="flex justify-center mb-8"
           >
-            <PeppiAvatar size="lg" showBubble={false} />
+            <PeppiMascot size="sm" showSpeechBubble={false} />
           </motion.div>
 
           <motion.h1
@@ -72,7 +72,7 @@ export default function LoginPage() {
 
           <motion.p
             variants={fadeInUp}
-            className="text-center text-gray-500 mb-8"
+            className="text-center text-gray-500 mb-6"
           >
             Log in to continue learning
           </motion.p>

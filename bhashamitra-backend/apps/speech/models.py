@@ -240,6 +240,22 @@ class PeppiMimicAttempt(TimeStampedModel):
         help_text="Star rating 0-3"
     )
 
+    # Acoustic Analysis (v2 scoring)
+    audio_energy_score = models.FloatField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="RMS energy analysis score 0-100"
+    )
+    duration_match_score = models.FloatField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Duration similarity to reference 0-100"
+    )
+    scoring_version = models.PositiveSmallIntegerField(
+        default=2,
+        help_text="Scoring algorithm version (1=STT+text, 2=hybrid with acoustic)"
+    )
+
     # Points
     points_earned = models.PositiveIntegerField(default=0)
     is_personal_best = models.BooleanField(default=False)

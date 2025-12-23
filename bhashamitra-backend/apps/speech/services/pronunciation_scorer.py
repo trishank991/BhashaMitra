@@ -1,15 +1,37 @@
 """
 Pronunciation Scoring Service for Peppi Mimic.
-Combines STT confidence with text matching to score pronunciation attempts.
+
+V2 Enhanced Scoring with Acoustic Analysis:
+- STT confidence (50%): How clearly speech was recognized
+- Text matching (30%): How close transcription matches expected
+- Audio energy (15%): RMS energy analysis (sufficient volume/clarity)
+- Duration match (5%): Recording duration similarity to reference
+
+Dependencies:
+- soundfile: For audio file reading
+- numpy: For RMS calculation
 """
 
 import difflib
 import re
-from dataclasses import dataclass
-from typing import Optional
+import tempfile
+import os
 import logging
+from dataclasses import dataclass
+from typing import Optional, Tuple
+import requests
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class AudioAnalysisResult:
+    """Result of acoustic audio analysis."""
+    energy_score: float      # 0-100 based on RMS energy
+    duration_ms: int         # Actual duration in milliseconds
+    duration_match_score: float  # 0-100 based on duration similarity
+    rms_energy: float        # Raw RMS value
+    is_valid: bool           # Whether analysis was successful
 
 
 @dataclass
@@ -17,21 +39,226 @@ class PronunciationResult:
     """Result of pronunciation scoring."""
     transcription: str
     expected_word: str
-    stt_confidence: float  # 0-1 from STT provider
-    text_match_score: float  # 0-100 from text comparison
-    final_score: float  # 0-100 combined score
-    stars: int  # 0-3 star rating
-    feedback_key: str  # 'perfect', 'good', 'try_again'
+    stt_confidence: float      # 0-1 from STT provider
+    text_match_score: float    # 0-100 from text comparison
+    energy_score: float        # 0-100 from audio energy analysis
+    duration_match_score: float  # 0-100 from duration comparison
+    final_score: float         # 0-100 combined score
+    stars: int                 # 0-3 star rating
+    feedback_key: str          # 'perfect', 'good', 'try_again'
+    scoring_version: int       # Algorithm version (2 = hybrid)
+    score_breakdown: dict      # Detailed breakdown for debugging
+
+
+class AudioAnalyzer:
+    """
+    Analyze audio files for pronunciation scoring.
+
+    Uses RMS (Root Mean Square) energy to assess:
+    - Whether the child spoke clearly and loudly enough
+    - Audio quality/clarity
+    - Recording duration vs expected duration
+    """
+
+    # Minimum RMS threshold for "good" audio (empirically tuned)
+    MIN_RMS_THRESHOLD = 0.01
+    # Optimal RMS range for children's speech
+    OPTIMAL_RMS_MIN = 0.03
+    OPTIMAL_RMS_MAX = 0.5
+
+    # Duration tolerance (±30% of expected is acceptable)
+    DURATION_TOLERANCE = 0.30
+
+    @classmethod
+    def analyze(
+        cls,
+        audio_url: str,
+        expected_duration_ms: Optional[int] = None
+    ) -> AudioAnalysisResult:
+        """
+        Analyze audio from URL for energy and duration.
+
+        Args:
+            audio_url: URL to audio file
+            expected_duration_ms: Expected duration for comparison (optional)
+
+        Returns:
+            AudioAnalysisResult with scores
+        """
+        try:
+            # Download audio
+            audio_data = cls._download_audio(audio_url)
+            if not audio_data:
+                return cls._default_result()
+
+            # Analyze using soundfile
+            result = cls._analyze_audio_data(audio_data, expected_duration_ms)
+            return result
+
+        except Exception as e:
+            logger.warning(f"Audio analysis failed: {e}")
+            return cls._default_result()
+
+    @classmethod
+    def _download_audio(cls, url: str) -> Optional[bytes]:
+        """Download audio file from URL."""
+        try:
+            response = requests.get(url, timeout=15)
+            response.raise_for_status()
+            return response.content
+        except Exception as e:
+            logger.warning(f"Failed to download audio: {e}")
+            return None
+
+    @classmethod
+    def _analyze_audio_data(
+        cls,
+        audio_data: bytes,
+        expected_duration_ms: Optional[int] = None
+    ) -> AudioAnalysisResult:
+        """Analyze audio data using soundfile and numpy."""
+        try:
+            import soundfile as sf
+            import numpy as np
+            import io
+
+            # Read audio from bytes
+            audio_bytes_io = io.BytesIO(audio_data)
+
+            try:
+                # Try to read audio file
+                samples, sample_rate = sf.read(audio_bytes_io)
+            except Exception as e:
+                # Try saving to temp file for format detection
+                logger.debug(f"Direct read failed, trying temp file: {e}")
+                with tempfile.NamedTemporaryFile(suffix='.webm', delete=False) as f:
+                    f.write(audio_data)
+                    temp_path = f.name
+
+                try:
+                    samples, sample_rate = sf.read(temp_path)
+                finally:
+                    os.unlink(temp_path)
+
+            # Convert to mono if stereo
+            if len(samples.shape) > 1:
+                samples = samples.mean(axis=1)
+
+            # Calculate RMS energy
+            rms_energy = float(np.sqrt(np.mean(samples ** 2)))
+
+            # Calculate duration
+            duration_ms = int(len(samples) / sample_rate * 1000)
+
+            # Calculate energy score (0-100)
+            energy_score = cls._calculate_energy_score(rms_energy)
+
+            # Calculate duration match score (0-100)
+            duration_match_score = cls._calculate_duration_score(
+                duration_ms, expected_duration_ms
+            )
+
+            logger.info(
+                f"Audio analysis: RMS={rms_energy:.4f}, "
+                f"duration={duration_ms}ms, energy_score={energy_score:.1f}, "
+                f"duration_match={duration_match_score:.1f}"
+            )
+
+            return AudioAnalysisResult(
+                energy_score=energy_score,
+                duration_ms=duration_ms,
+                duration_match_score=duration_match_score,
+                rms_energy=rms_energy,
+                is_valid=True
+            )
+
+        except ImportError as e:
+            logger.error(f"Missing audio analysis dependency: {e}")
+            return cls._default_result()
+        except Exception as e:
+            logger.warning(f"Audio analysis error: {e}")
+            return cls._default_result()
+
+    @classmethod
+    def _calculate_energy_score(cls, rms: float) -> float:
+        """
+        Convert RMS energy to 0-100 score.
+
+        Scoring:
+        - Below MIN_RMS_THRESHOLD: 0-30 (too quiet)
+        - In OPTIMAL range: 80-100 (good volume)
+        - Above OPTIMAL_MAX: 60-80 (maybe too loud/clipping)
+        """
+        if rms < cls.MIN_RMS_THRESHOLD:
+            # Too quiet - scale 0-30
+            return (rms / cls.MIN_RMS_THRESHOLD) * 30
+
+        if rms < cls.OPTIMAL_RMS_MIN:
+            # Quiet but audible - scale 30-80
+            ratio = (rms - cls.MIN_RMS_THRESHOLD) / (cls.OPTIMAL_RMS_MIN - cls.MIN_RMS_THRESHOLD)
+            return 30 + (ratio * 50)
+
+        if rms <= cls.OPTIMAL_RMS_MAX:
+            # Optimal range - scale 80-100
+            ratio = (rms - cls.OPTIMAL_RMS_MIN) / (cls.OPTIMAL_RMS_MAX - cls.OPTIMAL_RMS_MIN)
+            return 80 + (ratio * 20)
+
+        # Above optimal (possible clipping) - scale down from 80
+        excess_ratio = min((rms - cls.OPTIMAL_RMS_MAX) / cls.OPTIMAL_RMS_MAX, 1.0)
+        return max(60, 80 - (excess_ratio * 20))
+
+    @classmethod
+    def _calculate_duration_score(
+        cls,
+        actual_ms: int,
+        expected_ms: Optional[int]
+    ) -> float:
+        """
+        Calculate duration match score (0-100).
+
+        If no expected duration, return default of 75.
+        """
+        if not expected_ms or expected_ms <= 0:
+            return 75.0  # Default when no reference
+
+        # Calculate ratio
+        ratio = actual_ms / expected_ms
+
+        # Perfect match = 1.0
+        # Score decreases as ratio deviates from 1.0
+        deviation = abs(1.0 - ratio)
+
+        if deviation <= cls.DURATION_TOLERANCE:
+            # Within tolerance - score 80-100
+            normalized = 1 - (deviation / cls.DURATION_TOLERANCE)
+            return 80 + (normalized * 20)
+
+        # Outside tolerance - score decreases
+        excess = deviation - cls.DURATION_TOLERANCE
+        return max(0, 80 - (excess * 100))
+
+    @classmethod
+    def _default_result(cls) -> AudioAnalysisResult:
+        """Return default result when analysis fails."""
+        return AudioAnalysisResult(
+            energy_score=50.0,  # Neutral score
+            duration_ms=0,
+            duration_match_score=75.0,  # Neutral score
+            rms_energy=0.0,
+            is_valid=False
+        )
 
 
 class PronunciationScorer:
     """
-    Score pronunciation attempts using STT confidence and text matching.
+    Score pronunciation attempts using hybrid analysis.
 
-    Scoring Algorithm:
-    - 60% weight: STT confidence (how clearly the speech was recognized)
-    - 40% weight: Text match (how close transcription matches expected word)
-    - Bonus: +10 points for exact match
+    V2 Scoring Algorithm (Hybrid):
+    - 50% weight: STT confidence (how clearly speech was recognized)
+    - 30% weight: Text match (how close transcription matches expected)
+    - 15% weight: Audio energy (clarity/volume of recording)
+    - 5% weight: Duration match (recording length vs expected)
+    - Bonus: +10 points for exact text match
 
     Star Thresholds:
     - 3 stars: 85+ score
@@ -39,6 +266,15 @@ class PronunciationScorer:
     - 1 star: 40-64 score
     - 0 stars: <40 score
     """
+
+    # Scoring version
+    SCORING_VERSION = 2
+
+    # Weight configuration (v2 hybrid)
+    WEIGHT_STT = 0.50
+    WEIGHT_TEXT = 0.30
+    WEIGHT_ENERGY = 0.15
+    WEIGHT_DURATION = 0.05
 
     # Star thresholds
     THREE_STAR_THRESHOLD = 85
@@ -62,16 +298,20 @@ class PronunciationScorer:
         transcription: str,
         expected_word: str,
         stt_confidence: float,
-        expected_romanization: Optional[str] = None
+        expected_romanization: Optional[str] = None,
+        audio_url: Optional[str] = None,
+        expected_duration_ms: Optional[int] = None
     ) -> PronunciationResult:
         """
-        Score a pronunciation attempt.
+        Score a pronunciation attempt using hybrid analysis.
 
         Args:
             transcription: What the STT heard
             expected_word: The target word in native script
             stt_confidence: Confidence from STT (0-1)
             expected_romanization: Optional romanization for fallback matching
+            audio_url: URL to child's recording for acoustic analysis
+            expected_duration_ms: Expected duration from reference audio
 
         Returns:
             PronunciationResult with scores and feedback
@@ -80,7 +320,7 @@ class PronunciationScorer:
         transcription_clean = self._normalize_text(transcription)
         expected_clean = self._normalize_text(expected_word)
 
-        # Calculate text match score using sequence matching
+        # Calculate text match score
         text_match_score = self._calculate_text_match(
             transcription_clean,
             expected_clean,
@@ -94,12 +334,28 @@ class PronunciationScorer:
              transcription_clean == self._normalize_text(expected_romanization))
         )
 
-        # Calculate final score
-        # 60% from STT confidence, 40% from text match
-        confidence_component = stt_confidence * 60
-        match_component = (text_match_score / 100) * 40
+        # Perform acoustic analysis if audio URL provided
+        if audio_url:
+            audio_result = AudioAnalyzer.analyze(audio_url, expected_duration_ms)
+            energy_score = audio_result.energy_score
+            duration_match_score = audio_result.duration_match_score
+        else:
+            # Fallback to neutral scores
+            energy_score = 75.0
+            duration_match_score = 75.0
 
-        final_score = confidence_component + match_component
+        # Calculate weighted final score
+        confidence_component = (stt_confidence * 100) * self.WEIGHT_STT
+        text_component = text_match_score * self.WEIGHT_TEXT
+        energy_component = energy_score * self.WEIGHT_ENERGY
+        duration_component = duration_match_score * self.WEIGHT_DURATION
+
+        final_score = (
+            confidence_component +
+            text_component +
+            energy_component +
+            duration_component
+        )
 
         # Bonus for exact match
         if is_exact_match:
@@ -108,14 +364,44 @@ class PronunciationScorer:
         # Determine stars and feedback
         stars, feedback_key = self._get_stars_and_feedback(final_score)
 
+        # Build score breakdown for transparency
+        score_breakdown = {
+            'stt_confidence': {
+                'raw': stt_confidence,
+                'weighted': round(confidence_component, 2),
+                'weight': self.WEIGHT_STT
+            },
+            'text_match': {
+                'raw': text_match_score,
+                'weighted': round(text_component, 2),
+                'weight': self.WEIGHT_TEXT
+            },
+            'energy': {
+                'raw': energy_score,
+                'weighted': round(energy_component, 2),
+                'weight': self.WEIGHT_ENERGY
+            },
+            'duration': {
+                'raw': duration_match_score,
+                'weighted': round(duration_component, 2),
+                'weight': self.WEIGHT_DURATION
+            },
+            'exact_match_bonus': self.EXACT_MATCH_BONUS if is_exact_match else 0,
+            'is_exact_match': is_exact_match
+        }
+
         return PronunciationResult(
             transcription=transcription,
             expected_word=expected_word,
             stt_confidence=stt_confidence,
             text_match_score=text_match_score,
+            energy_score=energy_score,
+            duration_match_score=duration_match_score,
             final_score=round(final_score, 1),
             stars=stars,
-            feedback_key=feedback_key
+            feedback_key=feedback_key,
+            scoring_version=self.SCORING_VERSION,
+            score_breakdown=score_breakdown
         )
 
     def _normalize_text(self, text: str) -> str:
@@ -161,7 +447,7 @@ class PronunciationScorer:
 
         return best_ratio * 100
 
-    def _get_stars_and_feedback(self, score: float) -> tuple[int, str]:
+    def _get_stars_and_feedback(self, score: float) -> Tuple[int, str]:
         """Determine star rating and feedback key based on score."""
         if score >= self.THREE_STAR_THRESHOLD:
             return 3, 'perfect'
@@ -207,11 +493,11 @@ class PronunciationScorer:
         Returns:
             Peppi's feedback message
         """
-        # Default messages if challenge doesn't have custom ones
+        # Default messages with cat-themed words
         default_messages = {
-            'perfect': "WOOOW! 🌟 PERFECT! Tum toh superstar ho! Nani ko zaroor sunao!",
-            'good': "Bahut accha! 👏 Almost perfect! Ek baar aur try karo?",
-            'try_again': "Good try! 🤗 Mere saath bolo - sunoge phir try karo!",
+            'perfect': "MEOW! That was PURRRFECT! You're a paw-some language star! Nani ko zaroor sunao!",
+            'good': "Meow meow! Almost purrrfect! You're doing great, let's try one meow time?",
+            'try_again': "Meow! Good try little cub! Let's try one more time - listen and repeat after me!",
         }
 
         # Try to get custom message from challenge

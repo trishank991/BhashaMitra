@@ -10,101 +10,8 @@ import { PeppiNarrator } from '@/components/peppi';
 import { useAuthStore } from '@/stores';
 import { fadeInUp, staggerContainer } from '@/lib/constants';
 import { useAudio } from '@/hooks/useAudio';
-import type { SubscriptionTier, LanguageCode } from '@/types';
-
-// Mock story data (same as in stories/page.tsx)
-const mockStories = [
-  {
-    id: '1',
-    title: 'The Clever Crow',
-    titleNative: 'चालाक कौआ',
-    description: 'A thirsty crow finds a clever way to drink water from a pot.',
-    language: 'HINDI',
-    difficulty: 'beginner',
-    duration: 5,
-    xpReward: 50,
-    pages: [
-      {
-        pageNumber: 1,
-        text: 'एक बार एक कौआ बहुत प्यासा था।',
-        textEnglish: 'Once upon a time, a crow was very thirsty.',
-        imageUrl: '',
-      },
-      {
-        pageNumber: 2,
-        text: 'उसने एक घड़े में पानी देखा।',
-        textEnglish: 'He saw water in a pot.',
-        imageUrl: '',
-      },
-      {
-        pageNumber: 3,
-        text: 'पानी बहुत नीचे था।',
-        textEnglish: 'The water was very low.',
-        imageUrl: '',
-      },
-      {
-        pageNumber: 4,
-        text: 'कौए ने कंकड़ घड़े में डाले।',
-        textEnglish: 'The crow dropped pebbles into the pot.',
-        imageUrl: '',
-      },
-      {
-        pageNumber: 5,
-        text: 'पानी ऊपर आ गया और कौए ने पानी पी लिया।',
-        textEnglish: 'The water rose up and the crow drank the water.',
-        imageUrl: '',
-      },
-    ],
-  },
-  {
-    id: '2',
-    title: 'The Lion and the Mouse',
-    titleNative: 'शेर और चूहा',
-    description: 'A small mouse helps a mighty lion, teaching us about kindness.',
-    language: 'HINDI',
-    difficulty: 'beginner',
-    duration: 7,
-    xpReward: 60,
-    pages: [
-      {
-        pageNumber: 1,
-        text: 'एक बड़ा शेर जंगल में सो रहा था।',
-        textEnglish: 'A big lion was sleeping in the forest.',
-        imageUrl: '',
-      },
-      {
-        pageNumber: 2,
-        text: 'एक छोटा चूहा शेर पर चढ़ गया।',
-        textEnglish: 'A small mouse climbed on the lion.',
-        imageUrl: '',
-      },
-      {
-        pageNumber: 3,
-        text: 'शेर जाग गया और गुस्सा हो गया।',
-        textEnglish: 'The lion woke up and got angry.',
-        imageUrl: '',
-      },
-      {
-        pageNumber: 4,
-        text: 'चूहे ने कहा - "मुझे छोड़ दो, मैं तुम्हारी मदद करूंगा।"',
-        textEnglish: 'The mouse said - "Let me go, I will help you."',
-        imageUrl: '',
-      },
-      {
-        pageNumber: 5,
-        text: 'एक दिन शेर जाल में फंस गया।',
-        textEnglish: 'One day the lion got trapped in a net.',
-        imageUrl: '',
-      },
-      {
-        pageNumber: 6,
-        text: 'चूहे ने जाल काट दिया और शेर को बचाया।',
-        textEnglish: 'The mouse cut the net and saved the lion.',
-        imageUrl: '',
-      },
-    ],
-  },
-];
+import api from '@/lib/api';
+import type { SubscriptionTier, LanguageCode, Story } from '@/types';
 
 export default function StoryDetailPage() {
   const router = useRouter();
@@ -116,9 +23,10 @@ export default function StoryDetailPage() {
   const [showTranslation, setShowTranslation] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showPeppiNarrator, setShowPeppiNarrator] = useState(false);
+  const [story, setStory] = useState<Story | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, user, activeChild } = useAuthStore();
-
-  const story = mockStories.find((s) => s.id === storyId);
 
   // Audio playback hook - use story language if available
   const { isPlaying, isLoading: audioLoading, playAudio, stopAudio } = useAudio({
@@ -128,7 +36,7 @@ export default function StoryDetailPage() {
 
   // Handle playing page text
   const handlePlayPageText = () => {
-    if (!story) return;
+    if (!story || !story.pages || !story.pages[currentPage]) return;
     const pageText = story.pages[currentPage].text;
 
     if (isPlaying) {
@@ -148,6 +56,34 @@ export default function StoryDetailPage() {
     }
   }, [isHydrated, isAuthenticated, router]);
 
+  // Fetch story from API
+  useEffect(() => {
+    if (!isHydrated || !isAuthenticated || !storyId) return;
+
+    const fetchStory = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        console.log('[StoryDetailPage] Fetching story:', storyId);
+        const response = await api.getStory(storyId);
+        console.log('[StoryDetailPage] API response:', response);
+
+        if (response.success && response.data) {
+          setStory(response.data);
+        } else {
+          setError(response.error || 'Failed to load story');
+        }
+      } catch (err) {
+        console.error('[StoryDetailPage] Error:', err);
+        setError('Failed to load story');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStory();
+  }, [isHydrated, isAuthenticated, storyId]);
+
   if (!isHydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -164,13 +100,23 @@ export default function StoryDetailPage() {
     );
   }
 
-  if (!story) {
+  if (loading) {
+    return (
+      <MainLayout headerTitle="Loading Story...">
+        <div className="flex flex-col items-center justify-center py-12">
+          <Loading size="lg" text="Loading story..." />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error || !story) {
     return (
       <MainLayout headerTitle="Story Not Found">
         <div className="flex flex-col items-center justify-center py-12">
           <span className="text-6xl mb-4">📚</span>
           <h1 className="text-xl font-bold text-gray-900 mb-2">Story Not Found</h1>
-          <p className="text-gray-500 mb-6">This story doesn&apos;t exist or has been removed.</p>
+          <p className="text-gray-500 mb-6">{error || "This story doesn't exist or has been removed."}</p>
           <Link href="/stories">
             <Button>Back to Stories</Button>
           </Link>
@@ -179,8 +125,9 @@ export default function StoryDetailPage() {
     );
   }
 
-  const currentStoryPage = story.pages[currentPage];
-  const isLastPage = currentPage === story.pages.length - 1;
+  // Get current page data from the story
+  const currentStoryPage = story.pages && story.pages.length > 0 ? story.pages[currentPage] : null;
+  const isLastPage = story.pages ? currentPage === story.pages.length - 1 : true;
   const isFirstPage = currentPage === 0;
 
   // Get subscription tier
@@ -291,70 +238,72 @@ export default function StoryDetailPage() {
 
             {/* Hindi Text with Audio */}
             <div className="flex-1">
-              <div className="mb-4">
-                <p className="text-2xl font-bold text-gray-900 leading-relaxed text-center mb-3">
-                  {currentStoryPage.text}
-                </p>
-                {/* Listen Button */}
-                <div className="flex justify-center">
+              {currentStoryPage ? (
+                <>
+                  <div className="mb-4">
+                    <p className="text-2xl font-bold text-gray-900 leading-relaxed text-center mb-3">
+                      {currentStoryPage.text}
+                    </p>
+                    {/* Listen Button */}
+                    <div className="flex justify-center">
+                      <button
+                        onClick={handlePlayPageText}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-full font-medium hover:from-purple-500 hover:to-pink-600 transition-colors shadow-md"
+                      >
+                        <SpeakerButton
+                          isPlaying={isPlaying}
+                          isLoading={audioLoading}
+                          onClick={() => {}}
+                          size="sm"
+                          className="!bg-transparent !shadow-none hover:!bg-white/20"
+                        />
+                        <span className="text-sm">
+                          {audioLoading ? 'Loading...' : isPlaying ? 'Stop' : 'Listen'}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Translation Toggle */}
                   <button
-                    onClick={handlePlayPageText}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-full font-medium hover:from-purple-500 hover:to-pink-600 transition-colors shadow-md"
+                    onClick={() => setShowTranslation(!showTranslation)}
+                    className="w-full text-center text-sm text-primary-600 hover:text-primary-700 mb-2"
                   >
-                    <SpeakerButton
-                      isPlaying={isPlaying}
-                      isLoading={audioLoading}
-                      onClick={() => {}}
-                      size="sm"
-                      className="!bg-transparent !shadow-none hover:!bg-white/20"
-                    />
-                    <span className="text-sm">
-                      {audioLoading ? 'Loading...' : isPlaying ? 'Stop' : 'Listen'}
-                    </span>
+                    {showTranslation ? 'Hide translation' : 'Show translation'}
                   </button>
+
+                  {/* English Translation */}
+                  {showTranslation && currentStoryPage.translation && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-lg text-gray-500 text-center italic"
+                    >
+                      {currentStoryPage.translation}
+                    </motion.p>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No content available for this page</p>
                 </div>
-              </div>
-
-              {/* Translation Toggle */}
-              <button
-                onClick={() => setShowTranslation(!showTranslation)}
-                className="w-full text-center text-sm text-primary-600 hover:text-primary-700 mb-2"
-              >
-                {showTranslation ? 'Hide translation' : 'Show translation'}
-              </button>
-
-              {/* English Translation */}
-              {showTranslation && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-lg text-gray-500 text-center italic"
-                >
-                  {currentStoryPage.textEnglish}
-                </motion.p>
               )}
             </div>
           </Card>
         </motion.div>
 
-        {/* Peppi Narrator Section */}
+        {/* Peppi Narrator Section - Plays FULL story continuously */}
         <motion.div variants={fadeInUp}>
           {showPeppiNarrator ? (
             <PeppiNarrator
               storyId={storyId}
-              pageNumber={currentPage}
+              storyTitle={story?.title}
               language={storyLanguage}
-              text={currentStoryPage.text}
               defaultGender={peppiGender}
               subscriptionTier={subscriptionTier}
               onComplete={() => {
-                // Auto-advance to next page after narration completes
-                if (!isLastPage) {
-                  setTimeout(() => {
-                    setCurrentPage((prev) => prev + 1);
-                    setShowTranslation(false);
-                  }, 1000);
-                }
+                // Story narration completed
+                setIsCompleted(true);
               }}
             />
           ) : (
@@ -364,6 +313,7 @@ export default function StoryDetailPage() {
             >
               <span className="text-2xl">🐱</span>
               <span>Listen with Peppi</span>
+              <span className="text-xs opacity-75">(Full Story)</span>
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
               </svg>

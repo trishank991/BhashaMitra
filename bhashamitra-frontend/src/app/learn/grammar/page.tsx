@@ -125,7 +125,7 @@ export default function GrammarPage() {
 
       try {
         console.log('[GrammarPage] Fetching topics for child:', activeChild.id, 'language:', currentLanguage);
-        const response = await api.getGrammarTopics(activeChild.id);
+        const response = await api.getGrammarTopics(activeChild.id, currentLanguage);
         console.log('[GrammarPage] API response:', response);
 
         if (response.success && response.data) {
@@ -183,7 +183,7 @@ export default function GrammarPage() {
           </Card>
           <Card padding="sm" className="text-center bg-blue-50">
             <p className="text-2xl font-bold text-blue-600">
-              {topics.reduce((sum, t) => sum + (t.rules_count || 0), 0)}
+              {topics.reduce((sum, t) => sum + (t.rule_count || 0), 0)}
             </p>
             <p className="text-xs text-gray-500">Rules</p>
           </Card>

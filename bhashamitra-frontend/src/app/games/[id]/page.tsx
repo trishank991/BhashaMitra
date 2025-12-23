@@ -1,54 +1,67 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { MainLayout } from '@/components/layout';
 import { Card, Loading, Button, Badge, SpeakerButton } from '@/components/ui';
 import { useAuthStore } from '@/stores';
-import { fadeInUp, staggerContainer } from '@/lib/constants';
+import { fadeInUp, staggerContainer, SUPPORTED_LANGUAGES } from '@/lib/constants';
 import { useAudio } from '@/hooks/useAudio';
+import api, { GameWord } from '@/lib/api';
 
-// Game data
-const gamesData: Record<string, {
-  name: string;
-  icon: string;
-  description: string;
-  xpReward: number;
-}> = {
+// Game data - descriptions update based on language
+const getGamesData = (languageName: string) => ({
   'word-match': {
     name: 'Word Match',
     icon: '🎯',
-    description: 'Match Hindi words with their English meanings',
+    description: `Match ${languageName} words with their English meanings`,
     xpReward: 25,
   },
   'listen-speak': {
     name: 'Listen & Speak',
     icon: '🎤',
-    description: 'Practice pronunciation by listening and speaking',
+    description: `Practice ${languageName} pronunciation by listening and speaking`,
     xpReward: 30,
   },
+});
+
+// Fallback words for each language (used when API fails)
+const FALLBACK_WORDS: Record<string, GameWord[]> = {
+  HINDI: [
+    { word: 'माँ', english: 'mother', romanized: 'maa' },
+    { word: 'पिता', english: 'father', romanized: 'pita' },
+    { word: 'लाल', english: 'red', romanized: 'laal' },
+    { word: 'नीला', english: 'blue', romanized: 'neela' },
+    { word: 'पानी', english: 'water', romanized: 'paani' },
+    { word: 'खाना', english: 'food', romanized: 'khaana' },
+  ],
+  TAMIL: [
+    { word: 'அம்மா', english: 'mother', romanized: 'amma' },
+    { word: 'அப்பா', english: 'father', romanized: 'appa' },
+    { word: 'சிவப்பு', english: 'red', romanized: 'sivappu' },
+    { word: 'நீலம்', english: 'blue', romanized: 'neelam' },
+    { word: 'தண்ணீர்', english: 'water', romanized: 'thanneer' },
+    { word: 'உணவு', english: 'food', romanized: 'unavu' },
+  ],
+  TELUGU: [
+    { word: 'అమ్మ', english: 'mother', romanized: 'amma' },
+    { word: 'నాన్న', english: 'father', romanized: 'naanna' },
+    { word: 'ఎరుపు', english: 'red', romanized: 'erupu' },
+    { word: 'నీలం', english: 'blue', romanized: 'neelam' },
+    { word: 'నీళ్ళు', english: 'water', romanized: 'neellu' },
+    { word: 'ఆహారం', english: 'food', romanized: 'aaharam' },
+  ],
+  GUJARATI: [
+    { word: 'મા', english: 'mother', romanized: 'maa' },
+    { word: 'પિતા', english: 'father', romanized: 'pita' },
+    { word: 'લાલ', english: 'red', romanized: 'laal' },
+    { word: 'વાદળી', english: 'blue', romanized: 'vaadli' },
+    { word: 'પાણી', english: 'water', romanized: 'paani' },
+    { word: 'ખોરાક', english: 'food', romanized: 'khoraak' },
+  ],
 };
-
-// Word Match game words
-const wordMatchWords = [
-  { hindi: 'माँ', english: 'mother', romanized: 'maa' },
-  { hindi: 'पिता', english: 'father', romanized: 'pita' },
-  { hindi: 'लाल', english: 'red', romanized: 'laal' },
-  { hindi: 'नीला', english: 'blue', romanized: 'neela' },
-  { hindi: 'पानी', english: 'water', romanized: 'paani' },
-  { hindi: 'खाना', english: 'food', romanized: 'khaana' },
-];
-
-// Listen & Speak words
-const listenSpeakWords = [
-  { hindi: 'नमस्ते', english: 'Hello', romanized: 'namaste' },
-  { hindi: 'धन्यवाद', english: 'Thank you', romanized: 'dhanyavaad' },
-  { hindi: 'कृपया', english: 'Please', romanized: 'kripaya' },
-  { hindi: 'हाँ', english: 'Yes', romanized: 'haan' },
-  { hindi: 'नहीं', english: 'No', romanized: 'nahin' },
-];
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -60,36 +73,46 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 // Word Match Game Component
-function WordMatchGame({ onComplete }: { onComplete: (score: number) => void }) {
-  const [words] = useState(() => shuffleArray(wordMatchWords).slice(0, 4));
+function WordMatchGame({
+  onComplete,
+  gameWords,
+  language,
+  languageName
+}: {
+  onComplete: (score: number) => void;
+  gameWords: GameWord[];
+  language: string;
+  languageName: string;
+}) {
+  const [words] = useState(() => shuffleArray(gameWords).slice(0, 4));
   const [shuffledEnglish] = useState(() => shuffleArray(words.map(w => w.english)));
-  const [selectedHindi, setSelectedHindi] = useState<number | null>(null);
+  const [selectedWord, setSelectedWord] = useState<number | null>(null);
   const [matches, setMatches] = useState<Record<number, number>>({});
   const [score, setScore] = useState(0);
   const [wrongMatch, setWrongMatch] = useState<number | null>(null);
 
-  // Audio hook for kid-friendly voice
+  // Audio hook for kid-friendly voice - uses the child's language
   const { isPlaying, isLoading, playAudio } = useAudio({
-    language: 'HINDI',
+    language: language,
     voiceStyle: 'enthusiastic', // Use enthusiastic voice for games
   });
 
-  const handleHindiClick = (index: number) => {
+  const handleWordClick = (index: number) => {
     if (matches[index] !== undefined) return;
-    setSelectedHindi(index);
+    setSelectedWord(index);
     setWrongMatch(null);
   };
 
   const handleEnglishClick = (englishIndex: number) => {
-    if (selectedHindi === null) return;
+    if (selectedWord === null) return;
 
-    const correctEnglish = words[selectedHindi].english;
+    const correctEnglish = words[selectedWord].english;
     const selectedEnglishWord = shuffledEnglish[englishIndex];
 
     if (correctEnglish === selectedEnglishWord) {
-      setMatches(prev => ({ ...prev, [selectedHindi]: englishIndex }));
+      setMatches(prev => ({ ...prev, [selectedWord]: englishIndex }));
       setScore(prev => prev + 1);
-      setSelectedHindi(null);
+      setSelectedWord(null);
 
       if (Object.keys(matches).length + 1 === words.length) {
         setTimeout(() => onComplete(score + 1), 500);
@@ -98,7 +121,7 @@ function WordMatchGame({ onComplete }: { onComplete: (score: number) => void }) 
       setWrongMatch(englishIndex);
       setTimeout(() => {
         setWrongMatch(null);
-        setSelectedHindi(null);
+        setSelectedWord(null);
       }, 500);
     }
   };
@@ -112,20 +135,20 @@ function WordMatchGame({ onComplete }: { onComplete: (score: number) => void }) 
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {/* Hindi words */}
+        {/* Language words */}
         <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-500 text-center">Hindi</p>
+          <p className="text-sm font-medium text-gray-500 text-center">{languageName}</p>
           {words.map((word, index) => (
             <motion.div
               key={index}
               whileTap={{ scale: 0.95 }}
-              onClick={() => handleHindiClick(index)}
+              onClick={() => handleWordClick(index)}
             >
               <Card
                 className={`text-center h-20 flex flex-col items-center justify-center cursor-pointer transition-all relative ${
                   matches[index] !== undefined
                     ? 'bg-green-100 border-green-500'
-                    : selectedHindi === index
+                    : selectedWord === index
                     ? 'bg-blue-100 border-blue-500 ring-2 ring-blue-300'
                     : 'hover:bg-gray-50'
                 }`}
@@ -136,10 +159,10 @@ function WordMatchGame({ onComplete }: { onComplete: (score: number) => void }) 
                     size="sm"
                     isPlaying={isPlaying}
                     isLoading={isLoading}
-                    onClick={() => playAudio(word.hindi)}
+                    onClick={() => playAudio(word.word)}
                   />
                 </div>
-                <p className="text-2xl font-bold">{word.hindi}</p>
+                <p className="text-2xl font-bold">{word.word}</p>
                 <p className="text-xs text-gray-400 mt-1">{word.romanized}</p>
               </Card>
             </motion.div>
@@ -172,22 +195,32 @@ function WordMatchGame({ onComplete }: { onComplete: (score: number) => void }) 
       </div>
 
       <p className="text-center text-sm text-gray-500">
-        Tap a Hindi word, then tap its English meaning
+        Tap a {languageName} word, then tap its English meaning
       </p>
     </div>
   );
 }
 
 // Listen & Speak Game Component
-function ListenSpeakGame({ onComplete }: { onComplete: (score: number) => void }) {
+function ListenSpeakGame({
+  onComplete,
+  gameWords,
+  language,
+  languageName
+}: {
+  onComplete: (score: number) => void;
+  gameWords: GameWord[];
+  language: string;
+  languageName: string;
+}) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
-  const [words] = useState(() => shuffleArray(listenSpeakWords).slice(0, 4));
+  const [words] = useState(() => shuffleArray(gameWords).slice(0, 4));
 
-  // Audio hook for kid-friendly voice
+  // Audio hook for kid-friendly voice - uses the child's language
   const { isPlaying, isLoading, playAudio } = useAudio({
-    language: 'HINDI',
+    language: language,
     voiceStyle: 'kid_friendly', // Use kid_friendly voice for pronunciation
   });
 
@@ -195,7 +228,7 @@ function ListenSpeakGame({ onComplete }: { onComplete: (score: number) => void }
 
   // Play pronunciation when the card loads
   const handlePlayPronunciation = () => {
-    playAudio(currentWord.hindi);
+    playAudio(currentWord.word);
   };
 
   const handleCorrect = () => {
@@ -258,7 +291,7 @@ function ListenSpeakGame({ onComplete }: { onComplete: (score: number) => void }
         </div>
         <p className="text-xs text-purple-500 mb-3">Tap to listen!</p>
 
-        <p className="text-5xl font-bold text-gray-900 mb-2">{currentWord.hindi}</p>
+        <p className="text-5xl font-bold text-gray-900 mb-2">{currentWord.word}</p>
         <p className="text-lg text-purple-600">{currentWord.romanized}</p>
 
         {showAnswer && (
@@ -314,9 +347,48 @@ export default function GameDetailPage() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'complete'>('intro');
   const [finalScore, setFinalScore] = useState(0);
-  const { isAuthenticated } = useAuthStore();
+  const [gameWords, setGameWords] = useState<GameWord[]>([]);
+  const [isLoadingWords, setIsLoadingWords] = useState(true);
+  const { isAuthenticated, activeChild } = useAuthStore();
 
-  const game = gamesData[gameId];
+  // Get language code - handle both string and object formats
+  const languageCode = activeChild?.language
+    ? (typeof activeChild.language === 'string' ? activeChild.language : activeChild.language.code)
+    : 'HINDI';
+
+  const languageInfo = SUPPORTED_LANGUAGES[languageCode as keyof typeof SUPPORTED_LANGUAGES] || SUPPORTED_LANGUAGES.HINDI;
+  const languageName = languageInfo?.name || 'Hindi';
+
+  // Get game data with language-specific description
+  const gamesData = getGamesData(languageName);
+  const game = gamesData[gameId as keyof typeof gamesData];
+
+  // Fetch vocabulary words for the game
+  const fetchGameWords = useCallback(async () => {
+    if (!activeChild?.id) {
+      // Use fallback words if no child
+      setGameWords(FALLBACK_WORDS[languageCode] || FALLBACK_WORDS.HINDI);
+      setIsLoadingWords(false);
+      return;
+    }
+
+    setIsLoadingWords(true);
+    try {
+      const response = await api.getGameVocabulary(activeChild.id, 10);
+      if (response.success && response.data && response.data.length > 0) {
+        setGameWords(response.data);
+      } else {
+        // Use fallback words for the language
+        setGameWords(FALLBACK_WORDS[languageCode] || FALLBACK_WORDS.HINDI);
+      }
+    } catch (error) {
+      console.error('Error fetching game vocabulary:', error);
+      // Use fallback words for the language
+      setGameWords(FALLBACK_WORDS[languageCode] || FALLBACK_WORDS.HINDI);
+    } finally {
+      setIsLoadingWords(false);
+    }
+  }, [activeChild?.id, languageCode]);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -327,6 +399,12 @@ export default function GameDetailPage() {
       router.push('/login');
     }
   }, [isHydrated, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (isHydrated && isAuthenticated) {
+      fetchGameWords();
+    }
+  }, [isHydrated, isAuthenticated, fetchGameWords]);
 
   const handleGameComplete = (score: number) => {
     setFinalScore(score);
@@ -399,8 +477,12 @@ export default function GameDetailPage() {
               <p className="text-gray-500 mb-6">{game.description}</p>
               <Badge variant="success" className="mb-6">+{game.xpReward} XP</Badge>
               <div>
-                <Button onClick={() => setGameState('playing')} className="px-8">
-                  Start Game
+                <Button
+                  onClick={() => setGameState('playing')}
+                  className="px-8"
+                  disabled={isLoadingWords || gameWords.length === 0}
+                >
+                  {isLoadingWords ? 'Loading...' : 'Start Game'}
                 </Button>
               </div>
             </Card>
@@ -409,10 +491,20 @@ export default function GameDetailPage() {
           {gameState === 'playing' && (
             <>
               {gameId === 'word-match' && (
-                <WordMatchGame onComplete={handleGameComplete} />
+                <WordMatchGame
+                  onComplete={handleGameComplete}
+                  gameWords={gameWords}
+                  language={languageCode}
+                  languageName={languageName}
+                />
               )}
               {gameId === 'listen-speak' && (
-                <ListenSpeakGame onComplete={handleGameComplete} />
+                <ListenSpeakGame
+                  onComplete={handleGameComplete}
+                  gameWords={gameWords}
+                  language={languageCode}
+                  languageName={languageName}
+                />
               )}
             </>
           )}

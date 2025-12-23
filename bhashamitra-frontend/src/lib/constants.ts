@@ -77,6 +77,12 @@ export const SUPPORTED_LANGUAGES: Record<LanguageCode, Language> = {
     nativeName: 'اردو',
     flag: '🇵🇰',
   },
+  FIJI_HINDI: {
+    code: 'FIJI_HINDI',
+    name: 'Fiji Hindi',
+    nativeName: 'फ़िजी हिंदी',
+    flag: '🇫🇯',
+  },
 };
 
 // XP and Level Configuration

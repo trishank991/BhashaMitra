@@ -19,7 +19,7 @@ export interface User {
   subscription_tier?: SubscriptionTier;
   subscription_expires_at?: string | null;
   subscription_info?: SubscriptionInfo;
-  tts_provider?: 'cache_only' | 'svara' | 'sarvam';
+  tts_provider?: 'cache_only' | 'svara' | 'sarvam' | 'google_wavenet';
 }
 
 export interface Parent extends User {
@@ -59,7 +59,8 @@ export type LanguageCode =
   | 'KANNADA'
   | 'ODIA'
   | 'ASSAMESE'
-  | 'URDU';
+  | 'URDU'
+  | 'FIJI_HINDI';
 
 export interface Language {
   code: LanguageCode;
@@ -319,3 +320,6 @@ export * from './family';
 export * from './parent';
 export * from './teacher';
 export * from './mimic';
+export * from './curriculum';
+export * from './songs';
+export * from './peppi';

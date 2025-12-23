@@ -9,12 +9,13 @@ class Child(TimeStampedModel, SoftDeleteModel):
     """Child profile linked to a parent user."""
 
     class Language(models.TextChoices):
-        HINDI = 'HINDI', 'Hindi'
-        TAMIL = 'TAMIL', 'Tamil'
+        FIJI_HINDI = 'FIJI_HINDI', 'Fiji Hindi'
         GUJARATI = 'GUJARATI', 'Gujarati'
-        PUNJABI = 'PUNJABI', 'Punjabi'
-        TELUGU = 'TELUGU', 'Telugu'
+        HINDI = 'HINDI', 'Hindi'
         MALAYALAM = 'MALAYALAM', 'Malayalam'
+        PUNJABI = 'PUNJABI', 'Punjabi'
+        TAMIL = 'TAMIL', 'Tamil'
+        TELUGU = 'TELUGU', 'Telugu'
 
     class PeppiAddressing(models.TextChoices):
         BY_NAME = 'BY_NAME', 'By Name'
@@ -39,7 +40,7 @@ class Child(TimeStampedModel, SoftDeleteModel):
     )
     level = models.IntegerField(
         default=1,
-        validators=[MinValueValidator(1), MaxValueValidator(5)]
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
     total_points = models.IntegerField(default=0)
 

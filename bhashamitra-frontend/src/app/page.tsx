@@ -87,8 +87,8 @@ const FEATURES = [
   {
     icon: '🎯',
     title: 'Structured Curriculum',
-    description: 'Age-appropriate lessons from alphabet basics to conversational fluency. Perfect for ages 4-14.',
-    tag: '5 Levels',
+    description: 'Age-appropriate lessons from alphabet basics to conversational fluency. CBSE/ICSE inspired structure for ages 4-14.',
+    tag: '10 Levels (L1-L10)',
     gradient: 'from-indigo-50 to-indigo-100',
   },
   {
@@ -107,64 +107,68 @@ const FEATURES = [
   },
 ];
 
-// Pricing tiers
+// Pricing tiers - NZD pricing (Dec 2024)
 const PRICING_TIERS = [
   {
     name: 'Free',
     price: '$0',
+    period: '',
     icon: '🌱',
-    voiceType: 'Basic AI Voice',
+    voiceType: 'Browse Mode',
     voiceBadgeClass: 'bg-green-100 text-green-700',
     features: [
-      { text: '10 stories per month', enabled: true },
-      { text: '5 vocabulary lessons', enabled: true },
-      { text: '3 games per day', enabled: true },
-      { text: 'Basic progress tracking', enabled: true },
+      { text: 'Basic Hindi alphabets', enabled: true },
+      { text: 'Vocabulary & pronunciation', enabled: true },
+      { text: '5 stories', enabled: true },
+      { text: '2 games per day', enabled: true },
       { text: '1 child profile', enabled: true },
-      { text: 'Peppi story narration', enabled: false },
-      { text: 'Full curriculum access', enabled: false },
-      { text: 'Human-quality voices', enabled: false },
+      { text: 'L1-L10 Curriculum Journey', enabled: false },
+      { text: 'Peppi AI Chat', enabled: false },
+      { text: 'Live classes', enabled: false },
     ],
     ctaClass: 'bg-white text-green-600 border-2 border-green-500 hover:bg-green-500 hover:text-white',
     featured: false,
   },
   {
     name: 'Standard',
-    price: '$12',
+    price: 'NZD $20',
+    period: '/month',
     icon: '⭐',
-    voiceType: 'AI Generated Voice',
+    voiceType: 'Full Curriculum',
     voiceBadgeClass: 'bg-yellow-100/50 text-yellow-100',
     features: [
-      { text: 'Unlimited stories', enabled: true },
-      { text: 'Full vocabulary curriculum', enabled: true },
-      { text: 'Unlimited games', enabled: true },
+      { text: 'L1-L10 Curriculum (CBSE/ICSE)', enabled: true },
+      { text: 'Guided learning journey', enabled: true },
+      { text: 'Peppi AI Chat system', enabled: true },
       { text: 'Peppi story narration', enabled: true },
+      { text: 'Unlimited stories & games', enabled: true },
       { text: '3 child profiles', enabled: true },
-      { text: 'Detailed progress reports', enabled: true },
-      { text: 'All festival stories', enabled: true },
-      { text: 'Human-quality voices', enabled: false },
+      { text: 'Progress reports', enabled: true },
+      { text: 'Live classes', enabled: false },
     ],
     ctaClass: 'bg-yellow-400 text-gray-900 hover:bg-yellow-300',
     featured: true,
   },
   {
     name: 'Premium',
-    price: '$20',
+    price: 'NZD $30',
+    period: '/month',
     icon: '👑',
-    voiceType: 'Real Human Voices',
+    voiceType: 'Live Classes',
     voiceBadgeClass: 'bg-purple-100 text-purple-700',
     features: [
       { text: 'Everything in Standard', enabled: true },
-      { text: 'Human-quality voice narration', enabled: true },
-      { text: 'Unlimited child profiles', enabled: true },
-      { text: 'Priority new content', enabled: true },
+      { text: '2 FREE live classes/month', enabled: true },
+      { text: 'Premium human-quality voices', enabled: true },
+      { text: '5 child profiles', enabled: true },
+      { text: 'Priority support', enabled: true },
+      { text: 'Early access to new content', enabled: true },
       { text: 'Offline downloads', enabled: true },
-      { text: 'Family challenges', enabled: true },
-      { text: 'Exclusive premium stories', enabled: true },
-      { text: 'Early access to AI coaching', enabled: true },
+      { text: 'Additional live sessions available*', enabled: true },
     ],
     ctaClass: 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-500 hover:to-purple-600',
     featured: false,
+    note: '* Contact support for custom pricing',
   },
 ];
 
@@ -505,7 +509,7 @@ export default function LandingPage() {
                 {[
                   { icon: '📚', title: 'Story Narrator', desc: 'Peppi reads stories aloud with emotion and excitement. Available in Standard & Premium tiers.' },
                   { icon: '🎓', title: 'Language Coach', desc: 'Practice conversations with Peppi. Get real-time feedback on pronunciation.', comingSoon: true },
-                  { icon: '💬', title: 'AI Conversation Partner', desc: 'Chat with Peppi in your heritage language. Powered by advanced AI.', comingSoon: true },
+                  { icon: '💬', title: 'AI Conversation Partner', desc: 'Chat with Peppi in your heritage language. Powered by Google Gemini AI. Available for paid tiers.' },
                 ].map((item) => (
                   <div
                     key={item.title}
@@ -596,7 +600,7 @@ export default function LandingPage() {
                   </h3>
                   <div className={`text-4xl font-bold ${tier.featured ? 'text-white' : 'text-teal-800'}`}>
                     {tier.price}
-                    <span className="text-lg font-normal opacity-70">/month</span>
+                    {tier.period && <span className="text-lg font-normal opacity-70">{tier.period}</span>}
                   </div>
                   <div className={`inline-block mt-3 px-3 py-1 rounded-full text-sm font-semibold ${tier.voiceBadgeClass}`}>
                     {tier.voiceType}

@@ -21,8 +21,8 @@ class User(AbstractUser):
 
     class SubscriptionTier(models.TextChoices):
         FREE = 'FREE', 'Free'
-        STANDARD = 'STANDARD', 'Standard ($12/month)'
-        PREMIUM = 'PREMIUM', 'Premium ($20/month)'
+        STANDARD = 'STANDARD', 'Standard (NZD $20/month)'
+        PREMIUM = 'PREMIUM', 'Premium (NZD $30/month)'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
@@ -49,7 +49,7 @@ class User(AbstractUser):
 
     # Email as username
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name', 'username']
+    REQUIRED_FIELDS = ['name']  # Don't include username since email is USERNAME_FIELD
 
     objects = SoftDeleteUserManager()
     all_objects = UserManager()
@@ -107,17 +107,18 @@ class User(AbstractUser):
     def tts_provider(self) -> str:
         """Get the TTS provider for this user's tier.
 
-        3-Tier TTS Strategy (Dec 2024):
-        - FREE: cache_only (only pre-cached Svara content)
-        - STANDARD: svara (real-time Svara TTS generation)
-        - PREMIUM: sarvam (Sarvam AI Bulbul V2 - manisha voice at 50% pace)
+        TTS Strategy (Dec 2024):
+        - PREMIUM: google_wavenet (Google Cloud TTS - on-demand generation)
+        - STANDARD: cache_only (pre-cached content only)
+        - FREE: cache_only (pre-cached content only)
+
+        Premium gets real-time TTS. Standard/Free use pre-cached audio.
+        Fallback chain for Premium: Google WaveNet → Google Standard → Sarvam → Svara
         """
         if self.is_premium_tier and self.is_subscription_active:
-            return 'sarvam'
-        elif self.is_standard_tier and self.is_subscription_active:
-            return 'svara'
+            return 'google_wavenet'
         else:
-            # FREE tier - only serve pre-cached content
+            # Standard and Free tiers - only serve pre-cached content
             return 'cache_only'
 
     def upgrade_to_tier(self, tier: str, duration_days: int = 30):
@@ -133,19 +134,72 @@ class User(AbstractUser):
         self.save(update_fields=['subscription_tier', 'subscription_expires_at'])
 
     @property
+    def tier_features(self):
+        """Get the feature configuration for this user's tier."""
+        from apps.users.tier_config import get_tier_features
+        return get_tier_features(self.subscription_tier)
+
+    @property
     def story_limit(self) -> int:
         """Get the maximum number of stories this user can access."""
-        if self.is_premium_tier and self.is_subscription_active:
-            return 9999  # Unlimited
-        elif self.is_standard_tier and self.is_subscription_active:
-            return 8
-        else:
-            return 4  # FREE tier
+        if not self.is_subscription_active and not self.is_free_tier:
+            return 5  # Expired subscription gets free tier limits
+        return self.tier_features.story_limit
+
+    @property
+    def daily_game_limit(self) -> int:
+        """Get the maximum games per day. Returns -1 for unlimited."""
+        if not self.is_subscription_active and not self.is_free_tier:
+            return 2  # Expired subscription gets free tier limits
+        return self.tier_features.games_per_day
+
+    @property
+    def child_profile_limit(self) -> int:
+        """Get the maximum number of child profiles allowed."""
+        if not self.is_subscription_active and not self.is_free_tier:
+            return 1  # Expired subscription gets free tier limits
+        return self.tier_features.child_profiles
+
+    @property
+    def can_access_curriculum_progression(self) -> bool:
+        """Check if user can access the L1-L10 curriculum journey."""
+        return self.tier_features.has_curriculum_progression and self.is_subscription_active
+
+    @property
+    def can_access_peppi_ai_chat(self) -> bool:
+        """Check if user can access Peppi's AI chat system."""
+        return self.tier_features.has_peppi_ai_chat and self.is_subscription_active
+
+    @property
+    def can_access_peppi_narration(self) -> bool:
+        """Check if user can access Peppi story narration."""
+        return self.tier_features.has_peppi_narration and self.is_subscription_active
+
+    @property
+    def can_access_live_classes(self) -> bool:
+        """Check if user can access live classes."""
+        return self.tier_features.has_live_classes and self.is_subscription_active
+
+    @property
+    def free_live_classes_remaining(self) -> int:
+        """Get remaining free live classes for this month."""
+        # TODO: Implement tracking of used live classes per month
+        if not self.can_access_live_classes:
+            return 0
+        return self.tier_features.free_live_classes_per_month
+
+    @property
+    def content_access_mode(self) -> str:
+        """Get the content access mode: 'browse' or 'level_gated'."""
+        if not self.is_subscription_active and not self.is_free_tier:
+            return 'browse'  # Expired subscription gets free tier mode
+        return self.tier_features.content_access_mode
 
     @property
     def can_access_games(self) -> bool:
-        """Check if user can access games and quizzes (paid tiers only)."""
-        return (self.is_standard_tier or self.is_premium_tier) and self.is_subscription_active
+        """Check if user can access games (with daily limits for free tier)."""
+        # All tiers can access games, but free tier has daily limits
+        return True
 
     @property
     def can_access_videos(self) -> bool:
@@ -159,3 +213,13 @@ class User(AbstractUser):
             return 'premium'  # Sarvam AI (manisha/abhilash)
         else:
             return 'standard'  # Svara TTS for all tiers (FREE included)
+
+    def can_access_level_content(self, content_level: int, child_level: int = 1) -> bool:
+        """
+        Check if user can access content at a specific level.
+
+        FREE tier: Can only access L1 content
+        STANDARD/PREMIUM: Can access content up to their child's current level
+        """
+        from apps.users.tier_config import can_access_content
+        return can_access_content(self.subscription_tier, content_level, child_level)

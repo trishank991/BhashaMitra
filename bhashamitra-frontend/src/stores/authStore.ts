@@ -284,7 +284,7 @@ export const useAuthStore = create<AuthState>()(
       // Don't modify state during rehydration - just log
       onRehydrateStorage: () => (state, error) => {
         if (error) {
-          console.warn('[authStore] Rehydration warning:', error.message);
+          console.warn('[authStore] Rehydration warning:', String(error));
           // Don't throw - just log and continue
           return;
         }
@@ -293,12 +293,11 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       // Merge function to handle the simplified persisted state
-      merge: (persistedState: unknown, currentState) => {
-        const persisted = persistedState as { activeChildId?: string } | null;
+      merge: (_persistedState: unknown, currentState) => {
+        // We don't restore any state - user must login fresh
+        // This avoids serialization issues with complex objects
         return {
           ...currentState,
-          // We don't restore activeChild directly - user must login
-          // The activeChildId is stored but child data comes from API after login
         };
       },
     }

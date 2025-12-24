@@ -211,6 +211,36 @@ class ApiClient {
     });
   }
 
+  // Email verification endpoints
+  async verifyEmail(token: string): Promise<ApiResponse<{ meta: { message: string }; data: { email: string } }>> {
+    return this.request('/auth/verify-email/', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+  }
+
+  async resendVerification(email: string): Promise<ApiResponse<{ meta: { message: string } }>> {
+    return this.request('/auth/resend-verification/', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  // Password reset endpoints
+  async requestPasswordReset(email: string): Promise<ApiResponse<{ meta: { message: string } }>> {
+    return this.request('/auth/password-reset/', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token: string, password: string, passwordConfirm: string): Promise<ApiResponse<{ meta: { message: string } }>> {
+    return this.request('/auth/password-reset/confirm/', {
+      method: 'POST',
+      body: JSON.stringify({ token, password, password_confirm: passwordConfirm }),
+    });
+  }
+
   async getProfile(): Promise<ApiResponse<User>> {
     return this.request<User>('/auth/me/');
   }

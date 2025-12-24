@@ -35,8 +35,9 @@ class ChildBasicSerializer(serializers.ModelSerializer):
         return None
 
     def get_avatar_url(self, obj):
+        # avatar is a CharField (emoji/string), not an ImageField
         if hasattr(obj, 'avatar') and obj.avatar:
-            return obj.avatar.url
+            return obj.avatar
         return None
 
 

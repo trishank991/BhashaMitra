@@ -273,33 +273,8 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'bhashamitra-auth',
-      // SECURITY FIX: Don't persist tokens to localStorage - only keep in memory
-      // This prevents XSS attacks from stealing JWT tokens
-      // Users will need to log in again after closing browser (security best practice)
-      partialize: (state) => ({
-        // Only persist activeChild ID to avoid serialization issues
-        // The full child data will be fetched after login
-        activeChildId: state.activeChild?.id || null,
-      }),
-      // Don't modify state during rehydration - just log
-      onRehydrateStorage: () => (state, error) => {
-        if (error) {
-          console.warn('[authStore] Rehydration warning:', String(error));
-          // Don't throw - just log and continue
-          return;
-        }
-        if (state) {
-          console.log('[authStore] Rehydrated - user must login again');
-        }
-      },
-      // Merge function to handle the simplified persisted state
-      merge: (_persistedState: unknown, currentState) => {
-        // We don't restore any state - user must login fresh
-        // This avoids serialization issues with complex objects
-        return {
-          ...currentState,
-        };
-      },
+      // Only persist minimal data to avoid serialization issues
+      partialize: () => ({}), // Don't persist anything - fresh login required
     }
   )
 );

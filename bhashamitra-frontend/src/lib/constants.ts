@@ -1,12 +1,9 @@
 import { Language, LanguageCode } from '@/types';
 
 // API Configuration
-// In production (Vercel), use the Render backend. In development, use localhost.
-const isProduction = process.env.NODE_ENV === 'production';
-const PRODUCTION_API_URL = 'https://bhashamitra.onrender.com/api/v1';
-const DEVELOPMENT_API_URL = 'http://localhost:8000/api/v1';
-
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (isProduction ? PRODUCTION_API_URL : DEVELOPMENT_API_URL);
+// Use NEXT_PUBLIC_API_URL if set, otherwise default to production Render backend
+// For local development, set NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1 in .env.local
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://bhashamitra.onrender.com/api/v1';
 
 // Supported Languages
 export const SUPPORTED_LANGUAGES: Record<LanguageCode, Language> = {

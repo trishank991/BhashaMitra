@@ -6,8 +6,11 @@
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-// API base URL from environment or default to localhost
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+// API base URL - use production URL in production, localhost in development
+const isProduction = process.env.NODE_ENV === 'production';
+const PRODUCTION_API_URL = 'https://bhashamitra.onrender.com/api/v1';
+const DEVELOPMENT_API_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (isProduction ? PRODUCTION_API_URL : DEVELOPMENT_API_URL);
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({

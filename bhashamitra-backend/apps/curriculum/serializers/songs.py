@@ -13,6 +13,7 @@ class SongSerializer(serializers.ModelSerializer):
         model = Song
         fields = [
             'id',
+            'language',
             'title_english',
             'title_hindi',
             'title_romanized',
@@ -46,6 +47,7 @@ class SongListSerializer(serializers.ModelSerializer):
         model = Song
         fields = [
             'id',
+            'language',
             'title_english',
             'title_hindi',
             'title_romanized',

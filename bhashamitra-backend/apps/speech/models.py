@@ -312,6 +312,11 @@ class PeppiMimicProgress(TimeStampedModel):
     mastered = models.BooleanField(default=False, help_text="3 stars achieved")
     mastered_at = models.DateTimeField(null=True, blank=True)
 
+    # Streak tracking
+    current_streak = models.PositiveIntegerField(default=0, help_text="Current consecutive day streak")
+    longest_streak = models.PositiveIntegerField(default=0, help_text="Longest streak achieved")
+    last_attempt_date = models.DateField(null=True, blank=True, help_text="Date of last attempt for streak tracking")
+
     class Meta:
         db_table = 'peppi_mimic_progress'
         unique_together = ['child', 'challenge']
@@ -329,6 +334,7 @@ class PeppiMimicProgress(TimeStampedModel):
         Returns True if this was a personal best.
         """
         from django.utils import timezone
+        from datetime import timedelta
 
         self.total_attempts += 1
         self.total_points += attempt.points_earned
@@ -344,6 +350,27 @@ class PeppiMimicProgress(TimeStampedModel):
         if attempt.stars == 3 and not self.mastered:
             self.mastered = True
             self.mastered_at = timezone.now()
+
+        # Update streak tracking
+        today = timezone.now().date()
+        if self.last_attempt_date is None:
+            # First attempt ever
+            self.current_streak = 1
+        elif self.last_attempt_date == today:
+            # Same day, no streak change
+            pass
+        elif self.last_attempt_date == today - timedelta(days=1):
+            # Consecutive day - increase streak
+            self.current_streak += 1
+        else:
+            # Streak broken - reset to 1
+            self.current_streak = 1
+
+        # Update longest streak
+        if self.current_streak > self.longest_streak:
+            self.longest_streak = self.current_streak
+
+        self.last_attempt_date = today
 
         self.save()
         return is_personal_best

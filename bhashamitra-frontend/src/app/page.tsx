@@ -53,12 +53,15 @@ function PeppiSVG({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'xl' }) {
   );
 }
 
-// Language badges data
+// Language badges data - All 7 supported languages
 const LANGUAGES = [
   { name: 'Hindi', native: 'हिंदी', color: 'border-l-orange-500 text-orange-700' },
   { name: 'Tamil', native: 'தமிழ்', color: 'border-l-pink-500 text-pink-700' },
+  { name: 'Telugu', native: 'తెలుగు', color: 'border-l-purple-500 text-purple-700' },
   { name: 'Gujarati', native: 'ગુજરાતી', color: 'border-l-yellow-500 text-yellow-700' },
   { name: 'Punjabi', native: 'ਪੰਜਾਬੀ', color: 'border-l-teal-500 text-teal-700' },
+  { name: 'Malayalam', native: 'മലയാളം', color: 'border-l-green-500 text-green-700' },
+  { name: 'Fiji Hindi', native: 'फ़िजी हिंदी', color: 'border-l-blue-500 text-blue-700' },
 ];
 
 // Features data
@@ -73,8 +76,8 @@ const FEATURES = [
   {
     icon: '🎮',
     title: 'Fun Learning Games',
-    description: 'Memory games, word matching, pronunciation challenges, and vocabulary builders that make learning feel like play.',
-    tag: '20+ Game Types',
+    description: 'Memory games, word matching, quizzes, word searches, and vocabulary builders that make learning feel like play.',
+    tag: '7 Game Types',
     gradient: 'from-pink-50 to-pink-100',
   },
   {
@@ -102,7 +105,7 @@ const FEATURES = [
     icon: '🏆',
     title: 'Rewards & Streaks',
     description: 'Earn badges, maintain streaks, and unlock achievements. Gamification that keeps kids coming back!',
-    tag: '50+ Badges',
+    tag: 'Badges & Rewards',
     gradient: 'from-purple-50 to-purple-100',
   },
 ];
@@ -163,7 +166,7 @@ const PRICING_TIERS = [
       { text: '5 child profiles', enabled: true },
       { text: 'Priority support', enabled: true },
       { text: 'Early access to new content', enabled: true },
-      { text: 'Offline downloads', enabled: true },
+      { text: 'Offline downloads (coming soon)', enabled: true },
       { text: 'Additional live sessions available*', enabled: true },
     ],
     ctaClass: 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-500 hover:to-purple-600',
@@ -172,14 +175,23 @@ const PRICING_TIERS = [
   },
 ];
 
-// Festival stories
-const FESTIVALS = [
+// Festival stories - actual festivals with stories available
+interface FestivalItem {
+  name: string;
+  religion: string;
+  stories: number;
+  icon: string;
+  gradient: string;
+  comingSoon?: boolean;
+}
+
+const FESTIVALS: FestivalItem[] = [
   { name: 'Diwali', religion: 'Hindu Festival', stories: 5, icon: '🪔', gradient: 'from-orange-200 to-orange-300' },
-  { name: 'Holi', religion: 'Hindu Festival', stories: 4, icon: '🎨', gradient: 'from-pink-200 to-pink-300' },
-  { name: 'Eid', religion: 'Islamic Festival', stories: 4, icon: '🌙', gradient: 'from-green-200 to-green-300' },
-  { name: 'Guru Nanak Jayanti', religion: 'Sikh Festival', stories: 3, icon: '🙏', gradient: 'from-blue-200 to-blue-300' },
-  { name: 'Christmas', religion: 'Christian Festival', stories: 3, icon: '🎄', gradient: 'from-red-200 to-red-300' },
-  { name: 'Baisakhi', religion: 'Sikh Festival', stories: 2, icon: '🌾', gradient: 'from-amber-200 to-amber-300' },
+  { name: 'Navratri', religion: 'Hindu Festival', stories: 1, icon: '🕉️', gradient: 'from-pink-200 to-pink-300' },
+  { name: 'Holi', religion: 'Hindu Festival', stories: 1, icon: '🎨', gradient: 'from-purple-200 to-purple-300' },
+  { name: 'Raksha Bandhan', religion: 'Hindu Festival', stories: 1, icon: '🎀', gradient: 'from-red-200 to-red-300' },
+  { name: 'Pongal', religion: 'South Indian Festival', stories: 1, icon: '🌾', gradient: 'from-amber-200 to-amber-300' },
+  { name: 'More Coming', religion: 'All Traditions', stories: 0, icon: '✨', gradient: 'from-blue-200 to-blue-300', comingSoon: true },
 ];
 
 export default function LandingPage() {
@@ -665,7 +677,11 @@ export default function LandingPage() {
                 <div className="p-6">
                   <h4 className="text-xl font-bold text-teal-800 mb-1">{festival.name}</h4>
                   <p className="text-sm text-gray-500 mb-2">{festival.religion}</p>
-                  <p className="text-orange-600 font-semibold">{festival.stories} stories available</p>
+                  {festival.comingSoon ? (
+                    <p className="text-blue-600 font-semibold">Eid, Christmas, & more coming soon!</p>
+                  ) : (
+                    <p className="text-orange-600 font-semibold">{festival.stories} {festival.stories === 1 ? 'story' : 'stories'} available</p>
+                  )}
                 </div>
               </motion.div>
             ))}

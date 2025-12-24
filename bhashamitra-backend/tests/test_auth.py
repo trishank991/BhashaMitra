@@ -14,12 +14,15 @@ class TestRegistration:
         data = {
             'email': 'newuser@example.com',
             'password': 'SecurePass123!',
+            'password_confirm': 'SecurePass123!',
             'name': 'New User'
         }
         response = api_client.post(url, data, format='json')
         assert response.status_code == status.HTTP_201_CREATED
-        assert 'access' in response.data.get('data', {}).get('tokens', {})
-        assert 'refresh' in response.data.get('data', {}).get('tokens', {})
+        # Register returns session at top level (not nested under data)
+        session = response.data.get('session', {})
+        assert 'access_token' in session
+        assert 'refresh_token' in session
 
     def test_register_duplicate_email(self, api_client, user):
         """Test registration with existing email fails."""
@@ -68,7 +71,9 @@ class TestLogin:
         }
         response = api_client.post(url, data, format='json')
         assert response.status_code == status.HTTP_200_OK
-        assert 'access' in response.data.get('data', {}).get('tokens', {})
+        # API returns session.access_token/refresh_token
+        session = response.data.get('data', {}).get('session', {})
+        assert 'access_token' in session
 
     def test_login_wrong_password(self, api_client, user):
         """Test login with wrong password fails."""
@@ -100,9 +105,11 @@ class TestCurrentUser:
         url = '/api/v1/auth/me/'
         response = auth_client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        data = response.data.get('data', {})
-        assert data.get('email') == user.email
-        assert data.get('name') == user.name
+        # User data may be at data level or data.user level
+        data = response.data.get('data', response.data)
+        user_data = data.get('user', data) if isinstance(data, dict) else data
+        assert user_data.get('email') == user.email
+        assert user_data.get('name') == user.name
 
     def test_get_current_user_unauthenticated(self, api_client):
         """Test getting current user without auth fails."""

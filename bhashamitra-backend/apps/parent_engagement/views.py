@@ -172,7 +172,7 @@ class ChildActivityView(generics.ListAPIView):
         since_date = timezone.now() - timedelta(days=days)
         queryset = queryset.filter(created_at__gte=since_date)
 
-        return queryset.order_by('-created_at')[:50]
+        return queryset.order_by('-created_at')
 
 
 class ChildWeeklyReportView(APIView):
@@ -514,10 +514,18 @@ class ProgressUpdateView(APIView):
 
                 # Check if goal completed
                 if goal.current_value >= goal.target_value:
+                    # Generate title from goal type and target
+                    goal_titles = {
+                        'DAILY_MINUTES': f'Learn for {goal.target_value} minutes daily',
+                        'WEEKLY_STORIES': f'Complete {goal.target_value} stories this week',
+                        'MONTHLY_POINTS': f'Earn {goal.target_value} points this month',
+                        'LEVEL_TARGET': f'Reach level {goal.target_value}',
+                    }
+                    goal_title = goal_titles.get(goal.goal_type, 'Learning goal')
                     ActivityLog.objects.create(
                         child=child,
                         activity_type='BADGE_EARNED',
-                        description=f'Goal completed: {goal.title}',
+                        description=f'Goal completed: {goal_title}',
                         points_earned=50,  # Bonus points for completing goal
                     )
                     child.total_points += 50

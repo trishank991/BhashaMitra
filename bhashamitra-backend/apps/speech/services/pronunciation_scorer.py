@@ -100,15 +100,26 @@ class AudioAnalyzer:
             return cls._default_result()
 
     @classmethod
-    def _download_audio(cls, url: str) -> Optional[bytes]:
-        """Download audio file from URL."""
-        try:
-            response = requests.get(url, timeout=15)
-            response.raise_for_status()
-            return response.content
-        except Exception as e:
-            logger.warning(f"Failed to download audio: {e}")
-            return None
+    def _download_audio(cls, url: str, max_retries: int = 3) -> Optional[bytes]:
+        """Download audio file from URL with retry logic."""
+        import time
+
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(url, timeout=15)
+                response.raise_for_status()
+                return response.content
+            except requests.exceptions.Timeout:
+                logger.warning(f"Audio download timeout (attempt {attempt + 1}/{max_retries})")
+                if attempt < max_retries - 1:
+                    time.sleep(1 * (attempt + 1))  # Exponential backoff
+            except requests.exceptions.RequestException as e:
+                logger.warning(f"Audio download failed (attempt {attempt + 1}/{max_retries}): {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(0.5 * (attempt + 1))
+
+        logger.error(f"Failed to download audio after {max_retries} attempts: {url}")
+        return None
 
     @classmethod
     def _analyze_audio_data(
@@ -319,6 +330,14 @@ class PronunciationScorer:
         # Clean inputs
         transcription_clean = self._normalize_text(transcription)
         expected_clean = self._normalize_text(expected_word)
+
+        # Validate and normalize STT confidence (should be 0-1, some providers return >1)
+        stt_confidence = max(0.0, min(1.0, float(stt_confidence)))
+        # Apply minimum floor for very low confidence to avoid unfair penalties
+        if stt_confidence < 0.1 and transcription_clean:
+            # If we got a transcription but confidence is very low, use floor of 0.3
+            stt_confidence = max(stt_confidence, 0.3)
+            logger.debug(f"Applied STT confidence floor: {stt_confidence}")
 
         # Calculate text match score
         text_match_score = self._calculate_text_match(

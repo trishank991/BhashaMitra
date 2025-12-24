@@ -424,7 +424,7 @@ class CurriculumAudioListView(APIView):
 
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.db.models import Avg, Sum, Count
+from django.db.models import Avg, Sum, Count, Max
 from apps.speech.models import PeppiMimicChallenge, PeppiMimicAttempt, PeppiMimicProgress
 from apps.speech.serializers import (
     MimicChallengeListSerializer,
@@ -523,6 +523,12 @@ class MimicChallengeDetailView(APIView):
         return Response(serializer.data)
 
 
+class MimicAttemptThrottle(ScopedRateThrottle):
+    """Rate limit pronunciation attempts to prevent spam."""
+    scope = 'mimic_attempts'
+    THROTTLE_RATES = {'mimic_attempts': '30/minute'}
+
+
 class MimicAttemptSubmitView(APIView):
     """
     POST /api/v1/children/{child_id}/mimic/challenges/{challenge_id}/attempt/
@@ -551,6 +557,7 @@ class MimicAttemptSubmitView(APIView):
     }
     """
     permission_classes = [IsAuthenticated]
+    throttle_classes = [MimicAttemptThrottle]
 
     def post(self, request, child_id, challenge_id):
         child = get_object_or_404(Child, id=child_id, user=request.user)
@@ -702,6 +709,8 @@ class MimicProgressView(APIView):
             total_attempts=Sum('total_attempts'),
             total_points=Sum('total_points'),
             avg_score=Avg('best_score'),
+            current_streak=Max('current_streak'),
+            longest_streak=Max('longest_streak'),
         )
 
         challenges_attempted = progress_qs.count()
@@ -721,7 +730,8 @@ class MimicProgressView(APIView):
             'total_attempts': stats['total_attempts'] or 0,
             'total_points': stats['total_points'] or 0,
             'average_score': round(stats['avg_score'] or 0, 1),
-            'current_streak': 0,  # TODO: Implement streak tracking
+            'current_streak': stats['current_streak'] or 0,
+            'longest_streak': stats['longest_streak'] or 0,
             'categories': list(categories),
         })
 

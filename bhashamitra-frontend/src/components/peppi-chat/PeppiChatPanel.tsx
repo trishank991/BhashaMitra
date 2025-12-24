@@ -102,12 +102,10 @@ export function PeppiChatPanel({ childId }: PeppiChatPanelProps) {
   // Handle send message
   const handleSendMessage = async (content: string) => {
     if (!activeConversation) {
-      // Start a new conversation first
+      // Start a new conversation first and wait for it
       await startConversation(childId, { mode, language: childLanguage });
-      // Then send the message
-      setTimeout(() => {
-        sendMessage(childId, content);
-      }, 500);
+      // Now send the message - the store will have activeConversation set
+      sendMessage(childId, content);
     } else {
       sendMessage(childId, content);
     }
@@ -181,10 +179,12 @@ export function PeppiChatPanel({ childId }: PeppiChatPanelProps) {
               {chatSuggestions[mode].map((suggestion, idx) => (
                 <button
                   key={idx}
-                  onClick={() => {
-                    handleStartChat();
-                    // Send the suggestion after starting
-                    setTimeout(() => handleSendMessage(suggestion), 600);
+                  onClick={async () => {
+                    clearError();
+                    // Start conversation and wait for it to complete
+                    await startConversation(childId, { mode, language: childLanguage });
+                    // Now send the suggestion message
+                    sendMessage(childId, suggestion);
                   }}
                   disabled={isLoading || !isAvailable}
                   className="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"

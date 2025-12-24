@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 import uuid
+import secrets
 
 
 class SoftDeleteUserManager(UserManager):
@@ -41,6 +42,17 @@ class User(AbstractUser):
         null=True,
         blank=True,
         help_text='When the current subscription expires (null = never for free tier)'
+    )
+
+    # Email verification
+    email_verified = models.BooleanField(
+        default=False,
+        help_text='Whether the user has verified their email address'
+    )
+    email_verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='When the email was verified'
     )
 
     deleted_at = models.DateTimeField(null=True, blank=True)
@@ -223,3 +235,115 @@ class User(AbstractUser):
         """
         from apps.users.tier_config import can_access_content
         return can_access_content(self.subscription_tier, content_level, child_level)
+
+    def verify_email(self):
+        """Mark user's email as verified."""
+        self.email_verified = True
+        self.email_verified_at = timezone.now()
+        self.save(update_fields=['email_verified', 'email_verified_at'])
+
+
+class EmailVerificationToken(models.Model):
+    """Token for email verification."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='verification_tokens'
+    )
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'email_verification_tokens'
+        indexes = [
+            models.Index(fields=['token']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"Verification token for {self.user.email}"
+
+    @classmethod
+    def create_for_user(cls, user: User, hours_valid: int = 24) -> 'EmailVerificationToken':
+        """Create a new verification token for a user."""
+        # Invalidate any existing unused tokens
+        cls.objects.filter(user=user, used_at__isnull=True).delete()
+
+        token = secrets.token_urlsafe(48)
+        expires_at = timezone.now() + timedelta(hours=hours_valid)
+
+        return cls.objects.create(
+            user=user,
+            token=token,
+            expires_at=expires_at
+        )
+
+    @property
+    def is_valid(self) -> bool:
+        """Check if token is still valid."""
+        return (
+            self.used_at is None and
+            self.expires_at > timezone.now()
+        )
+
+    def use(self):
+        """Mark token as used."""
+        self.used_at = timezone.now()
+        self.save(update_fields=['used_at'])
+
+
+class PasswordResetToken(models.Model):
+    """Token for password reset."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens'
+    )
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'password_reset_tokens'
+        indexes = [
+            models.Index(fields=['token']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"Password reset token for {self.user.email}"
+
+    @classmethod
+    def create_for_user(cls, user: User, hours_valid: int = 1) -> 'PasswordResetToken':
+        """Create a new password reset token for a user."""
+        # Invalidate any existing unused tokens
+        cls.objects.filter(user=user, used_at__isnull=True).delete()
+
+        token = secrets.token_urlsafe(48)
+        expires_at = timezone.now() + timedelta(hours=hours_valid)
+
+        return cls.objects.create(
+            user=user,
+            token=token,
+            expires_at=expires_at
+        )
+
+    @property
+    def is_valid(self) -> bool:
+        """Check if token is still valid."""
+        return (
+            self.used_at is None and
+            self.expires_at > timezone.now()
+        )
+
+    def use(self):
+        """Mark token as used."""
+        self.used_at = timezone.now()
+        self.save(update_fields=['used_at'])

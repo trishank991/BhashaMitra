@@ -110,7 +110,9 @@ class ParentChildrenListTests(ParentEngagementBaseTest):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        # Handle paginated response
+        data = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        self.assertEqual(len(data), 2)
 
     def test_list_children_unauthenticated(self):
         """Unauthenticated request returns 401."""
@@ -138,8 +140,10 @@ class ParentChildrenListTests(ParentEngagementBaseTest):
         url = reverse('parent_engagement:children-list')
         response = self.client.get(url)
 
-        self.assertEqual(len(response.data), 2)
-        names = [c['name'] for c in response.data]
+        # Handle paginated response
+        data = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        self.assertEqual(len(data), 2)
+        names = [c['name'] for c in data]
         self.assertIn('Arjun', names)
         self.assertIn('Priya', names)
         self.assertNotIn('Other Child', names)
@@ -205,7 +209,9 @@ class ChildActivityTests(ParentEngagementBaseTest):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.data), 0)
+        # Handle paginated response
+        data = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        self.assertGreater(len(data), 0)
 
     def test_activity_log_filter_by_type(self):
         """Can filter activity log by type."""
@@ -213,7 +219,9 @@ class ChildActivityTests(ParentEngagementBaseTest):
         response = self.client.get(url, {'type': 'BADGE_EARNED'})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        for activity in response.data:
+        # Handle paginated response
+        data = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        for activity in data:
             self.assertEqual(activity['activity_type'], 'BADGE_EARNED')
 
     def test_activity_log_filter_by_days(self):

@@ -16,6 +16,7 @@ def user(db):
     """Create and return a test user."""
     from apps.users.models import User
     return User.objects.create_user(
+        username='testparent@example.com',
         email='testparent@example.com',
         password='testpass123',
         name='Test Parent'

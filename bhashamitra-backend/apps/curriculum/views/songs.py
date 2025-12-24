@@ -12,9 +12,10 @@ from apps.curriculum.serializers.songs import SongSerializer, SongListSerializer
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def song_list(request):
-    """Get list of songs, optionally filtered by level."""
+    """Get list of songs, optionally filtered by level, category, or language."""
     level_id = request.query_params.get('level')
     category = request.query_params.get('category')
+    language = request.query_params.get('language')
 
     queryset = Song.objects.filter(is_active=True).select_related('level')
 
@@ -23,6 +24,9 @@ def song_list(request):
 
     if category:
         queryset = queryset.filter(category=category)
+
+    if language:
+        queryset = queryset.filter(language=language.upper())
 
     serializer = SongListSerializer(queryset, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,10 +1,11 @@
-"""Song models for traditional Hindi songs and rhymes."""
+"""Song models for traditional songs and rhymes in various Indian languages."""
 from django.db import models
 from apps.core.models import TimeStampedModel
+from apps.children.models import Child
 
 
 class Song(TimeStampedModel):
-    """Traditional Hindi songs and rhymes."""
+    """Traditional songs and rhymes in various Indian languages."""
 
     class Category(models.TextChoices):
         RHYME = 'RHYME', 'Nursery Rhyme'
@@ -12,6 +13,12 @@ class Song(TimeStampedModel):
         EDUCATIONAL = 'EDUCATIONAL', 'Educational'
         FESTIVAL = 'FESTIVAL', 'Festival Song'
 
+    language = models.CharField(
+        max_length=20,
+        choices=Child.Language.choices,
+        default='HINDI',
+        help_text='Language of the song'
+    )
     title_english = models.CharField(max_length=200, help_text='English title')
     title_hindi = models.CharField(max_length=200, help_text='Hindi title')
     title_romanized = models.CharField(max_length=200, help_text='Romanized title')
@@ -49,6 +56,7 @@ class Song(TimeStampedModel):
             models.Index(fields=['level', 'order']),
             models.Index(fields=['category']),
             models.Index(fields=['is_active']),
+            models.Index(fields=['language']),
         ]
 
     def __str__(self):

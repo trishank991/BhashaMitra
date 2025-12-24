@@ -82,3 +82,39 @@ class LoginSerializer(serializers.Serializer):
     """Login serializer."""
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+
+
+class RequestPasswordResetSerializer(serializers.Serializer):
+    """Serializer for requesting a password reset."""
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        """Check if a user with this email exists."""
+        # We don't reveal if the email exists for security
+        # Just return the value and handle it in the view
+        return value.lower()
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """Serializer for resetting password with token."""
+    token = serializers.CharField(max_length=64)
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password_confirm = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError({'password_confirm': 'Passwords do not match'})
+        return attrs
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    """Serializer for email verification."""
+    token = serializers.CharField(max_length=64)
+
+
+class ResendVerificationSerializer(serializers.Serializer):
+    """Serializer for resending verification email."""
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        return value.lower()

@@ -1,4 +1,5 @@
 """User views."""
+import logging
 from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -6,8 +7,19 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
 
-from .serializers import UserSerializer, RegisterSerializer, LoginSerializer
+from .serializers import (
+    UserSerializer,
+    RegisterSerializer,
+    LoginSerializer,
+    RequestPasswordResetSerializer,
+    ResetPasswordSerializer,
+    VerifyEmailSerializer,
+    ResendVerificationSerializer,
+)
+from .models import EmailVerificationToken, PasswordResetToken
+from .email_service import EmailService
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
@@ -23,6 +35,21 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
+        # Create verification token and send email
+        try:
+            token = EmailVerificationToken.create_for_user(user)
+            EmailService.send_verification_email(user, token)
+            logger.info(f"Verification email sent to {user.email}")
+        except Exception as e:
+            logger.error(f"Failed to send verification email: {e}")
+            # Don't fail registration if email fails
+
+        # Send welcome email
+        try:
+            EmailService.send_welcome_email(user)
+        except Exception as e:
+            logger.error(f"Failed to send welcome email: {e}")
+
         refresh = RefreshToken.for_user(user)
 
         return Response({
@@ -31,7 +58,10 @@ class RegisterView(generics.CreateAPIView):
                 'access_token': str(refresh.access_token),
                 'refresh_token': str(refresh),
             },
-            'meta': {'message': 'Registration successful'}
+            'meta': {
+                'message': 'Registration successful. Please check your email to verify your account.',
+                'email_verification_sent': True,
+            }
         }, status=status.HTTP_201_CREATED)
 
 
@@ -170,4 +200,142 @@ class CurrentSubscriptionDetailView(APIView):
                     'price': f"NZD ${get_tier_pricing('STANDARD')['monthly']}/month",
                 },
             }
+        })
+
+
+class VerifyEmailView(APIView):
+    """Verify email address with token."""
+    permission_classes = [AllowAny]
+    throttle_scope = 'auth'
+
+    def post(self, request):
+        serializer = VerifyEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token_str = serializer.validated_data['token']
+
+        try:
+            token = EmailVerificationToken.objects.get(token=token_str)
+        except EmailVerificationToken.DoesNotExist:
+            return Response(
+                {'detail': 'Invalid verification token'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not token.is_valid:
+            return Response(
+                {'detail': 'Token has expired or already been used'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Mark token as used and verify user
+        token.use()
+        token.user.verify_email()
+
+        logger.info(f"Email verified for user {token.user.email}")
+
+        return Response({
+            'meta': {'message': 'Email verified successfully'},
+            'data': {'email': token.user.email}
+        })
+
+
+class ResendVerificationView(APIView):
+    """Resend verification email."""
+    permission_classes = [AllowAny]
+    throttle_scope = 'auth'
+
+    def post(self, request):
+        serializer = ResendVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Don't reveal if user exists
+            return Response({
+                'meta': {'message': 'If an account exists with this email, a verification link has been sent.'}
+            })
+
+        if user.email_verified:
+            return Response({
+                'meta': {'message': 'Email is already verified.'}
+            })
+
+        # Create new token and send
+        token = EmailVerificationToken.create_for_user(user)
+        EmailService.send_verification_email(user, token)
+
+        logger.info(f"Verification email resent to {email}")
+
+        return Response({
+            'meta': {'message': 'If an account exists with this email, a verification link has been sent.'}
+        })
+
+
+class RequestPasswordResetView(APIView):
+    """Request a password reset email."""
+    permission_classes = [AllowAny]
+    throttle_scope = 'auth'
+
+    def post(self, request):
+        serializer = RequestPasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+
+        try:
+            user = User.objects.get(email=email)
+            # Create token and send email
+            token = PasswordResetToken.create_for_user(user)
+            EmailService.send_password_reset_email(user, token)
+            logger.info(f"Password reset email sent to {email}")
+        except User.DoesNotExist:
+            # Don't reveal if user exists - just log
+            logger.info(f"Password reset requested for non-existent email: {email}")
+
+        # Always return success to prevent email enumeration
+        return Response({
+            'meta': {'message': 'If an account exists with this email, a password reset link has been sent.'}
+        })
+
+
+class ResetPasswordView(APIView):
+    """Reset password with token."""
+    permission_classes = [AllowAny]
+    throttle_scope = 'auth'
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token_str = serializer.validated_data['token']
+        new_password = serializer.validated_data['password']
+
+        try:
+            token = PasswordResetToken.objects.get(token=token_str)
+        except PasswordResetToken.DoesNotExist:
+            return Response(
+                {'detail': 'Invalid reset token'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not token.is_valid:
+            return Response(
+                {'detail': 'Token has expired or already been used'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Update password and mark token as used
+        user = token.user
+        user.set_password(new_password)
+        user.save(update_fields=['password'])
+        token.use()
+
+        logger.info(f"Password reset successfully for user {user.email}")
+
+        return Response({
+            'meta': {'message': 'Password has been reset successfully. You can now log in with your new password.'}
         })

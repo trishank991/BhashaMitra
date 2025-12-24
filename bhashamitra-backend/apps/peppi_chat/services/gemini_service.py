@@ -47,6 +47,7 @@ class GeminiAIService:
         'MARATHI': 'mr',
         'KANNADA': 'kn',
         'ODIA': 'or',
+        'FIJI_HINDI': 'hif',  # Fiji Hindi ISO 639-3 code
     }
 
     _client = None

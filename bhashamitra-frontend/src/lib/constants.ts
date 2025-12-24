@@ -1,9 +1,9 @@
 import { Language, LanguageCode } from '@/types';
 
-// API Configuration
-// Use NEXT_PUBLIC_API_URL if set, otherwise default to production Render backend
-// For local development, set NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1 in .env.local
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://bhashamitra.onrender.com/api/v1';
+// API Configuration - Production default (v2)
+// For local dev: set NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1 in .env.local
+const PRODUCTION_API = 'https://bhashamitra.onrender.com/api/v1';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API;
 
 // Supported Languages
 export const SUPPORTED_LANGUAGES: Record<LanguageCode, Language> = {

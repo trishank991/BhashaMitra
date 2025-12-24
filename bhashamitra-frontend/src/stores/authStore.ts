@@ -280,19 +280,21 @@ export const useAuthStore = create<AuthState>()(
         // Only persist child preference, NOT tokens or auth status
         activeChild: state.activeChild,
       }),
-      onRehydrateStorage: () => (_state, error) => {
+      onRehydrateStorage: () => (state, error) => {
         if (error) {
           console.error('[authStore] Rehydration error:', error);
           return;
         }
         // On rehydration, tokens are gone (memory-only for security)
         // Clear isAuthenticated since we have no valid tokens
-        console.log('[authStore] Session expired, tokens cleared for security');
-        useAuthStore.setState({
-          isAuthenticated: false,
-          tokens: null,
-          user: null,
-        });
+        // Note: We modify the state object directly during rehydration instead of calling setState
+        // to avoid circular reference issues
+        if (state) {
+          console.log('[authStore] Session expired, tokens cleared for security');
+          state.isAuthenticated = false;
+          state.tokens = null;
+          state.user = null;
+        }
       },
     }
   )

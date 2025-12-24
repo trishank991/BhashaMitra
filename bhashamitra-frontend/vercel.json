@@ -3,7 +3,9 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "npm install",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://bhashamitra.onrender.com/api/v1"
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "https://bhashamitra.onrender.com/api/v1"
+    }
   }
 }

@@ -277,44 +277,29 @@ export const useAuthStore = create<AuthState>()(
       // This prevents XSS attacks from stealing JWT tokens
       // Users will need to log in again after closing browser (security best practice)
       partialize: (state) => ({
-        // Only persist child preference (simplified to avoid serialization issues)
-        activeChild: state.activeChild ? {
-          id: state.activeChild.id,
-          name: state.activeChild.name,
-          age: state.activeChild.age,
-          avatar: state.activeChild.avatar,
-          language: typeof state.activeChild.language === 'string'
-            ? state.activeChild.language
-            : (state.activeChild.language as { code?: string })?.code || 'HINDI',
-          level: state.activeChild.level,
-          created_at: state.activeChild.created_at,
-          total_points: state.activeChild.total_points,
-          date_of_birth: state.activeChild.date_of_birth,
-        } : null,
+        // Only persist activeChild ID to avoid serialization issues
+        // The full child data will be fetched after login
+        activeChildId: state.activeChild?.id || null,
       }),
+      // Don't modify state during rehydration - just log
       onRehydrateStorage: () => (state, error) => {
         if (error) {
-          console.error('[authStore] Rehydration error:', error);
-          // Clear corrupted localStorage data
-          try {
-            localStorage.removeItem('bhashamitra-auth');
-          } catch (e) {
-            console.error('[authStore] Failed to clear localStorage:', e);
-          }
+          console.warn('[authStore] Rehydration warning:', error.message);
+          // Don't throw - just log and continue
           return;
         }
-        // On rehydration, tokens are gone (memory-only for security)
-        // Clear isAuthenticated since we have no valid tokens
         if (state) {
-          try {
-            console.log('[authStore] Session expired, tokens cleared for security');
-            state.isAuthenticated = false;
-            state.tokens = null;
-            state.user = null;
-          } catch (e) {
-            console.error('[authStore] Error during rehydration state update:', e);
-          }
+          console.log('[authStore] Rehydrated - user must login again');
         }
+      },
+      // Merge function to handle the simplified persisted state
+      merge: (persistedState: unknown, currentState) => {
+        const persisted = persistedState as { activeChildId?: string } | null;
+        return {
+          ...currentState,
+          // We don't restore activeChild directly - user must login
+          // The activeChildId is stored but child data comes from API after login
+        };
       },
     }
   )

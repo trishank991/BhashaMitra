@@ -165,6 +165,11 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
+# Allow all Vercel preview deployments for bhashamitra-frontend
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://bhashamitra-frontend.*\.vercel\.app$',
+]
+
 # ===========================================
 # EXTERNAL API CONFIGURATION
 # ===========================================

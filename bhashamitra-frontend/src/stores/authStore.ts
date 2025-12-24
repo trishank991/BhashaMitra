@@ -277,23 +277,43 @@ export const useAuthStore = create<AuthState>()(
       // This prevents XSS attacks from stealing JWT tokens
       // Users will need to log in again after closing browser (security best practice)
       partialize: (state) => ({
-        // Only persist child preference, NOT tokens or auth status
-        activeChild: state.activeChild,
+        // Only persist child preference (simplified to avoid serialization issues)
+        activeChild: state.activeChild ? {
+          id: state.activeChild.id,
+          name: state.activeChild.name,
+          age: state.activeChild.age,
+          avatar: state.activeChild.avatar,
+          language: typeof state.activeChild.language === 'string'
+            ? state.activeChild.language
+            : (state.activeChild.language as { code?: string })?.code || 'HINDI',
+          level: state.activeChild.level,
+          created_at: state.activeChild.created_at,
+          total_points: state.activeChild.total_points,
+          date_of_birth: state.activeChild.date_of_birth,
+        } : null,
       }),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
           console.error('[authStore] Rehydration error:', error);
+          // Clear corrupted localStorage data
+          try {
+            localStorage.removeItem('bhashamitra-auth');
+          } catch (e) {
+            console.error('[authStore] Failed to clear localStorage:', e);
+          }
           return;
         }
         // On rehydration, tokens are gone (memory-only for security)
         // Clear isAuthenticated since we have no valid tokens
-        // Note: We modify the state object directly during rehydration instead of calling setState
-        // to avoid circular reference issues
         if (state) {
-          console.log('[authStore] Session expired, tokens cleared for security');
-          state.isAuthenticated = false;
-          state.tokens = null;
-          state.user = null;
+          try {
+            console.log('[authStore] Session expired, tokens cleared for security');
+            state.isAuthenticated = false;
+            state.tokens = null;
+            state.user = null;
+          } catch (e) {
+            console.error('[authStore] Error during rehydration state update:', e);
+          }
         }
       },
     }

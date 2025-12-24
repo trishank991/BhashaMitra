@@ -161,6 +161,21 @@ Examples:
 - docs(readme): update setup instructions
 ```
 
+### IMPORTANT: No AI Tool References
+**DO NOT include any references to AI assistants or tools in:**
+- Git commit messages
+- Code comments
+- Documentation files
+- Pull request descriptions
+
+This includes (but not limited to):
+- "Generated with Claude Code"
+- "Co-Authored-By: Claude"
+- "Created by AI"
+- Any similar AI tool attribution
+
+All commits and documentation should appear as if written by human developers only.
+
 ### Current Repository Status
 
 - **Remote**: `origin` (GitHub)

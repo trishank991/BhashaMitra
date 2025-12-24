@@ -31,6 +31,7 @@ class ParentEngagementBaseTest(APITestCase):
         """Set up test data."""
         # Create parent user
         self.parent = User.objects.create_user(
+            username='parent_test',
             email='parent@test.com',
             password='testpass123',
             first_name='Test',
@@ -87,8 +88,7 @@ class ParentEngagementBaseTest(APITestCase):
         # Create learning goal
         self.goal = LearningGoal.objects.create(
             child=self.child1,
-            goal_type='daily_time',
-            title='Learn for 15 minutes daily',
+            goal_type='DAILY_MINUTES',
             target_value=15,
             current_value=10,
             start_date=today,
@@ -124,6 +124,7 @@ class ParentChildrenListTests(ParentEngagementBaseTest):
         """Parent only sees their own children."""
         # Create another parent with child
         other_parent = User.objects.create_user(
+            username='other_parent',
             email='other@test.com',
             password='testpass123',
         )
@@ -168,6 +169,7 @@ class ChildSummaryTests(ParentEngagementBaseTest):
     def test_get_child_summary_other_parent(self):
         """Cannot access another parent's child."""
         other_parent = User.objects.create_user(
+            username='other_parent2',
             email='other@test.com',
             password='testpass123',
         )

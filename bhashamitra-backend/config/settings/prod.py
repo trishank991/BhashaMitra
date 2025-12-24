@@ -29,6 +29,7 @@ X_FRAME_OPTIONS = 'DENY'
 # CSRF trusted origins for cross-origin requests
 CSRF_TRUSTED_ORIGINS = [
     'https://bhashamitra-frontend.vercel.app',
+    'https://bhasha-mitra.vercel.app',
     'https://*.vercel.app',
 ]
 

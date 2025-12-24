@@ -165,9 +165,10 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-# Allow all Vercel preview deployments for bhashamitra-frontend
+# Allow all Vercel preview deployments for bhashamitra/bhasha-mitra
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r'^https://bhashamitra-frontend.*\.vercel\.app$',
+    r'^https://bhasha-mitra.*\.vercel\.app$',
 ]
 
 # ===========================================

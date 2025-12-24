@@ -80,7 +80,9 @@ export function PeppiChatPanel({ childId }: PeppiChatPanelProps) {
 
   // Check status on mount
   useEffect(() => {
+    console.log('[PeppiChatPanel] useEffect triggered - isOpen:', isOpen, 'childId:', childId);
     if (isOpen && childId) {
+      console.log('[PeppiChatPanel] Calling checkStatus...');
       checkStatus(childId);
     }
   }, [isOpen, childId, checkStatus]);

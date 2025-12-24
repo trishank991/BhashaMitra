@@ -343,8 +343,21 @@ export const usePeppiChatStore = create<PeppiChatStore>((set, get) => ({
 
   // Check service status
   checkStatus: async (childId) => {
+    console.log('[PeppiChat] checkStatus called with childId:', childId);
+
+    if (!childId) {
+      console.error('[PeppiChat] No childId provided to checkStatus');
+      set({
+        isAvailable: false,
+        statusMessage: 'No child profile selected',
+      });
+      return;
+    }
+
     try {
+      console.log('[PeppiChat] Making status request...');
       const response = await api.getPeppiChatStatus(childId);
+      console.log('[PeppiChat] Status response:', response);
 
       if (response.success && response.data) {
         set({
@@ -358,6 +371,7 @@ export const usePeppiChatStore = create<PeppiChatStore>((set, get) => ({
         });
       }
     } catch (error) {
+      console.error('[PeppiChat] checkStatus error:', error);
       set({
         isAvailable: false,
         statusMessage: 'Unable to check status',

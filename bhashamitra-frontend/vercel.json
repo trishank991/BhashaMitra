@@ -2,10 +2,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "npm install",
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_API_URL": "https://bhashamitra.onrender.com/api/v1"
-    }
-  }
+  "installCommand": "npm install"
 }

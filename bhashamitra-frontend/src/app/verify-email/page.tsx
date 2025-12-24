@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -11,7 +11,7 @@ import api from '@/lib/api';
 
 type VerificationStatus = 'loading' | 'success' | 'error' | 'no-token';
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<VerificationStatus>('loading');
@@ -83,6 +83,95 @@ export default function VerifyEmailPage() {
   };
 
   return (
+    <motion.div
+      initial="initial"
+      animate="animate"
+      className="w-full max-w-md"
+    >
+      {/* Peppi greeting */}
+      <motion.div
+        variants={fadeInUp}
+        className="flex justify-center mb-8"
+      >
+        <PeppiMascot
+          size="sm"
+          showSpeechBubble={status === 'success'}
+          speechText={status === 'success' ? "Welcome aboard!" : undefined}
+        />
+      </motion.div>
+
+      <motion.div variants={fadeInUp}>
+        <Card className="text-center">
+          <div className="flex justify-center mb-6">
+            {getIcon()}
+          </div>
+
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            {getTitle()}
+          </h1>
+
+          <p className="text-gray-500 mb-6">
+            {message}
+          </p>
+
+          {email && status === 'success' && (
+            <p className="text-sm text-gray-400 mb-6">
+              Verified email: <span className="font-medium text-gray-600">{email}</span>
+            </p>
+          )}
+
+          {status === 'success' && (
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={() => router.push('/login')}
+            >
+              Continue to Login
+            </Button>
+          )}
+
+          {(status === 'error' || status === 'no-token') && (
+            <div className="space-y-3">
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => router.push('/login')}
+              >
+                Go to Login
+              </Button>
+              <p className="text-sm text-gray-500">
+                Need a new verification link?{' '}
+                <Link href="/login" className="text-primary-500 font-semibold hover:underline">
+                  Request one after logging in
+                </Link>
+              </p>
+            </div>
+          )}
+        </Card>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="w-full max-w-md">
+      <div className="flex justify-center mb-8">
+        <div className="w-24 h-24 bg-gray-200 rounded-full animate-pulse" />
+      </div>
+      <Card className="text-center">
+        <div className="flex justify-center mb-6">
+          <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
+        </div>
+        <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-4 animate-pulse" />
+        <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto mb-6 animate-pulse" />
+      </Card>
+    </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
     <div className="min-h-screen bg-gradient-to-b from-primary-50 via-white to-secondary-50 flex flex-col">
       {/* Back button */}
       <header className="p-4">
@@ -98,73 +187,9 @@ export default function VerifyEmailPage() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-        <motion.div
-          initial="initial"
-          animate="animate"
-          className="w-full max-w-md"
-        >
-          {/* Peppi greeting */}
-          <motion.div
-            variants={fadeInUp}
-            className="flex justify-center mb-8"
-          >
-            <PeppiMascot
-              size="sm"
-              showSpeechBubble={status === 'success'}
-              speechText={status === 'success' ? "Welcome aboard!" : undefined}
-            />
-          </motion.div>
-
-          <motion.div variants={fadeInUp}>
-            <Card className="text-center">
-              <div className="flex justify-center mb-6">
-                {getIcon()}
-              </div>
-
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {getTitle()}
-              </h1>
-
-              <p className="text-gray-500 mb-6">
-                {message}
-              </p>
-
-              {email && status === 'success' && (
-                <p className="text-sm text-gray-400 mb-6">
-                  Verified email: <span className="font-medium text-gray-600">{email}</span>
-                </p>
-              )}
-
-              {status === 'success' && (
-                <Button
-                  size="lg"
-                  className="w-full"
-                  onClick={() => router.push('/login')}
-                >
-                  Continue to Login
-                </Button>
-              )}
-
-              {(status === 'error' || status === 'no-token') && (
-                <div className="space-y-3">
-                  <Button
-                    size="lg"
-                    className="w-full"
-                    onClick={() => router.push('/login')}
-                  >
-                    Go to Login
-                  </Button>
-                  <p className="text-sm text-gray-500">
-                    Need a new verification link?{' '}
-                    <Link href="/login" className="text-primary-500 font-semibold hover:underline">
-                      Request one after logging in
-                    </Link>
-                  </p>
-                </div>
-              )}
-            </Card>
-          </motion.div>
-        </motion.div>
+        <Suspense fallback={<LoadingFallback />}>
+          <VerifyEmailContent />
+        </Suspense>
       </main>
     </div>
   );

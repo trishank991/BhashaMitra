@@ -113,17 +113,17 @@ class StartConversationSerializer(serializers.Serializer):
         default='HINDI',
         help_text="Primary language for the conversation"
     )
-    festival_id = serializers.IntegerField(
+    festival_id = serializers.UUIDField(
         required=False,
         allow_null=True,
         help_text="Festival ID for FESTIVAL_STORY mode"
     )
-    story_id = serializers.IntegerField(
+    story_id = serializers.UUIDField(
         required=False,
         allow_null=True,
         help_text="Story ID for FESTIVAL_STORY mode"
     )
-    lesson_id = serializers.IntegerField(
+    lesson_id = serializers.UUIDField(
         required=False,
         allow_null=True,
         help_text="Lesson ID for CURRICULUM_HELP mode"

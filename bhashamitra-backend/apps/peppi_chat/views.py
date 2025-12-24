@@ -519,16 +519,36 @@ class PeppiChatStatusView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    def check_tier_access(self, user) -> tuple:
+        """Check if user's tier allows Peppi chat access."""
+        # Get user's subscription tier
+        tier = getattr(user, 'subscription_tier', 'FREE')
+
+        # FREE tier cannot use chat
+        if tier == 'FREE':
+            return False, "Peppi chat is available for paid subscribers only. Upgrade to unlock!"
+
+        return True, tier
+
     def get(self, request, child_id=None):
         """Check if Peppi chat is available."""
         gemini_available = GeminiAIService.is_available()
 
         # Check user's tier
-        has_access, tier_or_msg = True, 'PREMIUM'  # Simplified for now
+        has_access, tier_or_msg = self.check_tier_access(request.user)
+
+        # Determine appropriate message
+        if not gemini_available:
+            message = "Peppi is taking a short nap. Please try again in a moment! 😴"
+        elif not has_access:
+            message = tier_or_msg
+        else:
+            message = "Peppi is ready to chat!"
 
         return Response({
             'available': gemini_available and has_access,
             'gemini_status': 'online' if gemini_available else 'offline',
             'tier_access': has_access,
-            'message': tier_or_msg if not has_access else 'Peppi is ready to chat!',
+            'tier': getattr(request.user, 'subscription_tier', 'FREE'),
+            'message': message,
         })

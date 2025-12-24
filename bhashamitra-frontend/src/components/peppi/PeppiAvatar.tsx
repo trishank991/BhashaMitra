@@ -149,7 +149,7 @@ export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className
                 ? { ry: [11, 3, 11] }
                 : mood === 'excited'
                 ? { ry: [11, 13, 11] }
-                : {}
+                : { ry: 11 }
             }
             transition={{ duration: 3, repeat: Infinity }}
           />
@@ -164,7 +164,7 @@ export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className
                 ? { ry: [11, 3, 11] }
                 : mood === 'excited'
                 ? { ry: [11, 13, 11] }
-                : {}
+                : { ry: 11 }
             }
             transition={{ duration: 3, repeat: Infinity }}
           />
@@ -179,7 +179,7 @@ export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className
                 ? { ry: [5, 1, 5] }
                 : mood === 'excited'
                 ? { ry: [5, 6, 5] }
-                : {}
+                : { ry: 5 }
             }
             transition={{ duration: 3, repeat: Infinity }}
           />
@@ -194,7 +194,7 @@ export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className
                 ? { ry: [5, 1, 5] }
                 : mood === 'excited'
                 ? { ry: [5, 6, 5] }
-                : {}
+                : { ry: 5 }
             }
             transition={{ duration: 3, repeat: Infinity }}
           />

@@ -134,7 +134,7 @@ export function PeppiChatPanel({ childId }: PeppiChatPanelProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-36 right-4 z-50 w-[350px] sm:w-[380px] max-h-[60vh] bg-gray-50 rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+    <div className="fixed bottom-20 right-4 z-50 w-[350px] sm:w-[380px] max-h-[70vh] bg-gray-50 rounded-2xl shadow-2xl border border-gray-200 flex flex-col">
       {/* Header */}
       <PeppiChatHeader
         mode={mode}
@@ -158,7 +158,7 @@ export function PeppiChatPanel({ childId }: PeppiChatPanelProps) {
       )}
 
       {/* Chat area */}
-      <div className="flex-1 overflow-y-auto p-4 min-h-[300px] max-h-[400px]">
+      <div className="flex-1 overflow-y-auto p-4 min-h-[200px] max-h-[350px]">
         {!activeConversation ? (
           // No active conversation - show start button with suggestions
           <div className="flex flex-col items-center justify-center h-full text-center">

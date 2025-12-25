@@ -573,6 +573,30 @@ Grammar lessons:
 - [x] **Voice Samples Downloaded** - 15 Hindi voice samples for IndicF5 reference audio
 - [x] **IndicF5 Integration Test** - Successfully generated TTS with 3 different voices
 
+### Recently Completed (Dec 26, 2024) - TTS & Bug Fixes
+
+- [x] **Google Cloud TTS Integration** - Added `google-cloud-texttospeech` to render.txt for production
+- [x] **Base64 Credentials Support** - Google credentials can be passed via `GOOGLE_CREDENTIALS_BASE64` env var
+- [x] **Peppi Narration Fix** - Changed from file URLs to base64 audio response (fixes VARCHAR(64) cache_key error)
+- [x] **TTS Pace Adjustment** - Sarvam AI pace changed from 0.5 → 0.7 (balanced for children)
+- [x] **Grammar Section Fix** - Fixed useAudio hook circular dependency (`stopAudio` in dependency array)
+- [x] **Grammar handlePlayExample Fix** - Wrapped in useCallback to prevent re-renders
+- [x] **Songs Seed Files Fix** - Added `language` field to all song seed files (Hindi, Tamil, Punjabi, Fiji Hindi)
+- [x] **STANDARD Tier TTS** - Fixed User model `tts_provider` property to give `google` TTS to STANDARD tier
+
+**Files Modified:**
+- `bhashamitra-backend/requirements/render.txt` - Added google-cloud-texttospeech
+- `bhashamitra-backend/apps/speech/services/google_provider.py` - Base64 credentials support
+- `bhashamitra-backend/apps/speech/services/sarvam_provider.py` - DEFAULT_PACE = 0.7
+- `bhashamitra-backend/apps/speech/services/peppi_tts.py` - All voice configs pace = 0.7
+- `bhashamitra-backend/apps/speech/peppi_views.py` - Return base64 audio instead of file URLs
+- `bhashamitra-backend/apps/users/models.py` - tts_provider returns 'google' for STANDARD tier
+- `bhashamitra-frontend/src/hooks/useAudio.ts` - Fixed circular dependency
+- `bhashamitra-frontend/src/app/learn/grammar/[id]/page.tsx` - useCallback for handlePlayExample
+- `bhashamitra-frontend/src/components/peppi/PeppiNarrator.tsx` - Handle base64 audio_data
+- `bhashamitra-frontend/src/components/peppi/PeppiSongNarrator.tsx` - Handle base64 audio_data
+- `bhashamitra-backend/apps/curriculum/management/commands/seed_*.py` - Added language field to songs
+
 ### Recently Completed (Dec 19, 2024) - Curriculum Architecture
 - [x] **Curriculum Hierarchy Models** - CurriculumLevel, CurriculumModule, Lesson, LessonContent
 - [x] **Progress Tracking Models** - LevelProgress, ModuleProgress, LessonProgress
@@ -644,16 +668,18 @@ Features:
 
 **Provider Details:**
 
-1. **Svara TTS (Tier 1 & 2)**: HuggingFace Space `kenpath/svara-tts`
-   - Free tier: Only serves pre-cached content (alphabet, vocabulary, stories)
-   - Standard tier: Real-time generation for any content
-   - ~50-70s per generation, good quality AI voice
-   - Supports 12 Indian languages
+1. **Google Cloud TTS (Primary for Peppi)**:
+   - API: Google Cloud Text-to-Speech
+   - Authentication: `GOOGLE_CREDENTIALS_BASE64` (base64-encoded JSON credentials)
+   - WaveNet voices for premium quality
+   - Speaking rate: 1.0 for stories, 0.85 for songs
+   - Package: `google-cloud-texttospeech>=2.33.0` (in render.txt)
 
-2. **Sarvam AI Bulbul V2 (Tier 3 Premium)**:
+2. **Sarvam AI Bulbul V2 (Fallback)**:
    - API: `https://api.sarvam.ai/text-to-speech`
    - Model: `bulbul:v2`
-   - Human-like voice quality, ~1.5s generation (40x faster than Svara)
+   - Human-like voice quality, ~1.5s generation
+   - **Pace: 0.7** (balanced for children - not too slow, not too fast)
    - Languages: Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Punjabi, Odia
    - Cost: ~NZD $1.80/user/month estimated, ~$0.36 with 80% cache hit rate
    - **Selected Voices (Dec 2024):**
@@ -662,6 +688,11 @@ Features:
    - Available voices (all tested, can switch anytime):
      - Female: anushka (warm), manisha (clear), vidya (expressive), arya (friendly)
      - Male: abhilash (friendly), karun (professional), hitesh (casual)
+
+3. **Svara TTS (Legacy - Not actively used)**:
+   - HuggingFace Space `kenpath/svara-tts`
+   - ~50-70s per generation, slower than Sarvam
+   - Supports 12 Indian languages
 
 **Unit Economics Analysis:**
 - Average kid reads 3 stories/day × 5 pages × 50 words = 750 words/day
@@ -677,7 +708,10 @@ Features:
 
 **Environment Variables:**
 ```bash
-# Sarvam AI TTS (Tier 3 - Premium)
+# Google Cloud TTS (Primary)
+GOOGLE_CREDENTIALS_BASE64=<base64-encoded-json-credentials>
+
+# Sarvam AI TTS (Fallback)
 SARVAM_API_KEY=your_key_here
 ```
 
@@ -805,28 +839,30 @@ Reference audio requirements:
 
 ### Peppi Voice Configuration
 
-Uses Sarvam AI Bulbul V2 voices for premium quality narration:
+Uses Google Cloud TTS (primary) with Sarvam AI as fallback:
 
 ```python
+# Peppi TTS priority:
+# 1. Google Cloud TTS WaveNet (if GOOGLE_CREDENTIALS_BASE64 set)
+# 2. Sarvam AI Bulbul V2 (fallback, pace: 0.7)
+
 PEPPI_VOICE_CONFIG = {
-    'hindi': {
-        'male': {'speaker': 'arvind', 'pitch': 0.4, 'pace': 0.85, 'model': 'bulbul:v2'},
-        'female': {'speaker': 'meera', 'pitch': 0.3, 'pace': 0.85, 'model': 'bulbul:v2'}
+    'HINDI': {
+        'male': {'speaker': 'arvind', 'pitch': 0.4, 'pace': 0.7, 'model': 'bulbul:v2'},
+        'female': {'speaker': 'anushka', 'pitch': 0.3, 'pace': 0.7, 'model': 'bulbul:v2'}
     },
-    'tamil': {
-        'male': {'speaker': 'kumar', 'pitch': 0.4, 'pace': 0.85, 'model': 'bulbul:v2'},
-        'female': {'speaker': 'manisha', 'pitch': 0.3, 'pace': 0.85, 'model': 'bulbul:v2'}
+    'TAMIL': {
+        'male': {'speaker': 'kumar', 'pitch': 0.4, 'pace': 0.7, 'model': 'bulbul:v2'},
+        'female': {'speaker': 'anushka', 'pitch': 0.3, 'pace': 0.7, 'model': 'bulbul:v2'}
     },
-    'gujarati': {
-        'male': {'speaker': 'arvind', 'pitch': 0.4, 'pace': 0.85, 'model': 'bulbul:v2'},
-        'female': {'speaker': 'meera', 'pitch': 0.3, 'pace': 0.85, 'model': 'bulbul:v2'}
-    },
-    'punjabi': {
-        'male': {'speaker': 'arvind', 'pitch': 0.4, 'pace': 0.85, 'model': 'bulbul:v2'},
-        'female': {'speaker': 'meera', 'pitch': 0.3, 'pace': 0.85, 'model': 'bulbul:v2'}
-    }
+    # ... other languages use same pattern with pace: 0.7
 }
 ```
+
+**Peppi Narration Response Format (Dec 2024):**
+- Returns audio as base64 data (not file URLs) to avoid ephemeral storage issues on Render
+- Frontend converts base64 to blob URL for playback
+- TTSService handles caching internally using text hash
 
 ### Peppi Home Page Story Time Feature (Dec 2024)
 

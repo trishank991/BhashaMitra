@@ -44,8 +44,15 @@ def song_detail(request, song_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def songs_by_level(request, level_code):
-    """Get all songs for a specific level."""
+    """Get all songs for a specific level, optionally filtered by language."""
     level = get_object_or_404(CurriculumLevel, code=level_code)
-    songs = Song.objects.filter(level=level, is_active=True).order_by('order')
+    language = request.query_params.get('language')
+
+    queryset = Song.objects.filter(level=level, is_active=True)
+
+    if language:
+        queryset = queryset.filter(language=language.upper())
+
+    songs = queryset.order_by('order')
     serializer = SongListSerializer(songs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)

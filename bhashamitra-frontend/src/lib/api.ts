@@ -1038,11 +1038,13 @@ class ApiClient {
   }
 
   /**
-   * Get songs by level code
+   * Get songs by level code and optionally language
    * @param levelCode Level code (e.g., 'L1')
+   * @param language Optional language filter (e.g., 'HINDI')
    */
-  async getSongsByLevel(levelCode: string): Promise<ApiResponse<Song[]>> {
-    const response = await this.request<Song[]>(`/curriculum/songs/level/${levelCode}/`);
+  async getSongsByLevel(levelCode: string, language?: string): Promise<ApiResponse<Song[]>> {
+    const params = language ? `?language=${language}` : '';
+    const response = await this.request<Song[]>(`/curriculum/songs/level/${levelCode}/${params}`);
     if (response.success && response.data) {
       return { success: true, data: response.data || [] };
     }

@@ -34,8 +34,11 @@ export default function SongsPage() {
     const fetchSongs = async () => {
       setLoading(true);
       try {
-        // Get L1 songs for young children
-        const response = await api.getSongsByLevel('L1');
+        // Get L1 songs for young children, filtered by child's language
+        const childLanguage = typeof activeChild?.language === 'string'
+          ? activeChild.language
+          : (activeChild?.language as { code?: string })?.code || 'HINDI';
+        const response = await api.getSongsByLevel('L1', childLanguage);
         if (response.success && response.data) {
           setSongs(response.data);
         } else {
@@ -49,7 +52,7 @@ export default function SongsPage() {
     };
 
     fetchSongs();
-  }, [isHydrated, isAuthenticated, router]);
+  }, [isHydrated, isAuthenticated, router, activeChild?.language]);
 
   const categories: (SongCategory | 'ALL')[] = ['ALL', 'RHYME', 'FOLK', 'EDUCATIONAL', 'FESTIVAL'];
 

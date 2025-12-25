@@ -58,8 +58,8 @@ class SarvamAIProvider:
     DEFAULT_MALE_VOICE = 'abhilash'
 
     # Speech pace control (1.0 = normal, <1.0 = slower, >1.0 = faster)
-    # Slightly slower for clarity but natural enough to sound clear
-    DEFAULT_PACE = 0.85  # 85% speed - clear but natural sounding
+    # Balanced pace for children - not too slow, not too fast
+    DEFAULT_PACE = 0.7  # 70% speed - clear and easy to follow for kids
 
     @classmethod
     def _get_api_key(cls) -> Optional[str]:

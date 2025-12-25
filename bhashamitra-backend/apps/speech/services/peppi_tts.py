@@ -21,19 +21,19 @@ class PeppiTTSProvider:
     """
 
     # Peppi voice configuration per language and gender
-    # Pace 0.85 = slightly slower than normal but still natural and clear
+    # Pace 0.7 = balanced speed for children - clear and easy to follow
     PEPPI_VOICE_CONFIG = {
         'HINDI': {
             'male': {
                 'speaker': 'arvind',
                 'pitch': 0.4,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             },
             'female': {
                 'speaker': 'anushka',
                 'pitch': 0.3,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             }
         },
@@ -41,13 +41,13 @@ class PeppiTTSProvider:
             'male': {
                 'speaker': 'kumar',
                 'pitch': 0.4,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             },
             'female': {
                 'speaker': 'anushka',
                 'pitch': 0.3,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             }
         },
@@ -55,13 +55,13 @@ class PeppiTTSProvider:
             'male': {
                 'speaker': 'arvind',
                 'pitch': 0.4,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             },
             'female': {
                 'speaker': 'anushka',
                 'pitch': 0.3,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             }
         },
@@ -69,13 +69,13 @@ class PeppiTTSProvider:
             'male': {
                 'speaker': 'arvind',
                 'pitch': 0.4,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             },
             'female': {
                 'speaker': 'anushka',
                 'pitch': 0.3,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             }
         },
@@ -83,13 +83,13 @@ class PeppiTTSProvider:
             'male': {
                 'speaker': 'arvind',
                 'pitch': 0.4,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             },
             'female': {
                 'speaker': 'anushka',
                 'pitch': 0.3,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             }
         },
@@ -97,13 +97,13 @@ class PeppiTTSProvider:
             'male': {
                 'speaker': 'arvind',
                 'pitch': 0.4,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             },
             'female': {
                 'speaker': 'anushka',
                 'pitch': 0.3,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             }
         },
@@ -111,13 +111,13 @@ class PeppiTTSProvider:
             'male': {
                 'speaker': 'arvind',
                 'pitch': 0.4,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             },
             'female': {
                 'speaker': 'anushka',
                 'pitch': 0.3,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             }
         },
@@ -125,13 +125,13 @@ class PeppiTTSProvider:
             'male': {
                 'speaker': 'arvind',
                 'pitch': 0.4,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             },
             'female': {
                 'speaker': 'anushka',
                 'pitch': 0.3,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             }
         },
@@ -139,13 +139,13 @@ class PeppiTTSProvider:
             'male': {
                 'speaker': 'arvind',
                 'pitch': 0.4,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             },
             'female': {
                 'speaker': 'anushka',
                 'pitch': 0.3,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             }
         },
@@ -153,13 +153,13 @@ class PeppiTTSProvider:
             'male': {
                 'speaker': 'arvind',
                 'pitch': 0.4,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             },
             'female': {
                 'speaker': 'anushka',
                 'pitch': 0.3,
-                'pace': 0.85,
+                'pace': 0.7,
                 'model': 'bulbul:v2'
             }
         },

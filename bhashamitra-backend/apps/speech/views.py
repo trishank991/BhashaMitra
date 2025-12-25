@@ -105,8 +105,9 @@ class TextToSpeechView(APIView):
                 user=user
             )
 
-            response = HttpResponse(audio_bytes, content_type='audio/wav')
-            response['Content-Disposition'] = 'inline; filename="speech.wav"'
+            # Google TTS returns MP3, so use correct content type
+            response = HttpResponse(audio_bytes, content_type='audio/mpeg')
+            response['Content-Disposition'] = 'inline; filename="speech.mp3"'
             response['Content-Length'] = len(audio_bytes)
             response['X-TTS-Cached'] = str(was_cached).lower()
             response['X-TTS-Language'] = language

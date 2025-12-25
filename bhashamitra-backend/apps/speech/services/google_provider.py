@@ -153,12 +153,27 @@ class GoogleTTSProvider:
     COST_PER_CHAR_WAVENET = 16.0 / 1_000_000  # $16 per million
 
     @classmethod
+    def _create_simple_ssml(cls, text: str) -> str:
+        """
+        Create simple, clear SSML for short text like vocabulary and grammar examples.
+        Uses slower rate for clarity without complex prosody variations.
+        """
+        # Simple, clear pronunciation - slightly slower for learning
+        return f'<speak><prosody rate="90%" pitch="0">{text}</prosody></speak>'
+
+    @classmethod
     def _create_storytelling_ssml(cls, text: str) -> str:
         """
         Convert plain text to expressive SSML for child-friendly storytelling.
         Adds voice modulations, pauses, and emphasis to keep kids engaged.
+
+        NOTE: Only used for longer story content. Short text uses _create_simple_ssml.
         """
         import re
+
+        # For short text (< 100 chars), use simple clear pronunciation
+        if len(text) < 100:
+            return cls._create_simple_ssml(text)
 
         # Split into sentences for individual treatment
         sentences = re.split(r'([।\.\!\?]+)', text)

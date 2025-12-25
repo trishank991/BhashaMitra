@@ -45,5 +45,8 @@ django-health-check>=3.17,<4.0
 # Gradio client for external TTS APIs
 gradio-client>=0.10.0
 
+# Google Cloud TTS (for Peppi narration)
+google-cloud-texttospeech>=2.33.0
+
 # Google Gemini AI (for Peppi Chat) - new unified SDK (replaces deprecated google-generativeai)
 google-genai>=1.0.0

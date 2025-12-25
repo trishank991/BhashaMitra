@@ -1,7 +1,8 @@
-"""Google Gemini AI Service for Peppi chatbot."""
+"""Google Gemini AI Service for Peppi chatbot using new google-genai SDK."""
 import logging
 import time
-from typing import AsyncGenerator, Optional
+import traceback
+from typing import AsyncGenerator
 
 from django.conf import settings
 
@@ -11,6 +12,8 @@ logger = logging.getLogger(__name__)
 class GeminiAIService:
     """
     Service for Google Gemini AI integration.
+
+    Uses the new google-genai SDK (replaces deprecated google-generativeai).
 
     Handles:
     - API communication with Gemini
@@ -22,7 +25,8 @@ class GeminiAIService:
     # Get model settings from Django settings with defaults
     @classmethod
     def get_model_id(cls):
-        return getattr(settings, 'GEMINI_MODEL_ID', 'gemini-2.0-flash-exp')
+        # gemini-2.0-flash is the recommended model for fast responses
+        return getattr(settings, 'GEMINI_MODEL_ID', 'gemini-2.0-flash')
 
     @classmethod
     def get_max_tokens(cls):
@@ -55,14 +59,14 @@ class GeminiAIService:
     @classmethod
     def get_client(cls):
         """
-        Get or create the Gemini client.
+        Get or create the Gemini client using the new google-genai SDK.
 
         Returns:
-            GenerativeModel: The Gemini model instance
+            genai.Client: The Gemini client instance
         """
         if cls._client is None:
             try:
-                import google.generativeai as genai
+                from google import genai
 
                 api_key = getattr(settings, 'GOOGLE_GEMINI_API_KEY', None)
                 if not api_key:
@@ -70,73 +74,57 @@ class GeminiAIService:
                     raise ValueError("GOOGLE_GEMINI_API_KEY not configured")
 
                 logger.info(f"Configuring Gemini with API key (first 8 chars): {api_key[:8]}...")
-                genai.configure(api_key=api_key)
 
-                # Configure safety settings for child-appropriate content
-                safety_settings = [
-                    {
-                        "category": "HARM_CATEGORY_HARASSMENT",
-                        "threshold": "BLOCK_LOW_AND_ABOVE"
-                    },
-                    {
-                        "category": "HARM_CATEGORY_HATE_SPEECH",
-                        "threshold": "BLOCK_LOW_AND_ABOVE"
-                    },
-                    {
-                        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                        "threshold": "BLOCK_LOW_AND_ABOVE"
-                    },
-                    {
-                        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                        "threshold": "BLOCK_LOW_AND_ABOVE"
-                    },
-                ]
-
-                # Configure generation settings
-                generation_config = {
-                    "temperature": cls.get_temperature(),
-                    "top_p": cls.TOP_P,
-                    "top_k": cls.TOP_K,
-                    "max_output_tokens": cls.get_max_tokens(),
-                }
+                # Create client with API key
+                cls._client = genai.Client(api_key=api_key)
 
                 model_id = cls.get_model_id()
-                cls._client = genai.GenerativeModel(
-                    model_name=model_id,
-                    safety_settings=safety_settings,
-                    generation_config=generation_config,
-                )
-
-                logger.info(f"Gemini client initialized with model: {model_id}")
+                logger.info(f"Gemini client initialized, will use model: {model_id}")
 
             except ImportError:
-                logger.error("google-generativeai package not installed")
-                raise ImportError("Please install google-generativeai: pip install google-generativeai")
+                logger.error("google-genai package not installed")
+                raise ImportError("Please install google-genai: pip install google-genai")
 
         return cls._client
 
     @classmethod
-    def build_messages_history(
+    def build_conversation_contents(
         cls,
         conversation,
+        user_message: str,
+        system_prompt: str,
         max_messages: int = 20,
-        include_system_prompt: bool = False,
-        system_prompt: str = ""
     ) -> list:
         """
-        Build message history for the conversation.
+        Build conversation contents for the API call.
+
+        The new SDK uses a different format - we build a list of Content objects.
 
         Args:
             conversation: PeppiConversation instance
-            max_messages: Maximum number of messages to include
-            include_system_prompt: Whether to include system prompt as first message
+            user_message: The current user message
             system_prompt: The system prompt to include
+            max_messages: Maximum number of history messages to include
 
         Returns:
-            List of message dictionaries for Gemini
+            List of content parts for the API
         """
+        from google.genai import types
         from apps.peppi_chat.models import PeppiChatMessage
 
+        contents = []
+
+        # Add system prompt as first user message with model acknowledgment
+        contents.append(types.Content(
+            role="user",
+            parts=[types.Part.from_text(text=system_prompt)]
+        ))
+        contents.append(types.Content(
+            role="model",
+            parts=[types.Part.from_text(text="I understand! I am Peppi, and I will follow these instructions carefully. Ready to help!")]
+        ))
+
+        # Get conversation history
         messages = PeppiChatMessage.objects.filter(
             conversation=conversation
         ).order_by('-created_at')[:max_messages]
@@ -144,33 +132,20 @@ class GeminiAIService:
         # Reverse to get chronological order
         messages = list(reversed(messages))
 
-        history = []
-
-        # Add system prompt as first user message if requested
-        if include_system_prompt and system_prompt:
-            history.append({
-                "role": "user",
-                "parts": [system_prompt]
-            })
-            # Add a brief acknowledgment from model
-            history.append({
-                "role": "model",
-                "parts": ["I understand! I am Peppi, and I will follow these instructions carefully. Ready to help!"]
-            })
-
         for msg in messages:
-            if msg.role == 'user':
-                history.append({
-                    "role": "user",
-                    "parts": [msg.content_primary]
-                })
-            elif msg.role == 'assistant':
-                history.append({
-                    "role": "model",
-                    "parts": [msg.content_primary]
-                })
+            role = "user" if msg.role == 'user' else "model"
+            contents.append(types.Content(
+                role=role,
+                parts=[types.Part.from_text(text=msg.content_primary)]
+            ))
 
-        return history
+        # Add the current user message
+        contents.append(types.Content(
+            role="user",
+            parts=[types.Part.from_text(text=user_message)]
+        ))
+
+        return contents
 
     @classmethod
     async def generate_response(
@@ -182,7 +157,7 @@ class GeminiAIService:
         stream: bool = False,
     ) -> AsyncGenerator[str, None]:
         """
-        Generate a response from Gemini.
+        Generate a response from Gemini (async version).
 
         Args:
             conversation: PeppiConversation instance
@@ -197,26 +172,32 @@ class GeminiAIService:
         start_time = time.time()
 
         try:
-            model = cls.get_client()
+            from google.genai import types
 
-            # Build conversation history with system prompt included
-            history = cls.build_messages_history(
+            client = cls.get_client()
+            model_id = cls.get_model_id()
+
+            # Build conversation contents
+            contents = cls.build_conversation_contents(
                 conversation,
-                include_system_prompt=True,
-                system_prompt=system_prompt
+                user_message,
+                system_prompt
             )
 
-            # Start a chat session with history (which now includes system prompt)
-            chat = model.start_chat(history=history)
-
-            # Just send the user message - system prompt is already in history
-            full_message = user_message
+            # Configure generation settings
+            config = types.GenerateContentConfig(
+                temperature=cls.get_temperature(),
+                top_p=cls.TOP_P,
+                top_k=cls.TOP_K,
+                max_output_tokens=cls.get_max_tokens(),
+            )
 
             if stream:
                 # Streaming response
-                response = await chat.send_message_async(
-                    full_message,
-                    stream=True
+                response = await client.aio.models.generate_content_stream(
+                    model=model_id,
+                    contents=contents,
+                    config=config,
                 )
 
                 full_text = ""
@@ -225,16 +206,18 @@ class GeminiAIService:
                         full_text += chunk.text
                         yield chunk.text
 
-                # Log completion
                 latency_ms = int((time.time() - start_time) * 1000)
                 logger.info(
                     f"Gemini streaming response completed: "
                     f"{len(full_text)} chars, {latency_ms}ms"
                 )
-
             else:
                 # Non-streaming response
-                response = await chat.send_message_async(full_message)
+                response = await client.aio.models.generate_content(
+                    model=model_id,
+                    contents=contents,
+                    config=config,
+                )
 
                 latency_ms = int((time.time() - start_time) * 1000)
                 logger.info(
@@ -245,7 +228,6 @@ class GeminiAIService:
 
         except Exception as e:
             logger.error(f"Gemini API error: {str(e)}")
-            # Return a friendly error message in Hindi
             error_msg = (
                 "अरे! Peppi को कुछ problem हो गई। 😅 "
                 "Ek minute mein phir try karo!"
@@ -275,37 +257,49 @@ class GeminiAIService:
         start_time = time.time()
 
         try:
-            model = cls.get_client()
+            from google.genai import types
 
-            # Build conversation history with system prompt included
-            history = cls.build_messages_history(
+            client = cls.get_client()
+            model_id = cls.get_model_id()
+
+            # Build conversation contents
+            contents = cls.build_conversation_contents(
                 conversation,
-                include_system_prompt=True,
-                system_prompt=system_prompt
+                user_message,
+                system_prompt
             )
 
-            # Start chat with history (which now includes system prompt)
-            chat = model.start_chat(history=history)
+            # Configure generation settings
+            config = types.GenerateContentConfig(
+                temperature=cls.get_temperature(),
+                top_p=cls.TOP_P,
+                top_k=cls.TOP_K,
+                max_output_tokens=cls.get_max_tokens(),
+            )
 
-            # Just send the user message - system prompt is already in history
-            full_message = user_message
-
-            response = chat.send_message(full_message)
+            # Generate response
+            response = client.models.generate_content(
+                model=model_id,
+                contents=contents,
+                config=config,
+            )
 
             latency_ms = int((time.time() - start_time) * 1000)
 
+            # Get response text
+            response_text = response.text
+
             # Estimate token count (rough approximation)
-            token_count = len(response.text.split()) * 2
+            token_count = len(response_text.split()) * 2
 
             logger.info(
-                f"Gemini sync response: {len(response.text)} chars, "
+                f"Gemini sync response: {len(response_text)} chars, "
                 f"~{token_count} tokens, {latency_ms}ms"
             )
 
-            return response.text, token_count, latency_ms
+            return response_text, token_count, latency_ms
 
         except Exception as e:
-            import traceback
             error_details = traceback.format_exc()
             logger.error(f"Gemini API error: {str(e)}")
             logger.error(f"Gemini API full traceback:\n{error_details}")

@@ -40,8 +40,8 @@ django-redis>=5.4.0,<6.0
 celery>=5.3,<6.0
 redis>=5.0,<6.0
 
-# Google Gemini AI (for Peppi Chat)
-google-generativeai>=0.8.0
+# Google Gemini AI (for Peppi Chat) - new unified SDK
+google-genai>=1.0.0
 
 # Hugging Face Spaces (for Svara TTS)
 gradio-client>=2.0.0

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -54,7 +54,7 @@ export default function GrammarTopicDetailPage() {
   }, [audioError]);
 
   // Handle playing text audio - extract text from examples
-  const handlePlayExample = async (example: string | GrammarExample) => {
+  const handlePlayExample = useCallback(async (example: string | GrammarExample) => {
     // Handle both string and object example formats
     let textToPlay: string;
     if (typeof example === 'string') {
@@ -87,7 +87,7 @@ export default function GrammarTopicDetailPage() {
         console.error('[Grammar] playAudio error:', err);
       }
     }
-  };
+  }, [playingText, isPlaying, stopAudio, playAudio, currentLanguage]);
 
   // Format example for display
   const formatExample = (example: string | GrammarExample): string => {

@@ -1148,6 +1148,7 @@ Bula! Fun will come!''',
                     'age_min': song_data['age_min'],
                     'age_max': song_data['age_max'],
                     'duration_seconds': song_data['duration_seconds'],
+                    'language': 'FIJI_HINDI',
                     'order': i,
                     'is_active': True,
                 }

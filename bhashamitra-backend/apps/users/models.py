@@ -120,17 +120,19 @@ class User(AbstractUser):
         """Get the TTS provider for this user's tier.
 
         TTS Strategy (Dec 2024):
-        - PREMIUM: google_wavenet (Google Cloud TTS - on-demand generation)
-        - STANDARD: cache_only (pre-cached content only)
+        - PREMIUM: google_wavenet (Google Cloud TTS WaveNet - highest quality)
+        - STANDARD: google (Google Cloud TTS Standard - high quality)
         - FREE: cache_only (pre-cached content only)
 
-        Premium gets real-time TTS. Standard/Free use pre-cached audio.
-        Fallback chain for Premium: Google WaveNet → Google Standard → Sarvam → Svara
+        Paid tiers get real-time TTS. Free uses pre-cached audio.
+        Fallback chain: Google → Sarvam → Svara
         """
         if self.is_premium_tier and self.is_subscription_active:
             return 'google_wavenet'
+        elif self.is_standard_tier and self.is_subscription_active:
+            return 'google'
         else:
-            # Standard and Free tiers - only serve pre-cached content
+            # Free tier - only serve pre-cached content
             return 'cache_only'
 
     def upgrade_to_tier(self, tier: str, duration_days: int = 30):

@@ -1043,6 +1043,7 @@ Let us preserve tradition!''',
                     'age_min': song_data['age_min'],
                     'age_max': song_data['age_max'],
                     'duration_seconds': song_data['duration_seconds'],
+                    'language': 'TAMIL',
                     'order': i,
                     'is_active': True,
                 }

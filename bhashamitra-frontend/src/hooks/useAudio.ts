@@ -59,8 +59,12 @@ export function useAudio(options: UseAudioOptions = {}): UseAudioReturn {
 
     console.log('[useAudio] playAudio called:', { text, language, voiceStyle });
 
-    // Stop any currently playing audio
-    stopAudio();
+    // Stop any currently playing audio - inline to avoid circular dependency
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
 
     setIsLoading(true);
     setError(null);
@@ -106,7 +110,7 @@ export function useAudio(options: UseAudioOptions = {}): UseAudioReturn {
       setError(err instanceof Error ? err.message : 'Failed to play audio');
       setIsLoading(false);
     }
-  }, [language, voiceStyle, stopAudio]);
+  }, [language, voiceStyle]);
 
   return {
     isPlaying,

@@ -196,7 +196,8 @@ STORYWEAVER_BASE_URL = 'https://storyweaver.org.in/api/v1'
 # Google Gemini AI (for Peppi Chat)
 # Get API key from: https://aistudio.google.com/app/apikey
 GOOGLE_GEMINI_API_KEY = os.getenv('GOOGLE_GEMINI_API_KEY', '')
-GEMINI_MODEL_ID = os.getenv('GEMINI_MODEL_ID', 'gemini-2.0-flash-exp')
+# Use stable model - gemini-1.5-flash is fast and reliable
+GEMINI_MODEL_ID = os.getenv('GEMINI_MODEL_ID', 'gemini-1.5-flash')
 
 # Peppi Chat Settings
 PEPPI_CHAT_MAX_TOKENS = int(os.getenv('PEPPI_CHAT_MAX_TOKENS', 1024))

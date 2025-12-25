@@ -66,8 +66,10 @@ class GeminiAIService:
 
                 api_key = getattr(settings, 'GOOGLE_GEMINI_API_KEY', None)
                 if not api_key:
+                    logger.error("GOOGLE_GEMINI_API_KEY is not set in settings")
                     raise ValueError("GOOGLE_GEMINI_API_KEY not configured")
 
+                logger.info(f"Configuring Gemini with API key (first 8 chars): {api_key[:8]}...")
                 genai.configure(api_key=api_key)
 
                 # Configure safety settings for child-appropriate content
@@ -303,7 +305,10 @@ class GeminiAIService:
             return response.text, token_count, latency_ms
 
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
             logger.error(f"Gemini API error: {str(e)}")
+            logger.error(f"Gemini API full traceback:\n{error_details}")
             latency_ms = int((time.time() - start_time) * 1000)
             error_msg = (
                 "अरे! Peppi को कुछ problem हो गई। 😅 "

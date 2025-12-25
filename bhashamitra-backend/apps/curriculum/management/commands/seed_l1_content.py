@@ -275,6 +275,7 @@ Mother loved him, he was laughing''',
         count = 0
         for song_data in songs_data:
             song_data['level'] = level
+            song_data['language'] = 'HINDI'
             song, created = Song.objects.update_or_create(
                 title_english=song_data['title_english'],
                 level=level,

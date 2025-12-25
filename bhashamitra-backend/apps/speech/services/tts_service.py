@@ -137,40 +137,11 @@ class TTSService:
                 )
                 return cached_audio, 'cache', True
 
-        # FREE tier: Cache only - try Svara as fallback for basic content
+        # FREE tier: Cache only - fail fast with upgrade message
+        # NOTE: Removed Svara fallback because HuggingFace Spaces can take 30+ seconds
+        # and causes timeout issues on the frontend
         if user_tier == 'cache_only':
-            # For FREE tier, attempt to generate using Svara for short alphabet/vocab content
-            # This provides basic pronunciation for learning while limiting costs
-            if len(text) <= 50:  # Short content like letters, words
-                try:
-                    from apps.speech.services.mms_provider import SvaraTTSProvider
-                    if SvaraTTSProvider.is_available():
-                        audio_bytes, duration_ms = SvaraTTSProvider.text_to_speech(
-                            text=text,
-                            language=language,
-                        )
-                        cls._save_to_cache(
-                            cache_key=cache_key,
-                            text=text,
-                            language=language,
-                            voice_profile=voice_profile,
-                            audio_bytes=audio_bytes,
-                            duration_ms=duration_ms,
-                            provider='svara_free',
-                        )
-                        cls._log_usage(
-                            text_length=len(text),
-                            language=language,
-                            provider='svara_free',
-                            voice_profile=voice_profile,
-                            was_cached=False,
-                            response_time_ms=int((time.time() - start_time) * 1000),
-                        )
-                        return audio_bytes, 'svara_free', False
-                except Exception as e:
-                    logger.warning(f"Free tier Svara TTS failed: {e}")
-
-            # If still not available, reject with helpful message
+            logger.info(f"FREE tier TTS request rejected (not cached): '{text[:30]}...'")
             cls._log_usage(
                 text_length=len(text),
                 language=language,
@@ -182,16 +153,22 @@ class TTSService:
                 error_message="Content not available for free tier",
             )
             raise TTSServiceError(
-                "Audio not available. For unlimited pronunciation practice, "
-                "upgrade to Standard ($12/month)."
+                "Audio not available on free tier. "
+                "Upgrade to Standard for unlimited pronunciation practice."
             )
+
+        # Log the TTS tier being used
+        logger.info(f"TTS request: tier={user_tier}, text='{text[:30]}...', language={language}")
 
         # PREMIUM tier: Try Google TTS WaveNet first (highest quality)
         if user_tier == 'google_wavenet':
             try:
                 from apps.speech.services.google_provider import GoogleTTSProvider
 
-                if GoogleTTSProvider.is_available():
+                google_available = GoogleTTSProvider.is_available()
+                logger.info(f"Google TTS available: {google_available}")
+
+                if google_available:
                     try:
                         audio_bytes, duration_ms = GoogleTTSProvider.text_to_speech(
                             text=text,

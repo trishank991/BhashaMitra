@@ -423,6 +423,10 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${this.accessToken}`;
     }
 
+    // Create AbortController for timeout (15 seconds)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -432,7 +436,10 @@ class ApiClient {
           language,
           voice_style: voiceStyle,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -451,6 +458,13 @@ class ApiClient {
         audioUrl,
       };
     } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        return {
+          success: false,
+          error: 'Audio generation timed out. Please try again.',
+        };
+      }
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Network error',

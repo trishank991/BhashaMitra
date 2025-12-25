@@ -44,3 +44,6 @@ django-health-check>=3.17,<4.0
 
 # Gradio client for external TTS APIs
 gradio-client>=0.10.0
+
+# Google Gemini AI (for Peppi Chat) - lightweight API client
+google-generativeai>=0.8.0

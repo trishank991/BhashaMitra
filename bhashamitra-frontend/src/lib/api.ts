@@ -753,8 +753,16 @@ class ApiClient {
   // PEPPI NARRATION ENDPOINTS
   // ========================================
 
-  async getPeppiNarration(storyId: string, language: string, gender: PeppiGender): Promise<ApiResponse<{ audio_url: string; cached: boolean }>> {
-    return this.request<{ audio_url: string; cached: boolean }>(`/peppi/narrate/story/${storyId}/?language=${language}&gender=${gender}`);
+  async getPeppiNarration(storyId: string, language: string, gender: PeppiGender): Promise<ApiResponse<{
+    audio_url?: string;
+    audio_data?: string;
+    audio_format?: string;
+    cached: boolean;
+    provider?: string;
+    story_title?: string;
+    page_count?: number;
+  }>> {
+    return this.request<{ audio_url?: string; audio_data?: string; audio_format?: string; cached: boolean; provider?: string; story_title?: string; page_count?: number }>(`/peppi/narrate/story/${storyId}/?language=${language}&gender=${gender}`);
   }
 
   async generatePeppiNarration(text: string, language: string, gender: PeppiGender): Promise<ApiResponse<{ audio_url: string }>> {
@@ -766,15 +774,17 @@ class ApiClient {
 
   /**
    * Get Peppi narration for a song (full lyrics narration)
-   * NOTE: During testing, only 1 song can be cached at a time.
    */
   async getPeppiSongNarration(songId: number | string, language: string, gender: PeppiGender): Promise<ApiResponse<{
-    audio_url: string;
+    audio_url?: string;
+    audio_data?: string;
+    audio_format?: string;
     cached: boolean;
+    provider?: string;
     song_title?: string;
     song_title_hindi?: string;
   }>> {
-    return this.request<{ audio_url: string; cached: boolean; song_title?: string; song_title_hindi?: string }>(
+    return this.request<{ audio_url?: string; audio_data?: string; audio_format?: string; cached: boolean; provider?: string; song_title?: string; song_title_hindi?: string }>(
       `/peppi/narrate/song/${songId}/?language=${language}&gender=${gender}`
     );
   }

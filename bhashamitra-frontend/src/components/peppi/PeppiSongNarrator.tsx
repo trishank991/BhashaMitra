@@ -72,7 +72,20 @@ export function PeppiSongNarrator({
         const response = await api.getPeppiSongNarration(songId, language, gender);
 
         if (response.success && response.data) {
-          setAudioUrl(response.data.audio_url);
+          // Handle both audio_url (legacy) and audio_data (base64)
+          if (response.data.audio_url) {
+            setAudioUrl(response.data.audio_url);
+          } else if (response.data.audio_data) {
+            // Convert base64 to blob URL
+            const binaryString = atob(response.data.audio_data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], { type: 'audio/mp3' });
+            const blobUrl = URL.createObjectURL(blob);
+            setAudioUrl(blobUrl);
+          }
           setMood('happy');
         } else {
           setError(response.error || 'Failed to load narration');
@@ -146,17 +159,21 @@ export function PeppiSongNarrator({
     };
   }, [onComplete, setMood]);
 
-  // Stop audio when component unmounts
+  // Stop audio and cleanup blob URLs when component unmounts
   useEffect(() => {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
+      // Cleanup blob URL if it exists
+      if (audioUrl && audioUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(audioUrl);
+      }
       setIsPlaying(false);
       setMood('happy');
     };
-  }, [setMood]);
+  }, [setMood, audioUrl]);
 
   // Upgrade prompt for FREE tier
   if (showUpgrade && !isPeppiAvailable) {

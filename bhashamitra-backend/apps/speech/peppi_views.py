@@ -1,7 +1,6 @@
 """Peppi narration views for story and song reading."""
 import logging
 import base64
-from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,12 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from apps.stories.models import Story, StoryPage
 from apps.curriculum.models import Song
 from apps.speech.services.tts_service import TTSService
-from apps.speech.models import AudioCache
 
 logger = logging.getLogger(__name__)
-
-# Testing limits - only cache one song during testing
-MAX_CACHED_SONGS = 1
 
 
 class PeppiNarrateStoryView(APIView):
@@ -52,22 +47,7 @@ class PeppiNarrateStoryView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Generate cache key for full story narration
-        cache_key = f"peppi_story_{story_id}_{language}_{gender}"
-
-        # Check cache first
-        cached = AudioCache.objects.filter(cache_key=cache_key).first()
-        if cached and cached.audio_file:
-            logger.info(f"Peppi narration cache hit for story {story_id}")
-            audio_url = request.build_absolute_uri(cached.audio_file.url)
-            return Response({
-                'audio_url': audio_url,
-                'cached': True,
-                'story_title': story.title,
-                'page_count': pages.count()
-            })
-
-        # Generate fresh narration using Google TTS with Peppi voice
+        # Generate narration using TTS with Peppi voice
         # Always use Google TTS WaveNet for Peppi narration regardless of user tier
         try:
             from unittest.mock import Mock
@@ -82,27 +62,13 @@ class PeppiNarrateStoryView(APIView):
                 force_regenerate=False,
             )
 
-            # Save to cache with special key for story
-            from django.core.files.base import ContentFile
-            audio_cache = AudioCache.objects.create(
-                cache_key=cache_key,
-                text_content=full_text,
-                text_hash=cache_key,
-                language=language,
-                voice_style='kid_friendly',
-                provider=provider,
-                content_type='peppi_story',
-                content_id=str(story_id),
-            )
-            audio_cache.audio_file.save(
-                f"{cache_key}.mp3",
-                ContentFile(audio_bytes)
-            )
-
-            audio_url = request.build_absolute_uri(audio_cache.audio_file.url)
+            # Return audio as base64 for immediate playback (avoids file storage issues)
+            audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
             return Response({
-                'audio_url': audio_url,
-                'cached': False,
+                'audio_data': audio_base64,
+                'audio_format': 'mp3',
+                'provider': provider,
+                'cached': was_cached,
                 'story_title': story.title,
                 'page_count': pages.count()
             })
@@ -264,31 +230,7 @@ class PeppiNarrateSongView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Generate cache key for song narration (v3 = emotional expression)
-        cache_key = f"peppi_song_{song_id}_{language}_{gender}_v3_emotional"
-
-        # Check cache first
-        cached = AudioCache.objects.filter(cache_key=cache_key).first()
-        if cached and cached.audio_file:
-            logger.info(f"Peppi song narration cache hit for song {song_id}")
-            audio_url = request.build_absolute_uri(cached.audio_file.url)
-            return Response({
-                'audio_url': audio_url,
-                'cached': True,
-                'song_title': song.title_english,
-                'song_title_hindi': song.title_hindi
-            })
-
-        # Check if we've exceeded cache limit for testing
-        existing_song_caches = AudioCache.objects.filter(content_type='peppi_song').count()
-        if existing_song_caches >= MAX_CACHED_SONGS:
-            logger.warning(f"Song cache limit reached ({MAX_CACHED_SONGS}). Returning error.")
-            return Response(
-                {'error': f'Song narration limit reached during testing. Only {MAX_CACHED_SONGS} song(s) can be cached.'},
-                status=status.HTTP_429_TOO_MANY_REQUESTS
-            )
-
-        # Generate fresh narration using Google TTS with Peppi voice
+        # Generate narration using TTS with Peppi voice
         # Use 'song' voice profile for slower pace with emotions and voice modulation
         try:
             from unittest.mock import Mock
@@ -303,27 +245,13 @@ class PeppiNarrateSongView(APIView):
                 force_regenerate=False,
             )
 
-            # Save to cache with special key for song
-            from django.core.files.base import ContentFile
-            audio_cache = AudioCache.objects.create(
-                cache_key=cache_key,
-                text_content=lyrics_text,
-                text_hash=cache_key,
-                language=language,
-                voice_style='song',  # Mark as song voice style
-                provider=provider,
-                content_type='peppi_song',
-                content_id=str(song_id),
-            )
-            audio_cache.audio_file.save(
-                f"{cache_key}.mp3",
-                ContentFile(audio_bytes)
-            )
-
-            audio_url = request.build_absolute_uri(audio_cache.audio_file.url)
+            # Return audio as base64 for immediate playback (avoids file storage issues)
+            audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
             return Response({
-                'audio_url': audio_url,
-                'cached': False,
+                'audio_data': audio_base64,
+                'audio_format': 'mp3',
+                'provider': provider,
+                'cached': was_cached,
                 'song_title': song.title_english,
                 'song_title_hindi': song.title_hindi
             })

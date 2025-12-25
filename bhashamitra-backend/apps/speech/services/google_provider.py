@@ -333,10 +333,44 @@ class GoogleTTSProvider:
         return getattr(settings, 'GOOGLE_TTS_API_KEY', None) or os.environ.get('GOOGLE_TTS_API_KEY')
 
     @classmethod
+    def _setup_credentials_from_base64(cls) -> bool:
+        """Decode base64 credentials and set up for Google Cloud SDK."""
+        import base64
+        import tempfile
+
+        base64_creds = os.environ.get('GOOGLE_CREDENTIALS_BASE64')
+        if not base64_creds:
+            return False
+
+        # Check if we already set up the credentials file
+        existing_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+        if existing_path and os.path.exists(existing_path):
+            return True
+
+        try:
+            # Decode and write to temp file
+            creds_json = base64.b64decode(base64_creds)
+            temp_file = tempfile.NamedTemporaryFile(mode='wb', suffix='.json', delete=False)
+            temp_file.write(creds_json)
+            temp_file.close()
+
+            # Set environment variable for Google Cloud SDK
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_file.name
+            logger.info(f"Set up Google credentials from base64 at: {temp_file.name}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to decode Google credentials: {e}")
+            return False
+
+    @classmethod
     def is_available(cls) -> bool:
         """Check if Google Cloud TTS is configured."""
         # Check for API key first (simpler auth)
         if cls._get_api_key():
+            return True
+
+        # Check for base64-encoded credentials (for cloud deployment)
+        if cls._setup_credentials_from_base64():
             return True
 
         # Check for service account credentials file

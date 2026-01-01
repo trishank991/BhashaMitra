@@ -30,20 +30,20 @@ export type SoundName =
 
 // Sound file paths (relative to public directory)
 const SOUND_PATHS: Record<SoundName, string> = {
-  correct: '/audio/sounds/correct.mp3',
-  wrong: '/audio/sounds/wrong.mp3',
-  levelUp: '/audio/sounds/level-up.mp3',
-  badge: '/audio/sounds/badge.mp3',
-  click: '/audio/sounds/click.mp3',
-  pageTurn: '/audio/sounds/page-turn.mp3',
-  celebration: '/audio/sounds/celebration.mp3',
-  meow: '/audio/sounds/meow.mp3',
-  streak: '/audio/sounds/streak.mp3',
-  storyComplete: '/audio/sounds/story-complete.mp3',
-  pop: '/audio/sounds/pop.mp3',
-  whoosh: '/audio/sounds/whoosh.mp3',
-  recordStart: '/audio/sounds/pop.mp3', // Use pop for record start
-  recordStop: '/audio/sounds/click.mp3', // Use click for record stop
+  correct: '/audio/sounds/correct.wav',
+  wrong: '/audio/sounds/wrong.wav',
+  levelUp: '/audio/sounds/level-up.wav',
+  badge: '/audio/sounds/badge.wav',
+  click: '/audio/sounds/click.wav',
+  pageTurn: '/audio/sounds/page-turn.wav',
+  celebration: '/audio/sounds/celebration.wav',
+  meow: '/audio/sounds/meow.wav',
+  streak: '/audio/sounds/streak.wav',
+  storyComplete: '/audio/sounds/story-complete.wav',
+  pop: '/audio/sounds/pop.wav',
+  whoosh: '/audio/sounds/whoosh.wav',
+  recordStart: '/audio/sounds/pop.wav', // Use pop for record start
+  recordStop: '/audio/sounds/click.wav', // Use click for record stop
 };
 
 // Default volume levels for different sounds
@@ -145,10 +145,21 @@ class SoundService {
 
       // Play and handle errors gracefully
       clone.play().catch((error) => {
-        // Autoplay might be blocked - this is fine
-        if (error.name !== 'NotAllowedError') {
-          console.warn(`[SoundService] Failed to play ${sound}:`, error);
+        // Handle specific error types
+        if (error instanceof DOMException) {
+          // NotSupportedError - audio format/browser doesn't support it
+          if (error.name === 'NotSupportedError') {
+            console.warn(`[SoundService] Audio format not supported for ${sound}, skipping`);
+            return;
+          }
+          // NotAllowedError - autoplay blocked
+          if (error.name === 'NotAllowedError') {
+            // Silently ignore autoplay errors
+            return;
+          }
         }
+        // Log other errors
+        console.warn(`[SoundService] Failed to play ${sound}:`, error);
       });
     } catch (error) {
       console.warn(`[SoundService] Error playing ${sound}:`, error);

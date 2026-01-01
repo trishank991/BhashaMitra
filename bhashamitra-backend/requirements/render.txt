@@ -53,3 +53,6 @@ google-cloud-speech>=2.27.0
 
 # Google Gemini AI (for Peppi Chat) - new unified SDK (replaces deprecated google-generativeai)
 google-genai>=1.0.0
+
+# Stripe Payments
+stripe>=7.0.0

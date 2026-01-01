@@ -4,11 +4,15 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '@/stores';
 import { Button, Input, Card } from '@/components/ui';
 import { PeppiMascot } from '@/components/peppi';
 import { SocialLoginButtons } from '@/components/auth';
 import { fadeInUp } from '@/lib/constants';
+
+// Get Google client ID from environment
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,7 +40,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-50 via-white to-secondary-50 flex flex-col">
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <div className="min-h-screen bg-gradient-to-b from-primary-50 via-white to-secondary-50 flex flex-col">
       {/* Back button */}
       <header className="p-4">
         <Link href="/">
@@ -185,6 +190,7 @@ export default function LoginPage() {
           </motion.div>
         </motion.div>
       </main>
-    </div>
+      </div>
+    </GoogleOAuthProvider>
   );
 }

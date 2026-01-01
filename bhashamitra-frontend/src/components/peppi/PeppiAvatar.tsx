@@ -146,9 +146,9 @@ export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className
             ry="11"
             animate={
               mood === 'sleepy'
-                ? { ry: [11, 3, 11] }
+                ? { ry: [11, 3, 11] as const }
                 : mood === 'excited'
-                ? { ry: [11, 13, 11] }
+                ? { ry: [11, 13, 11] as const }
                 : { ry: 11 }
             }
             transition={{ duration: 3, repeat: Infinity }}
@@ -161,9 +161,9 @@ export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className
             ry="11"
             animate={
               mood === 'sleepy'
-                ? { ry: [11, 3, 11] }
+                ? { ry: [11, 3, 11] as const }
                 : mood === 'excited'
-                ? { ry: [11, 13, 11] }
+                ? { ry: [11, 13, 11] as const }
                 : { ry: 11 }
             }
             transition={{ duration: 3, repeat: Infinity }}
@@ -176,9 +176,9 @@ export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className
             ry="5"
             animate={
               mood === 'sleepy'
-                ? { ry: [5, 1, 5] }
+                ? { ry: [5, 1, 5] as const }
                 : mood === 'excited'
-                ? { ry: [5, 6, 5] }
+                ? { ry: [5, 6, 5] as const }
                 : { ry: 5 }
             }
             transition={{ duration: 3, repeat: Infinity }}
@@ -191,9 +191,9 @@ export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className
             ry="5"
             animate={
               mood === 'sleepy'
-                ? { ry: [5, 1, 5] }
+                ? { ry: [5, 1, 5] as const }
                 : mood === 'excited'
-                ? { ry: [5, 6, 5] }
+                ? { ry: [5, 6, 5] as const }
                 : { ry: 5 }
             }
             transition={{ duration: 3, repeat: Infinity }}

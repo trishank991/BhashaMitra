@@ -11,6 +11,10 @@ echo "Checking Google Cloud packages..."
 pip show google-cloud-texttospeech || echo "WARNING: google-cloud-texttospeech not installed!"
 pip show google-cloud-speech || echo "WARNING: google-cloud-speech not installed!"
 
+# Verify stripe is installed
+echo "Checking Stripe package..."
+pip show stripe || echo "WARNING: stripe not installed!"
+
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
 

@@ -3,7 +3,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.festivals.models import Festival, FestivalActivity
-from apps.festivals.data.festivals import FESTIVALS_DATA, DIWALI_ACTIVITIES
+from apps.festivals.data.festivals import FESTIVALS_DATA
+from apps.festivals.data.festival_activities import FESTIVAL_ACTIVITIES
 
 
 class Command(BaseCommand):
@@ -81,105 +82,10 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def _seed_activities(self):
-        """Seed festival activities."""
-        # Get Diwali festival
-        try:
-            diwali = Festival.objects.get(name='Diwali')
-        except Festival.DoesNotExist:
-            self.stdout.write(
-                self.style.WARNING('Diwali festival not found. Skipping activities.')
-            )
-            return
-
+        """Seed festival activities for all festivals."""
         created_count = 0
-        for activity_data in DIWALI_ACTIVITIES:
-            activity, created = FestivalActivity.objects.update_or_create(
-                festival=diwali,
-                title=activity_data['title'],
-                defaults={
-                    'activity_type': activity_data['activity_type'],
-                    'description': activity_data['description'],
-                    'instructions': activity_data['instructions'],
-                    'materials_needed': activity_data.get('materials_needed', []),
-                    'min_age': activity_data.get('min_age', 3),
-                    'max_age': activity_data.get('max_age', 8),
-                    'duration_minutes': activity_data.get('duration_minutes', 15),
-                    'difficulty_level': activity_data.get('difficulty_level', 1),
-                    'points_reward': activity_data.get('points_reward', 25),
-                    'is_active': True,
-                }
-            )
-            if created:
-                created_count += 1
-                self.stdout.write(f'  Created activity: {activity.title}')
-
-        self.stdout.write(
-            self.style.SUCCESS(f'Activities: {created_count} created for Diwali')
-        )
-
-        # Add sample activities for other major festivals
-        self._seed_other_festival_activities()
-
-    def _seed_other_festival_activities(self):
-        """Seed sample activities for other major festivals."""
-        other_activities = {
-            'Holi': [
-                {
-                    'title': 'Colors of Holi',
-                    'activity_type': 'VOCABULARY',
-                    'description': 'Learn color names in different languages',
-                    'instructions': 'Match colors with their names',
-                    'min_age': 3,
-                    'max_age': 8,
-                    'points_reward': 20,
-                },
-                {
-                    'title': 'Holi Story Time',
-                    'activity_type': 'STORY',
-                    'description': 'The story of Holika and Prahlad',
-                    'instructions': 'Listen to the magical story of why we celebrate Holi',
-                    'min_age': 4,
-                    'max_age': 8,
-                    'points_reward': 30,
-                },
-            ],
-            'Eid ul-Fitr': [
-                {
-                    'title': 'Eid Greetings',
-                    'activity_type': 'VOCABULARY',
-                    'description': 'Learn Eid greetings in different languages',
-                    'instructions': 'Practice saying Eid Mubarak in various ways',
-                    'min_age': 3,
-                    'max_age': 8,
-                    'points_reward': 20,
-                },
-            ],
-            'Christmas': [
-                {
-                    'title': 'Christmas Carols',
-                    'activity_type': 'SONG',
-                    'description': 'Sing along to popular Christmas songs',
-                    'instructions': 'Listen and sing along with the lyrics',
-                    'min_age': 3,
-                    'max_age': 8,
-                    'points_reward': 25,
-                },
-            ],
-            'Baisakhi': [
-                {
-                    'title': 'Bhangra Dance',
-                    'activity_type': 'GAME',
-                    'description': 'Learn simple Bhangra moves',
-                    'instructions': 'Follow the dance steps shown on screen',
-                    'min_age': 4,
-                    'max_age': 8,
-                    'points_reward': 30,
-                },
-            ],
-        }
-
-        created_count = 0
-        for festival_name, activities in other_activities.items():
+        
+        for festival_name, activities in FESTIVAL_ACTIVITIES.items():
             try:
                 festival = Festival.objects.get(name=festival_name)
                 for activity_data in activities:
@@ -201,9 +107,13 @@ class Command(BaseCommand):
                     )
                     if created:
                         created_count += 1
+                        self.stdout.write(f'  Created activity: {activity.title}')
             except Festival.DoesNotExist:
+                self.stdout.write(
+                    self.style.WARNING(f'Festival {festival_name} not found. Skipping activities.')
+                )
                 continue
 
         self.stdout.write(
-            self.style.SUCCESS(f'Other festival activities: {created_count} created')
+            self.style.SUCCESS(f'Total activities created: {created_count}')
         )

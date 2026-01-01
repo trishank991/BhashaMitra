@@ -33,6 +33,9 @@ export function useAudio(options: UseAudioOptions = {}): UseAudioReturn {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
+  // Guard to prevent double API calls (React 18 Strict Mode issue)
+  const isRequestInProgressRef = useRef(false);
+  const lastTextRef = useRef<string | null>(null);
 
   // Cleanup audio URL on unmount
   useEffect(() => {
@@ -40,6 +43,7 @@ export function useAudio(options: UseAudioOptions = {}): UseAudioReturn {
       if (audioUrlRef.current) {
         URL.revokeObjectURL(audioUrlRef.current);
       }
+      isRequestInProgressRef.current = false;
     };
   }, []);
 
@@ -53,11 +57,18 @@ export function useAudio(options: UseAudioOptions = {}): UseAudioReturn {
 
   const playAudio = useCallback(async (text: string) => {
     if (!text.trim()) {
-      console.log('[useAudio] Empty text, skipping');
       return;
     }
 
-    console.log('[useAudio] playAudio called:', { text, language, voiceStyle });
+    // Prevent duplicate requests for the same text within a short window
+    // This handles React 18 Strict Mode double-invoke
+    if (isRequestInProgressRef.current && lastTextRef.current === text) {
+      return;
+    }
+
+    // Mark request as in progress
+    isRequestInProgressRef.current = true;
+    lastTextRef.current = text;
 
     // Stop any currently playing audio - inline to avoid circular dependency
     if (audioRef.current) {
@@ -70,9 +81,7 @@ export function useAudio(options: UseAudioOptions = {}): UseAudioReturn {
     setError(null);
 
     try {
-      console.log('[useAudio] Calling api.getAudio...');
       const result = await api.getAudio(text, language, voiceStyle);
-      console.log('[useAudio] api.getAudio result:', { success: result.success, hasAudioUrl: !!result.audioUrl, error: result.error });
 
       if (!result.success || !result.audioUrl) {
         setError(result.error || 'Failed to generate audio');
@@ -97,18 +106,21 @@ export function useAudio(options: UseAudioOptions = {}): UseAudioReturn {
 
       audio.onended = () => {
         setIsPlaying(false);
+        isRequestInProgressRef.current = false;
       };
 
       audio.onerror = () => {
         setError('Failed to play audio');
         setIsPlaying(false);
         setIsLoading(false);
+        isRequestInProgressRef.current = false;
       };
 
       await audio.play();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to play audio');
       setIsLoading(false);
+      isRequestInProgressRef.current = false;
     }
   }, [language, voiceStyle]);
 

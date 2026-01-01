@@ -55,15 +55,12 @@ export default function StoriesPage() {
       setError(null);
 
       try {
-        console.log('[StoriesPage] Fetching stories for language:', selectedLanguage);
         const response = await api.getStories(selectedLanguage);
-        console.log('[StoriesPage] API response:', response);
 
         if (response.success && response.data) {
           // Handle paginated response - results array contains the stories
           const storiesData = response.data.results || [];
           setStories(storiesData);
-          console.log('[StoriesPage] Loaded', storiesData.length, 'stories');
         } else {
           setError(response.error || 'Failed to load stories');
           setStories([]);

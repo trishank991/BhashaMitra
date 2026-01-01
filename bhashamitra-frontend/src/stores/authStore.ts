@@ -13,7 +13,8 @@ interface AuthState {
 
   // Actions
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  register: (email: string, password: string, passwordConfirm: string, name: string) => Promise<{ success: boolean; needsOnboarding: boolean; error?: string }>;
+  googleLogin: (googleToken: string) => Promise<{ success: boolean; needsOnboarding: boolean; error?: string }>;
   logout: () => void;
   setActiveChild: (child: ChildProfile | null) => void;
   fetchChildren: () => Promise<void>;
@@ -46,6 +47,7 @@ export const useAuthStore = create<AuthState>()(
           };
 
           api.setAccessToken(tokens.access);
+          api.setRefreshToken(tokens.refresh);
 
           set({
             user: {
@@ -58,6 +60,9 @@ export const useAuthStore = create<AuthState>()(
               subscription_expires_at: user.subscription_expires_at,
               subscription_info: user.subscription_info as SubscriptionInfo | undefined,
               tts_provider: user.tts_provider as 'cache_only' | 'svara' | 'sarvam' | 'google_wavenet' | undefined,
+              email_verified: user.email_verified || false,
+              is_onboarded: user.is_onboarded || false,
+              onboarding_completed_at: user.onboarding_completed_at,
             },
             tokens,
             isAuthenticated: true,
@@ -74,20 +79,27 @@ export const useAuthStore = create<AuthState>()(
         return false;
       },
 
-      register: async (email: string, password: string, name: string) => {
+      register: async (email: string, password: string, passwordConfirm: string, name: string) => {
         set({ isLoading: true });
 
-        const response = await api.register({ email, password, name, role: 'parent' });
+        const response = await api.register({ email, password, password_confirm: passwordConfirm, name, role: 'parent' });
 
         if (response.success && response.data) {
-          // Extract tokens from the nested response structure (same as login)
-          const { user, session } = response.data.data;
+          // Extract tokens - register returns { data: user, session: tokens }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const responseData = response.data as any;
+          const user = responseData.data || responseData.user;
+          const session = responseData.session;
+
           const tokens: AuthTokens = {
             access: session.access_token,
             refresh: session.refresh_token,
           };
 
           api.setAccessToken(tokens.access);
+          api.setRefreshToken(tokens.refresh);
+
+          const needsOnboarding = !user.is_onboarded;
 
           set({
             user: {
@@ -100,21 +112,79 @@ export const useAuthStore = create<AuthState>()(
               subscription_expires_at: user.subscription_expires_at,
               subscription_info: user.subscription_info as SubscriptionInfo | undefined,
               tts_provider: user.tts_provider as 'cache_only' | 'svara' | 'sarvam' | 'google_wavenet' | undefined || 'cache_only',
+              email_verified: user.email_verified || false,
+              is_onboarded: user.is_onboarded || false,
+              onboarding_completed_at: user.onboarding_completed_at,
             },
             tokens,
             isAuthenticated: true,
             isLoading: false,
           });
 
-          return true;
+          // Return object with success and needsOnboarding for redirect logic
+          return { success: true, needsOnboarding };
         }
 
         set({ isLoading: false });
-        return false;
+        // Parse and return specific error message
+        const errorMessage = response.error || 'Registration failed. Please try again.';
+        return { success: false, needsOnboarding: false, error: errorMessage };
+      },
+
+      googleLogin: async (googleToken: string) => {
+        set({ isLoading: true });
+
+        const response = await api.googleAuth(googleToken);
+
+        if (response.success && response.data) {
+          // Extract tokens from the nested response structure
+          const { user, session } = response.data.data;
+          const tokens: AuthTokens = {
+            access: session.access_token,
+            refresh: session.refresh_token,
+          };
+
+          api.setAccessToken(tokens.access);
+          api.setRefreshToken(tokens.refresh);
+
+          const needsOnboarding = !user.is_onboarded;
+
+          set({
+            user: {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              role: user.role as 'parent' | 'child',
+              created_at: (user as { created_at?: string }).created_at || new Date().toISOString(),
+              subscription_tier: user.subscription_tier as SubscriptionTier | undefined || 'FREE',
+              subscription_expires_at: user.subscription_expires_at,
+              subscription_info: user.subscription_info as SubscriptionInfo | undefined,
+              tts_provider: user.tts_provider as 'cache_only' | 'svara' | 'sarvam' | 'google_wavenet' | undefined || 'cache_only',
+              email_verified: user.email_verified || true, // Google users are auto-verified
+              is_onboarded: user.is_onboarded || false,
+              onboarding_completed_at: user.onboarding_completed_at,
+            },
+            tokens,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+
+          // Fetch children profiles for returning users
+          if (!response.data.meta?.is_new_user) {
+            await get().fetchChildren();
+          }
+
+          return { success: true, needsOnboarding };
+        }
+
+        set({ isLoading: false });
+        const errorMessage = response.error || 'Google authentication failed. Please try again.';
+        return { success: false, needsOnboarding: false, error: errorMessage };
       },
 
       logout: () => {
         api.setAccessToken(null);
+        api.setRefreshToken(null);
         set({
           user: null,
           tokens: null,
@@ -129,18 +199,9 @@ export const useAuthStore = create<AuthState>()(
       },
 
       fetchChildren: async () => {
-        console.log('[fetchChildren] Starting fetch...');
-        console.log('[fetchChildren] Current API token:', api.getAccessToken() ? 'SET' : 'NOT SET');
-
         const response = await api.getChildren();
 
-        console.log('[fetchChildren] API response:', JSON.stringify(response, null, 2));
-
         if (response.success && response.data) {
-          console.log('[fetchChildren] Success! Children count:', response.data.length);
-          if (response.data.length > 0) {
-            console.log('[fetchChildren] First child:', response.data[0].name, response.data[0].id);
-          }
           set({ children: response.data });
 
           // Update active child with fresh data from server
@@ -149,20 +210,15 @@ export const useAuthStore = create<AuthState>()(
             // Find the matching child and update with server data
             const freshChild = response.data.find(c => c.id === activeChild.id);
             if (freshChild) {
-              console.log('[fetchChildren] Updating active child with fresh data:', freshChild.name);
               set({ activeChild: freshChild });
             } else {
               // If previous active child no longer exists, use first child
-              console.log('[fetchChildren] Previous active child not found, using first child');
               set({ activeChild: response.data[0] });
             }
           } else if (!activeChild && response.data.length > 0) {
             // No active child, set the first one
-            console.log('[fetchChildren] No active child, setting first child:', response.data[0].name);
             set({ activeChild: response.data[0] });
           }
-        } else {
-          console.error('[fetchChildren] API call failed or returned no data:', response.error);
         }
       },
 
@@ -210,10 +266,7 @@ export const useAuthStore = create<AuthState>()(
 
         // If no active child, try fetching children first (handles race condition on page load)
         if (!activeChild?.id) {
-          console.log('[updateActiveChildLanguage] No active child, fetching children first...');
-
           if (!tokens?.access) {
-            console.error('[updateActiveChildLanguage] No access token available');
             return false;
           }
 
@@ -221,21 +274,14 @@ export const useAuthStore = create<AuthState>()(
           // Re-get state after fetch
           const updatedState = get();
           activeChild = updatedState.activeChild;
-
-          console.log('[updateActiveChildLanguage] After fetch - activeChild:', activeChild?.name, 'children count:', updatedState.children.length);
         }
 
         if (!activeChild?.id) {
-          console.error('[updateActiveChildLanguage] No active child after fetch');
           return false;
         }
 
-        console.log('[updateActiveChildLanguage] Updating language to:', language, 'for child:', activeChild.id);
-
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const response = await api.updateChild(activeChild.id, { language } as any);
-
-        console.log('[updateActiveChildLanguage] API response:', response);
 
         if (response.success && response.data) {
           // Create an updated child object with the new language
@@ -245,8 +291,6 @@ export const useAuthStore = create<AuthState>()(
             ...response.data,
             language: language, // Explicitly set the language to ensure it's updated
           };
-
-          console.log('[updateActiveChildLanguage] Updated child with language:', updatedChild.language);
 
           // Update both activeChild and children array in a SINGLE set call
           // This ensures atomic state update and proper re-render triggering
@@ -260,21 +304,47 @@ export const useAuthStore = create<AuthState>()(
             children: updatedChildren,
           });
 
-          // Verify state was updated
-          const newState = get();
-          console.log('[updateActiveChildLanguage] State after update - activeChild.language:', newState.activeChild?.language);
-
           return true;
         }
 
-        console.error('[updateActiveChildLanguage] API call failed:', response.error);
         return false;
       },
     }),
     {
       name: 'bhashamitra-auth',
-      // Only persist minimal data to avoid serialization issues
-      partialize: () => ({}), // Don't persist anything - fresh login required
+      // Persist essential auth state for session continuity
+      partialize: (state) => ({
+        user: state.user,
+        tokens: state.tokens,
+        activeChild: state.activeChild,
+        children: state.children,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      // Rehydrate API tokens and configure callbacks on store load
+      onRehydrateStorage: () => (state) => {
+        if (state?.tokens?.access) {
+          api.setAccessToken(state.tokens.access);
+        }
+        if (state?.tokens?.refresh) {
+          api.setRefreshToken(state.tokens.refresh);
+        }
+        // Set up auth callbacks for automatic token refresh
+        api.setAuthCallbacks(
+          // On token refreshed - update store with new access token
+          (newAccessToken: string) => {
+            const currentTokens = useAuthStore.getState().tokens;
+            if (currentTokens) {
+              useAuthStore.setState({
+                tokens: { ...currentTokens, access: newAccessToken },
+              });
+            }
+          },
+          // On logout - clear auth state
+          () => {
+            useAuthStore.getState().logout();
+          }
+        );
+      },
     }
   )
 );

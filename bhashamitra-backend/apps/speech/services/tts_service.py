@@ -3,27 +3,24 @@ BhashaMitra TTS Service
 Tier-based architecture with subscription-aware provider routing.
 
 TTS Strategy (Dec 2024):
-- PREMIUM ($30/month): Google Cloud TTS WaveNet (on-demand, highest quality)
-- STANDARD ($20/month): Cache only (pre-cached content)
-- FREE ($0): Cache only (pre-cached content)
+- PREMIUM ($30/month): Google Cloud TTS WaveNet (highest quality, natural voices)
+- STANDARD ($20/month): Google Cloud TTS Standard (good quality)
+- FREE ($0): Google Cloud TTS Standard (same quality, limited content access)
 
-Fallback chain for Premium tier:
+All tiers get audio - the difference is in voice quality and content access.
+
+Fallback chain:
 1. Cache (instant, free) - checked first for all tiers
-2. Google TTS WaveNet (Premium tier only - highest quality)
-3. Google TTS Standard (Premium fallback if WaveNet fails)
+2. Google TTS WaveNet (Premium tier - highest quality)
+3. Google TTS Standard (all tiers - good quality)
 4. Sarvam AI (fallback if Google fails - high quality Indian voices)
 5. Svara TTS (emergency backup - free, lower quality)
 
-Cost Strategy:
-- Pre-cache curriculum content → Standard/Free tiers use cached audio
-- On-demand requests use Google TTS for Premium tier only
-- Sarvam AI and Svara as fallbacks if Google fails
-
 Feature restrictions by tier:
 - Stories: FREE=5, STANDARD=unlimited, PREMIUM=unlimited
-- Games/Quizzes: STANDARD and PREMIUM only
+- Games/Quizzes: All tiers (FREE has limited vocabulary)
 - Live Classes: PREMIUM only
-- Real-time TTS: PREMIUM only
+- TTS Quality: FREE/STANDARD=Standard voices, PREMIUM=WaveNet voices
 """
 import hashlib
 import logging
@@ -137,71 +134,57 @@ class TTSService:
                 )
                 return cached_audio, 'cache', True
 
-        # FREE tier: Cache only - fail fast with upgrade message
-        # NOTE: Removed Svara fallback because HuggingFace Spaces can take 30+ seconds
-        # and causes timeout issues on the frontend
+        # FREE tier: Use Google TTS Standard (same as Standard tier)
+        # All users get audio - quality difference is in voice type (Standard vs WaveNet)
         if user_tier == 'cache_only':
-            logger.info(f"FREE tier TTS request rejected (not cached): '{text[:30]}...'")
-            cls._log_usage(
-                text_length=len(text),
-                language=language,
-                provider='none',
-                voice_profile=voice_profile,
-                was_cached=False,
-                response_time_ms=int((time.time() - start_time) * 1000),
-                success=False,
-                error_message="Content not available for free tier",
-            )
-            raise TTSServiceError(
-                "Audio not available on free tier. "
-                "Upgrade to Standard for unlimited pronunciation practice."
-            )
+            logger.info(f"FREE tier TTS request: '{text[:30]}...' - using Google Standard")
+            # Fall through to use Google TTS Standard (same as Standard tier)
 
         # Log the TTS tier being used
         logger.info(f"TTS request: tier={user_tier}, text='{text[:30]}...', language={language}")
 
-        # PREMIUM tier: Try Google TTS WaveNet first (highest quality)
-        if user_tier == 'google_wavenet':
-            try:
-                from apps.speech.services.google_provider import GoogleTTSProvider
+        # ALL tiers now use WaveNet for best user experience
+        # WaveNet provides highest quality, natural-sounding voices
+        try:
+            from apps.speech.services.google_provider import GoogleTTSProvider
 
-                google_available = GoogleTTSProvider.is_available()
-                logger.info(f"Google TTS available: {google_available}")
+            google_available = GoogleTTSProvider.is_available()
+            logger.info(f"Google TTS available: {google_available}")
 
-                if google_available:
-                    try:
-                        audio_bytes, duration_ms = GoogleTTSProvider.text_to_speech(
-                            text=text,
-                            language=language,
-                            voice_profile=voice_profile,  # Pass voice profile for song/story SSML
-                            use_wavenet=True,  # Premium gets WaveNet voices
-                        )
-                        cls._save_to_cache(
-                            cache_key=cache_key,
-                            text=text,
-                            language=language,
-                            voice_profile=voice_profile,
-                            audio_bytes=audio_bytes,
-                            duration_ms=duration_ms,
-                            provider='google_wavenet',
-                        )
-                        cls._log_usage(
-                            text_length=len(text),
-                            language=language,
-                            provider='google_wavenet',
-                            voice_profile=voice_profile,
-                            was_cached=False,
-                            response_time_ms=int((time.time() - start_time) * 1000),
-                            estimated_cost=GoogleTTSProvider.estimate_cost(text, use_wavenet=True),
-                        )
-                        return audio_bytes, 'google_wavenet', False
-                    except Exception as e:
-                        logger.warning(f"Google WaveNet TTS failed, falling back to Standard: {e}")
-            except ImportError:
-                logger.warning("Google provider not available, falling back to Standard")
+            if google_available:
+                try:
+                    audio_bytes, duration_ms = GoogleTTSProvider.text_to_speech(
+                        text=text,
+                        language=language,
+                        voice_profile=voice_profile,  # Pass voice profile for song/story SSML
+                        use_wavenet=True,  # WaveNet for all users for best experience
+                    )
+                    cls._save_to_cache(
+                        cache_key=cache_key,
+                        text=text,
+                        language=language,
+                        voice_profile=voice_profile,
+                        audio_bytes=audio_bytes,
+                        duration_ms=duration_ms,
+                        provider='google_wavenet',
+                    )
+                    cls._log_usage(
+                        text_length=len(text),
+                        language=language,
+                        provider='google_wavenet',
+                        voice_profile=voice_profile,
+                        was_cached=False,
+                        response_time_ms=int((time.time() - start_time) * 1000),
+                        estimated_cost=GoogleTTSProvider.estimate_cost(text, use_wavenet=True),
+                    )
+                    return audio_bytes, 'google_wavenet', False
+                except Exception as e:
+                    logger.warning(f"Google WaveNet TTS failed, falling back to Standard: {e}")
+        except ImportError:
+            logger.warning("Google provider not available, falling back to Standard")
 
-        # STANDARD tier (or PREMIUM fallback): Use Google TTS Standard voices
-        if user_tier in ['google', 'google_wavenet']:
+        # Fallback: Use Google TTS Standard voices if WaveNet fails
+        if user_tier in ['google', 'google_wavenet', 'cache_only']:
             try:
                 from apps.speech.services.google_provider import GoogleTTSProvider
 
@@ -237,8 +220,8 @@ class TTSService:
             except ImportError:
                 logger.warning("Google provider not available, falling back to Sarvam AI")
 
-        # Sarvam AI fallback for paid tiers if Google fails (high quality Indian voices)
-        if user_tier in ['google', 'google_wavenet', 'sarvam']:
+        # Sarvam AI fallback for all tiers if Google fails (high quality Indian voices)
+        if user_tier in ['google', 'google_wavenet', 'sarvam', 'cache_only']:
             try:
                 from apps.speech.services.sarvam_provider import SarvamAIProvider
 
@@ -275,8 +258,8 @@ class TTSService:
             except ImportError:
                 logger.warning("Sarvam provider not available, falling back to Svara")
 
-        # Svara emergency backup for paid tiers if both Google and Sarvam fail
-        if user_tier in ['google', 'google_wavenet', 'svara', 'sarvam']:
+        # Svara emergency backup for all tiers if both Google and Sarvam fail
+        if user_tier in ['google', 'google_wavenet', 'svara', 'sarvam', 'cache_only']:
             try:
                 from apps.speech.services.mms_provider import SvaraTTSProvider
 
@@ -394,9 +377,9 @@ class TTSService:
                 }
             )
 
-            # Save audio file
+            # Save audio file (Google TTS returns MP3 format)
             audio_cache.audio_file.save(
-                f"{cache_key}.wav",
+                f"{cache_key}.mp3",
                 ContentFile(audio_bytes),
                 save=True,
             )
@@ -574,8 +557,8 @@ class TTSService:
             'supported_languages': cls.get_supported_languages(),
             'cache_stats': cls.get_cache_stats(),
             'tier_info': {
-                'free': {'provider': 'cache_only', 'description': 'Pre-cached curriculum content'},
-                'standard': {'provider': 'google', 'price': 'NZD $20/month', 'description': 'Google TTS Standard voices'},
-                'premium': {'provider': 'google_wavenet', 'price': 'NZD $30/month', 'description': 'Google TTS WaveNet + Live classes'},
+                'free': {'provider': 'google', 'description': 'Google TTS Standard voices (limited content)'},
+                'standard': {'provider': 'google', 'price': 'NZD $20/month', 'description': 'Google TTS Standard voices (unlimited content)'},
+                'premium': {'provider': 'google_wavenet', 'price': 'NZD $30/month', 'description': 'Google TTS WaveNet (highest quality) + Live classes'},
             }
         }

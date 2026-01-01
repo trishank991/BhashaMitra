@@ -39,7 +39,7 @@ export default function LevelsPage() {
         } else {
           setError(response.error || 'Failed to load levels');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load curriculum levels');
       } finally {
         setLoading(false);
@@ -96,7 +96,7 @@ export default function LevelsPage() {
               </div>
               {currentLevel.peppi_welcome && (
                 <div className="mt-3 p-3 bg-white/20 rounded-xl">
-                  <p className="text-sm italic">"{currentLevel.peppi_welcome}"</p>
+                  <p className="text-sm italic">&ldquo;{currentLevel.peppi_welcome}&rdquo;</p>
                   <p className="text-xs mt-1 opacity-80">- Peppi</p>
                 </div>
               )}

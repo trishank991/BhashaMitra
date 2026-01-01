@@ -98,7 +98,7 @@ export function FlashcardReview({ onComplete, maxCards = 20, className }: Flashc
       } else {
         setError(response.error || 'Failed to fetch flashcards');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
@@ -180,7 +180,7 @@ export function FlashcardReview({ onComplete, maxCards = 20, className }: Flashc
         setError(response.error || 'Failed to submit review');
         setIsReviewing(false);
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
       setIsReviewing(false);
     }
@@ -219,7 +219,7 @@ export function FlashcardReview({ onComplete, maxCards = 20, className }: Flashc
           All Caught Up!
         </h3>
         <p className="text-gray-600 max-w-md">
-          You've reviewed all due flashcards for today. Great job! Come back tomorrow for more practice.
+          You&apos;ve reviewed all due flashcards for today. Great job! Come back tomorrow for more practice.
         </p>
         <div className="mt-6 flex items-center gap-2 text-green-600">
           <Award size={24} />

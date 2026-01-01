@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Trophy, Share2, RotateCcw, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { soundService } from '@/lib/soundService';
 import { PeppiMimicAttemptResult, getStarRating } from '@/types';
 
 interface ResultDisplayProps {
@@ -26,15 +27,35 @@ export function ResultDisplay({
   const [showStars, setShowStars] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
+  const soundsPlayedRef = useRef(false);
 
   const starRating = getStarRating(result.stars);
 
-  // Staggered animation sequence
+  // Staggered animation sequence with sound effects
   useEffect(() => {
     const timers: NodeJS.Timeout[] = [];
 
-    // Show stars after initial delay
-    timers.push(setTimeout(() => setShowStars(true), 500));
+    // Show stars after initial delay and play star sounds
+    timers.push(setTimeout(() => {
+      setShowStars(true);
+
+      // Play sounds only once
+      if (!soundsPlayedRef.current) {
+        soundsPlayedRef.current = true;
+
+        // Play star earned sounds for each star (staggered)
+        for (let i = 0; i < result.stars; i++) {
+          timers.push(setTimeout(() => {
+            soundService.playStarEarned(i);
+          }, i * 200 + 100));
+        }
+
+        // Play the result sound after stars animate
+        timers.push(setTimeout(() => {
+          soundService.playMimicResult(result.stars);
+        }, result.stars * 200 + 300));
+      }
+    }, 500));
 
     // Show details after stars
     timers.push(setTimeout(() => setShowDetails(true), 1500));
@@ -43,7 +64,7 @@ export function ResultDisplay({
     timers.push(setTimeout(() => setShowButtons(true), 2000));
 
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [result.stars]);
 
   const renderStars = () => {
     return (
@@ -191,7 +212,10 @@ export function ResultDisplay({
           >
             {/* Try Again */}
             <motion.button
-              onClick={onTryAgain}
+              onClick={() => {
+                soundService.onClick();
+                onTryAgain?.();
+              }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-colors"
@@ -203,7 +227,10 @@ export function ResultDisplay({
             {/* Share Button */}
             {onShare && result.stars >= 2 && (
               <motion.button
-                onClick={onShare}
+                onClick={() => {
+                  soundService.onClick();
+                  onShare?.();
+                }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold transition-colors"
@@ -216,7 +243,10 @@ export function ResultDisplay({
             {/* Next Challenge */}
             {onNext && (
               <motion.button
-                onClick={onNext}
+                onClick={() => {
+                  soundService.onClick();
+                  onNext?.();
+                }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-semibold transition-colors"

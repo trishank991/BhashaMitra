@@ -52,7 +52,7 @@ export default function LevelDetailPage() {
         if (modulesRes.success && modulesRes.data) {
           setModules(modulesRes.data);
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load level data');
       } finally {
         setLoading(false);

@@ -25,6 +25,11 @@ class AudioCache(TimeStampedModel):
         MALAYALAM = 'MALAYALAM', 'Malayalam'
         BENGALI = 'BENGALI', 'Bengali'
         KANNADA = 'KANNADA', 'Kannada'
+        MARATHI = 'MARATHI', 'Marathi'
+        ODIA = 'ODIA', 'Odia'
+        ASSAMESE = 'ASSAMESE', 'Assamese'
+        URDU = 'URDU', 'Urdu'
+        FIJI_HINDI = 'FIJI_HINDI', 'Fiji Hindi'
 
     class VoiceStyle(models.TextChoices):
         STORYTELLER = 'storyteller', 'Storyteller (Warm & Engaging)'
@@ -105,6 +110,210 @@ class AudioCache(TimeStampedModel):
         """Increment access count (called when audio is served)"""
         self.access_count += 1
         self.save(update_fields=['access_count', 'last_accessed_at'])
+
+
+class VoiceCharacter(TimeStampedModel):
+    """
+    Voice character profiles for TTS narration.
+
+    Supports different character types (Peppi, Grandmother, Teacher, etc.)
+    with customizable voice settings per language.
+
+    Architecture supports:
+    - Google TTS voices
+    - Sarvam AI voices
+    - Cloned voices (e.g., grandmother's voice via ElevenLabs/Replicate)
+    - Custom voice providers
+    """
+
+    class CharacterType(models.TextChoices):
+        PEPPI = 'PEPPI', 'Peppi (AI Tutor)'
+        GRANDMOTHER = 'GRANDMOTHER', 'Grandmother'
+        GRANDFATHER = 'GRANDFATHER', 'Grandfather'
+        TEACHER = 'TEACHER', 'Teacher'
+        NARRATOR = 'NARRATOR', 'Narrator'
+        PARENT = 'PARENT', 'Parent'
+
+    class Gender(models.TextChoices):
+        MALE = 'MALE', 'Male'
+        FEMALE = 'FEMALE', 'Female'
+        NEUTRAL = 'NEUTRAL', 'Neutral'
+
+    class VoiceSource(models.TextChoices):
+        GOOGLE_TTS = 'GOOGLE_TTS', 'Google Cloud TTS'
+        SARVAM_AI = 'SARVAM_AI', 'Sarvam AI (Indic)'
+        CLONED = 'CLONED', 'Cloned Voice (ElevenLabs/Replicate)'
+        CUSTOM = 'CUSTOM', 'Custom Provider'
+
+    # Basic Info
+    name = models.CharField(
+        max_length=100,
+        help_text="Character name in English (e.g., 'Peppi', 'Grandmother')"
+    )
+    name_native = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Character name in native script (e.g., 'पेप्पी', 'दादी')"
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="Description of the character and voice style"
+    )
+
+    # Character Classification
+    character_type = models.CharField(
+        max_length=20,
+        choices=CharacterType.choices,
+        help_text="Type of character"
+    )
+    language = models.CharField(
+        max_length=20,
+        choices=AudioCache.Language.choices,
+        help_text="Language for this voice character"
+    )
+    gender = models.CharField(
+        max_length=10,
+        choices=Gender.choices,
+        help_text="Voice gender"
+    )
+
+    # Voice Configuration
+    voice_source = models.CharField(
+        max_length=20,
+        choices=VoiceSource.choices,
+        default=VoiceSource.SARVAM_AI,
+        help_text="TTS provider/source for this voice"
+    )
+    voice_id = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="External voice ID (e.g., ElevenLabs voice ID, Google voice name, Sarvam speaker)"
+    )
+    voice_model = models.CharField(
+        max_length=100,
+        blank=True,
+        default='bulbul:v2',
+        help_text="TTS model to use (e.g., 'bulbul:v2' for Sarvam)"
+    )
+
+    # Voice Characteristics (SSML/TTS settings)
+    speaking_rate = models.FloatField(
+        default=0.7,
+        validators=[MinValueValidator(0.5), MaxValueValidator(2.0)],
+        help_text="Speaking rate/pace: 0.5 (slow) to 2.0 (fast), 0.7 is balanced for children"
+    )
+    pitch = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(-20.0), MaxValueValidator(20.0)],
+        help_text="Voice pitch adjustment: -20 to +20 semitones"
+    )
+    volume_gain_db = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(-10.0), MaxValueValidator(10.0)],
+        help_text="Volume gain in decibels: -10 to +10 dB"
+    )
+
+    # Character Personality (used to enhance narration)
+    warmth_phrases = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="JSON object with warmth phrases per language"
+    )
+    personality_traits = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="JSON object describing personality traits for AI prompt enhancement"
+    )
+
+    # Status
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Is this voice character available for use?"
+    )
+    is_default = models.BooleanField(
+        default=False,
+        help_text="Is this the default voice for this character type and language?"
+    )
+
+    # Cloned Voice Metadata (for future integration)
+    cloned_from_user = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cloned_voices',
+        help_text="User who provided voice samples for cloning (e.g., parent/grandparent)"
+    )
+    clone_quality_score = models.FloatField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text="Quality score of cloned voice (0.0 to 1.0)"
+    )
+    clone_sample_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of voice samples used for cloning"
+    )
+
+    class Meta:
+        db_table = 'voice_characters'
+        verbose_name = 'Voice Character'
+        verbose_name_plural = 'Voice Characters'
+        indexes = [
+            models.Index(fields=['character_type', 'language']),
+            models.Index(fields=['language', 'is_active']),
+            models.Index(fields=['voice_source']),
+            models.Index(fields=['is_default']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['character_type', 'language', 'gender'],
+                condition=models.Q(is_default=True),
+                name='unique_default_per_character_language_gender'
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.get_character_type_display()}) - {self.language} - {self.gender}"
+
+    def get_voice_config(self) -> dict:
+        """Get voice configuration dict for TTS provider."""
+        config = {
+            'character_type': self.character_type,
+            'language': self.language,
+            'gender': self.gender,
+            'voice_source': self.voice_source,
+            'speaking_rate': self.speaking_rate,
+            'pitch': self.pitch,
+            'volume_gain_db': self.volume_gain_db,
+        }
+
+        if self.voice_source == self.VoiceSource.SARVAM_AI:
+            config['speaker'] = self.voice_id or ('anushka' if self.gender == self.Gender.FEMALE else 'arvind')
+            config['model'] = self.voice_model or 'bulbul:v2'
+            config['pace'] = self.speaking_rate
+        elif self.voice_source == self.VoiceSource.GOOGLE_TTS:
+            config['voice_name'] = self.voice_id
+            config['speed'] = self.speaking_rate
+        elif self.voice_source == self.VoiceSource.CLONED:
+            config['voice_id'] = self.voice_id
+            config['model'] = self.voice_model
+
+        return config
+
+    def get_warmth_phrases(self, category: str = None) -> list:
+        """Get warmth phrases for this character."""
+        if not self.warmth_phrases:
+            return []
+
+        if category and category in self.warmth_phrases:
+            return self.warmth_phrases.get(category, [])
+
+        all_phrases = []
+        for phrases_list in self.warmth_phrases.values():
+            if isinstance(phrases_list, list):
+                all_phrases.extend(phrases_list)
+        return all_phrases
 
 
 class PeppiMimicChallenge(TimeStampedModel):

@@ -24,20 +24,18 @@ import {
   PeppiMimicAttemptResult,
   PeppiMimicProgressSummary,
   MimicAttemptSubmitRequest,
-  MimicCategory,
-  MimicDifficulty,
   MimicChallengeFilters,
   // Curriculum types
-  CurriculumLevel,
-  CurriculumModule,
-  Lesson,
-  LevelProgress,
-  ModuleProgress,
   LessonProgress,
   CurriculumLevelWithProgress,
   CurriculumModuleWithProgress,
   LessonWithProgress,
   ChildCurriculumProgress,
+  // Parent Dashboard types
+  ParentDashboard,
+  ChildProgress,
+  Activity,
+  ChildStats,
   // Song types
   Song,
   // Peppi AI types
@@ -63,6 +61,8 @@ import {
   TeacherCharacterType,
   Classroom,
   ClassroomWithLevel,
+  // Family types
+  Family,
 } from '@/types';
 
 // Response types matching backend
@@ -79,6 +79,9 @@ interface LoginResponse {
       subscription_expires_at?: string | null;
       subscription_info?: Record<string, unknown>;
       tts_provider?: string;
+      email_verified?: boolean;
+      is_onboarded?: boolean;
+      onboarding_completed_at?: string | null;
     };
     session: {
       access_token: string;
@@ -98,6 +101,9 @@ interface RegisterResponse {
       subscription_expires_at?: string | null;
       subscription_info?: Record<string, unknown>;
       tts_provider?: string;
+      email_verified?: boolean;
+      is_onboarded?: boolean;
+      onboarding_completed_at?: string | null;
     };
     session: {
       access_token: string;
@@ -109,6 +115,11 @@ interface RegisterResponse {
 class ApiClient {
   private baseUrl: string;
   private accessToken: string | null = null;
+  private storedRefreshToken: string | null = null;
+  private isRefreshing: boolean = false;
+  private refreshPromise: Promise<boolean> | null = null;
+  private onTokenRefreshed: ((newAccessToken: string) => void) | null = null;
+  private onLogout: (() => void) | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -122,9 +133,71 @@ class ApiClient {
     return this.accessToken;
   }
 
+  setRefreshToken(token: string | null) {
+    this.storedRefreshToken = token;
+  }
+
+  // Set callbacks for token refresh and logout
+  setAuthCallbacks(
+    onTokenRefreshed: (newAccessToken: string) => void,
+    onLogout: () => void
+  ) {
+    this.onTokenRefreshed = onTokenRefreshed;
+    this.onLogout = onLogout;
+  }
+
+  private async attemptTokenRefresh(): Promise<boolean> {
+    // Prevent multiple simultaneous refresh attempts
+    if (this.isRefreshing && this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    if (!this.storedRefreshToken) {
+      return false;
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = this.doTokenRefresh();
+
+    try {
+      return await this.refreshPromise;
+    } finally {
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+    }
+  }
+
+  private async doTokenRefresh(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/refresh/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh: this.storedRefreshToken }),
+      });
+
+      if (!response.ok) {
+        // Refresh failed - logout user
+        this.onLogout?.();
+        return false;
+      }
+
+      const data = await response.json();
+      if (data.access) {
+        this.accessToken = data.access;
+        this.onTokenRefreshed?.(data.access);
+        return true;
+      }
+      return false;
+    } catch {
+      this.onLogout?.();
+      return false;
+    }
+  }
+
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    skipAuthRefresh: boolean = false
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
 
@@ -141,6 +214,20 @@ class ApiClient {
         ...options,
         headers,
       });
+
+      // Handle 401 Unauthorized - attempt token refresh
+      if (response.status === 401 && !skipAuthRefresh && this.storedRefreshToken) {
+        const refreshed = await this.attemptTokenRefresh();
+        if (refreshed) {
+          // Retry the original request with new token
+          return this.request<T>(endpoint, options, true);
+        }
+        // Refresh failed, return the error
+        return {
+          success: false,
+          error: 'Session expired. Please log in again.',
+        };
+      }
 
       const data = await response.json();
 
@@ -192,11 +279,30 @@ class ApiClient {
       body: JSON.stringify({
         email: data.email,
         password: data.password,
+        password_confirm: data.password_confirm,
         name: data.name,
       }),
     });
 
     // Restore token only if register failed
+    if (!result.success) {
+      this.accessToken = previousToken;
+    }
+
+    return result;
+  }
+
+  async googleAuth(googleToken: string): Promise<ApiResponse<RegisterResponse & { meta?: { is_new_user?: boolean } }>> {
+    // Clear any existing token before Google auth
+    const previousToken = this.accessToken;
+    this.accessToken = null;
+
+    const result = await this.request<RegisterResponse & { meta?: { is_new_user?: boolean } }>('/auth/google/', {
+      method: 'POST',
+      body: JSON.stringify({ token: googleToken }),
+    });
+
+    // Restore token only if Google auth failed
     if (!result.success) {
       this.accessToken = previousToken;
     }
@@ -282,6 +388,13 @@ class ApiClient {
     });
   }
 
+  // Onboarding
+  async completeOnboarding(): Promise<ApiResponse<{ is_onboarded: boolean }>> {
+    return this.request<{ is_onboarded: boolean }>('/users/complete-onboarding/', {
+      method: 'POST',
+    });
+  }
+
   // Stories endpoints
   async getStories(language?: LanguageCode, page?: number): Promise<ApiResponse<PaginatedResponse<Story>>> {
     const params = new URLSearchParams();
@@ -345,8 +458,8 @@ class ApiClient {
       difficulty: this.mapLevelToDifficulty(backendStory.level),
       duration: backendStory.estimated_minutes || 3,
       thumbnail: backendStory.cover_image_url || '',
-      pages: (backendStory.pages || []).map((page) => this.transformStoryPage(page)),
-      vocabulary: (backendStory.vocabulary || []).map((vocab) => this.transformVocabularyWord(vocab)),
+      pages: (backendStory.pages || []).map((page: any) => this.transformStoryPage(page)),
+      vocabulary: (backendStory.vocabulary || []).map((vocab: any) => this.transformVocabularyWord(vocab)),
       isLocked: false,
       requiredLevel: backendStory.level || 1,
       xpReward: backendStory.xp_reward || 10,
@@ -822,11 +935,13 @@ class ApiClient {
     if (filters?.mastered !== undefined) params.append('mastered', filters.mastered.toString());
 
     const queryString = params.toString();
-    const response = await this.request<PeppiMimicChallengeWithProgress[]>(
+    const response = await this.request<{ challenges: PeppiMimicChallengeWithProgress[]; categories: Record<string, string>; total: number }>(
       `/children/${childId}/mimic/challenges/${queryString ? `?${queryString}` : ''}`
     );
     if (response.success && response.data) {
-      return { success: true, data: response.data || [] };
+      // Extract challenges array from response object
+      const challenges = response.data.challenges || [];
+      return { success: true, data: Array.isArray(challenges) ? challenges : [] };
     }
     return { success: false, error: response.error, data: [] };
   }
@@ -1326,6 +1441,68 @@ class ApiClient {
     return this.request<CurrentSubscriptionResponse>('/auth/subscription/');
   }
 
+  // ============================================
+  // STRIPE PAYMENT METHODS
+  // ============================================
+
+  /**
+   * Get pricing information for all tiers (public endpoint)
+   */
+  async getPricingInfo(): Promise<ApiResponse<PricingInfo>> {
+    return this.request<PricingInfo>('/payments/pricing/', {}, true);
+  }
+
+  /**
+   * Create a Stripe Checkout session for subscription
+   * Returns a URL to redirect the user to Stripe's checkout page
+   */
+  async createCheckoutSession(data: CreateCheckoutRequest): Promise<ApiResponse<CreateCheckoutResponse>> {
+    return this.request<CreateCheckoutResponse>('/payments/checkout/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Create a Stripe Customer Portal session for managing subscription
+   * Returns a URL to redirect the user to Stripe's billing portal
+   */
+  async createCustomerPortal(returnUrl?: string): Promise<ApiResponse<CustomerPortalResponse>> {
+    return this.request<CustomerPortalResponse>('/payments/portal/', {
+      method: 'POST',
+      body: JSON.stringify({ return_url: returnUrl }),
+    });
+  }
+
+  /**
+   * Get user's active subscription details
+   */
+  async getSubscription(): Promise<ApiResponse<SubscriptionResponse>> {
+    return this.request<SubscriptionResponse>('/payments/subscription/');
+  }
+
+  /**
+   * Cancel the current subscription
+   * @param cancelImmediately If true, cancels immediately. Otherwise cancels at end of billing period.
+   * @param reason Optional cancellation reason
+   */
+  async cancelSubscription(cancelImmediately: boolean = false, reason?: string): Promise<ApiResponse<{ message: string; subscription: SubscriptionInfo }>> {
+    return this.request('/payments/subscription/cancel/', {
+      method: 'POST',
+      body: JSON.stringify({
+        cancel_immediately: cancelImmediately,
+        reason,
+      }),
+    });
+  }
+
+  /**
+   * Get user's payment history
+   */
+  async getPaymentHistory(): Promise<ApiResponse<PaymentHistoryResponse>> {
+    return this.request<PaymentHistoryResponse>('/payments/history/');
+  }
+
   /**
    * Get homepage progress summary for a child
    * @param childId Child UUID
@@ -1333,6 +1510,345 @@ class ApiClient {
   async getChildHomepageProgress(childId: string): Promise<ApiResponse<ChildHomepageProgressResponse>> {
     return this.request<ChildHomepageProgressResponse>(`/curriculum/children/${childId}/homepage-progress/`);
   }
+
+  // ========================================
+  // PARENT DASHBOARD ENDPOINTS
+  // ========================================
+
+  /**
+   * Get parent dashboard data with all children summaries and family stats
+   */
+  async getParentDashboard(): Promise<ApiResponse<ParentDashboard>> {
+    return this.request<ParentDashboard>('/parent/dashboard/');
+  }
+
+  /**
+   * Get detailed progress for a specific child
+   * @param childId Child UUID
+   */
+  async getChildProgress(childId: string): Promise<ApiResponse<ChildProgress>> {
+    return this.request<ChildProgress>(`/parent/children/${childId}/progress/`);
+  }
+
+  /**
+   * Get activity feed for a specific child
+   * @param childId Child UUID
+   */
+  async getChildActivity(childId: string): Promise<ApiResponse<Activity[]>> {
+    const response = await this.request<Activity[]>(`/parent/children/${childId}/activity/`);
+    if (response.success && response.data) {
+      return { success: true, data: response.data || [] };
+    }
+    return { success: false, error: response.error, data: [] };
+  }
+
+  /**
+   * Get statistics for a specific child
+   * @param childId Child UUID
+   */
+  async getChildStats(childId: string): Promise<ApiResponse<ChildStats>> {
+    return this.request<ChildStats>(`/parent/children/${childId}/stats/`);
+  }
+
+  /**
+   * Get parent notification preferences
+   */
+  async getParentPreferences(): Promise<ApiResponse<ParentPreferencesResponse>> {
+    return this.request<ParentPreferencesResponse>('/parent/preferences/');
+  }
+
+  /**
+   * Update parent notification preferences
+   */
+  async updateParentPreferences(updates: Record<string, unknown>): Promise<ApiResponse<{ success: boolean }>> {
+    return this.request('/parent/preferences/', {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  /**
+   * Get learning goals for a child
+   */
+  async getChildGoals(childId: string): Promise<ApiResponse<ChildGoalsResponse>> {
+    return this.request<ChildGoalsResponse>(`/parent/children/${childId}/goals/`);
+  }
+
+  /**
+   * Create a learning goal for a child
+   */
+  async createChildGoal(childId: string, data: CreateGoalRequest): Promise<ApiResponse<GoalResponse>> {
+    return this.request<GoalResponse>(`/parent/children/${childId}/goals/`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Delete a learning goal
+   */
+  async deleteChildGoal(childId: string, goalId: string): Promise<ApiResponse<{ success: boolean }>> {
+    return this.request(`/parent/children/${childId}/goals/${goalId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Get weekly report for a child
+   */
+  async getChildWeeklyReport(childId: string): Promise<ApiResponse<WeeklyReportResponse>> {
+    return this.request<WeeklyReportResponse>(`/parent/children/${childId}/weekly-report/`);
+  }
+
+  /**
+   * Get suggested parent-child activities
+   */
+  async getParentActivities(language: string, age?: number): Promise<ApiResponse<ParentActivitiesResponse>> {
+    const params = new URLSearchParams({ language });
+    if (age !== undefined) params.append('age', String(age));
+    return this.request<ParentActivitiesResponse>(`/parent/activities/?${params}`);
+  }
+
+  // ========================================
+  // FAMILY ENDPOINTS
+  // ========================================
+
+  /**
+   * Get the current user's family
+   */
+  async getFamily(): Promise<ApiResponse<Family>> {
+    return this.request<Family>('/api/v1/family/');
+  }
+
+  /**
+   * Create a new family for the current user
+   * @param name Family name
+   */
+  async createFamily(name: string): Promise<ApiResponse<Family>> {
+    return this.request<Family>('/api/v1/family/create/', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  /**
+   * Join a family using an invite code
+   * @param code Family invite code
+   */
+  async joinFamilyViaCode(code: string): Promise<ApiResponse<Family>> {
+    return this.request<Family>(`/api/v1/family/join/${code}/`, {
+      method: 'POST',
+    });
+  }
+
+  /**
+   * Validate a family invite code and get family info
+   * @param code Family invite code
+   */
+  async validateFamilyCode(code: string): Promise<ApiResponse<{name: string, member_count: number}>> {
+    return this.request<{name: string, member_count: number}>(`/api/v1/family/invite/${code}/`);
+  }
+
+  /**
+   * Get the current family's invite code
+   */
+  async getFamilyInviteCode(): Promise<ApiResponse<{invite_code: string, expires_at: string}>> {
+    return this.request<{invite_code: string, expires_at: string}>('/api/v1/family/invite-code/');
+  }
+
+  /**
+   * Refresh the family invite code (generate a new one)
+   */
+  async refreshFamilyInviteCode(): Promise<ApiResponse<{invite_code: string, expires_at: string}>> {
+    return this.request<{invite_code: string, expires_at: string}>('/api/v1/family/invite-code/', {
+      method: 'POST',
+    });
+  }
+
+  /**
+   * Get all children in the current user's family
+   */
+  async getFamilyChildren(): Promise<ApiResponse<ChildProfile[]>> {
+    return this.request<ChildProfile[]>('/api/v1/family/children/');
+  }
+
+  /**
+   * Add a child to the family
+   * @param childId Child UUID
+   */
+  async addChildToFamily(childId: string): Promise<ApiResponse<void>> {
+    return this.request<void>('/api/v1/family/children/', {
+      method: 'POST',
+      body: JSON.stringify({ child_id: childId }),
+    });
+  }
+
+  /**
+   * Remove a child from the family
+   * @param childId Child UUID
+   */
+  async removeChildFromFamily(childId: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/api/v1/family/children/${childId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ========================================
+  // CHALLENGE ENDPOINTS (Viral Quiz Sharing)
+  // ========================================
+
+  /**
+   * Get challenge to play (PUBLIC - no auth required)
+   * @param code Challenge code (e.g., "7K3M")
+   */
+  async getPublicChallenge(code: string): Promise<ApiResponse<{ data: PublicChallengeResponse }>> {
+    return this.request<{ data: PublicChallengeResponse }>(`/challenges/play/${code.toUpperCase()}/`);
+  }
+
+  /**
+   * Start a challenge attempt (PUBLIC - no auth required)
+   * @param code Challenge code
+   * @param data Participant info
+   */
+  async startChallengeAttempt(
+    code: string,
+    data: StartChallengeAttemptRequest
+  ): Promise<ApiResponse<{ data: { attempt_id: string; challenge: PublicChallengeResponse } }>> {
+    return this.request(`/challenges/play/${code.toUpperCase()}/`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Submit challenge answers (PUBLIC - no auth required)
+   * @param data Submit data with attempt_id, answers, and time_taken
+   */
+  async submitChallengeAnswers(data: SubmitChallengeRequest): Promise<ApiResponse<{ data: ChallengeResultResponse }>> {
+    return this.request(`/challenges/submit/`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Get challenge leaderboard (PUBLIC - no auth required)
+   * @param code Challenge code
+   */
+  async getChallengeLeaderboard(code: string): Promise<ApiResponse<{ data: ChallengeLeaderboardResponse }>> {
+    return this.request<{ data: ChallengeLeaderboardResponse }>(`/challenges/leaderboard/${code.toUpperCase()}/`);
+  }
+
+  /**
+   * List user's created challenges (AUTH REQUIRED)
+   */
+  async getMyChallenges(): Promise<ApiResponse<{ data: ChallengeResponse[] }>> {
+    return this.request<{ data: ChallengeResponse[] }>('/challenges/');
+  }
+
+  /**
+   * Create a new challenge (AUTH REQUIRED)
+   * @param data Challenge creation data
+   */
+  async createChallenge(data: CreateChallengeRequest): Promise<ApiResponse<{ data: ChallengeResponse; message: string }>> {
+    return this.request(`/challenges/`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Get details of a challenge I created (AUTH REQUIRED)
+   * @param code Challenge code
+   */
+  async getMyChallenge(code: string): Promise<ApiResponse<{ data: ChallengeResponse }>> {
+    return this.request<{ data: ChallengeResponse }>(`/challenges/${code.toUpperCase()}/`);
+  }
+
+  /**
+   * Get my challenge creation quota (AUTH REQUIRED)
+   */
+  async getChallengeQuota(): Promise<ApiResponse<{ data: ChallengeQuotaResponse }>> {
+    return this.request<{ data: ChallengeQuotaResponse }>('/challenges/quota/');
+  }
+
+  /**
+   * Get available challenge categories for a language (AUTH REQUIRED)
+   * @param language Language code
+   */
+  async getChallengeCateies(language: string = 'HINDI'): Promise<ApiResponse<{ data: ChallengeCategoryOption[] }>> {
+    return this.request<{ data: ChallengeCategoryOption[] }>(`/challenges/categories/?language=${language}`);
+  }
+}
+
+// Parent engagement types
+export interface ParentPreferencesResponse {
+  id: string;
+  notification_frequency: string;
+  email_reports: boolean;
+  push_notifications: boolean;
+  sms_alerts: boolean;
+  preferred_report_day: number;
+  timezone: string;
+}
+
+export interface ChildGoalsResponse {
+  goals: GoalResponse[];
+  count: number;
+}
+
+export interface GoalResponse {
+  id: string;
+  goal_type: string;
+  target_value: number;
+  current_value: number;
+  start_date: string;
+  end_date: string | null;
+  is_active: boolean;
+  progress_percentage: number;
+}
+
+export interface CreateGoalRequest {
+  type: string;
+  target: number;
+  deadline?: string;
+}
+
+export interface WeeklyReportResponse {
+  daily_data: Array<{
+    date: string;
+    time_spent_minutes: number;
+    lessons_completed: number;
+    points_earned: number;
+  }>;
+  summary: {
+    total_time_minutes: number;
+    total_lessons: number;
+    total_points: number;
+    days_active: number;
+  };
+  comparison: {
+    time_change_percent: number;
+    points_change_percent: number;
+    trend: string;
+  };
+  highlights: Array<{ type: string; message: string; icon: string }>;
+  suggestions: Array<{ type: string; message: string; action: string }>;
+}
+
+export interface ParentActivitiesResponse {
+  activities: Array<{
+    id: string;
+    title: string;
+    activity_type: string;
+    description: string;
+    duration_minutes: number;
+    materials_needed: string[];
+    learning_outcomes: string[];
+    is_featured: boolean;
+    age_range: string;
+  }>;
+  count: number;
 }
 
 // Subscription Types
@@ -1496,6 +2012,60 @@ export interface FlashcardReviewResult {
   interval_days: number;
 }
 
+// Stripe Payment Types
+export interface CreateCheckoutRequest {
+  tier: 'STANDARD' | 'PREMIUM';
+  billing_cycle?: 'monthly' | 'yearly';
+  success_url?: string;
+  cancel_url?: string;
+}
+
+export interface CreateCheckoutResponse {
+  session_id: string;
+  url: string;
+}
+
+export interface CustomerPortalResponse {
+  url: string;
+}
+
+export interface SubscriptionInfo {
+  id: string;
+  tier: 'STANDARD' | 'PREMIUM';
+  status: 'active' | 'trialing' | 'past_due' | 'canceled' | 'incomplete';
+  billing_cycle: 'monthly' | 'yearly';
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  is_trialing: boolean;
+  trial_end: string | null;
+}
+
+export interface SubscriptionResponse {
+  subscription: SubscriptionInfo | null;
+  tier: string;
+  has_subscription: boolean;
+}
+
+export interface PaymentRecord {
+  id: string;
+  amount: string;
+  currency: string;
+  status: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface PaymentHistoryResponse {
+  payments: PaymentRecord[];
+}
+
+export interface PricingInfo {
+  pricing: Record<string, { monthly: number; yearly: number }>;
+  features: Record<string, Record<string, boolean | string | number>>;
+  currency: string;
+  trial_days: number;
+}
+
 export interface Script {
   id: string;
   language: string;
@@ -1513,6 +2083,7 @@ export interface Letter {
   category: string;
   example_word: string;
   example_word_translation: string;
+  example_image?: string;
   audio_url?: string;
   pronunciation_guide: string;
 }
@@ -1576,6 +2147,129 @@ export interface GameWord {
   romanized: string;
   english: string;
   audioUrl?: string;
+}
+
+// Challenge Types (Viral Quiz Sharing)
+export interface ChallengeQuestion {
+  id: number;
+  type: 'alphabet_recognition' | 'vocabulary_to_english' | 'english_to_vocabulary';
+  question: string;
+  prompt: string;
+  prompt_native?: string;
+  romanization?: string;
+  choices: string[];
+  correct_index?: number; // Only present for creators
+  image_url?: string;
+  audio_url?: string;
+  hint?: string;
+}
+
+export interface PublicChallengeResponse {
+  id: string;
+  code: string;
+  title: string;
+  title_native?: string;
+  language: string;
+  language_name: string;
+  category: string;
+  difficulty: string;
+  question_count: number;
+  time_limit_seconds: number;
+  questions: Omit<ChallengeQuestion, 'correct_index'>[];
+  is_expired: boolean;
+  creator_name: string;
+}
+
+export interface ChallengeResponse {
+  id: string;
+  code: string;
+  title: string;
+  title_native?: string;
+  language: string;
+  language_name: string;
+  category: string;
+  difficulty: string;
+  question_count: number;
+  time_limit_seconds: number;
+  questions: ChallengeQuestion[];
+  is_active: boolean;
+  total_attempts: number;
+  total_completions: number;
+  average_score: number;
+  participant_count: number;
+  expires_at?: string;
+  is_expired: boolean;
+  share_url: string;
+  creator_name: string;
+  created_at: string;
+}
+
+export interface StartChallengeAttemptRequest {
+  participant_name: string;
+  participant_location?: string;
+}
+
+export interface SubmitChallengeRequest {
+  attempt_id: string;
+  answers: number[];
+  time_taken_seconds: number;
+}
+
+export interface ChallengeResultResponse {
+  score: number;
+  max_score: number;
+  percentage: number;
+  time_taken_seconds: number;
+  rank: number;
+  total_participants: number;
+  detailed_results: { question_id: number; correct: boolean; user_answer: number; correct_answer: number }[];
+  challenge_title: string;
+  share_url: string;
+}
+
+export interface LeaderboardEntry {
+  id: string;
+  participant_name: string;
+  participant_location?: string;
+  score: number;
+  max_score: number;
+  percentage: number;
+  time_taken_seconds: number;
+  rank: number;
+  completed_at: string;
+}
+
+export interface ChallengeLeaderboardResponse {
+  challenge_title: string;
+  challenge_code: string;
+  total_participants: number;
+  average_score: number;
+  leaderboard: LeaderboardEntry[];
+}
+
+export interface ChallengeQuotaResponse {
+  challenges_created_today: number;
+  total_challenges_created: number;
+  last_reset_date: string;
+  can_create: boolean;
+  message: string;
+}
+
+export interface ChallengeCategoryOption {
+  value: string;
+  label: string;
+  item_count: number;
+}
+
+export interface CreateChallengeRequest {
+  title: string;
+  title_native?: string;
+  language: string;
+  category: string;
+  difficulty: string;
+  question_count: number;
+  time_limit_seconds: number;
+  child_id?: string;
 }
 
 export const api = new ApiClient(API_BASE_URL);

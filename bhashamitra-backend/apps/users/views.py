@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
 
+from django.conf import settings
 from .serializers import (
     UserSerializer,
     RegisterSerializer,
@@ -15,6 +16,7 @@ from .serializers import (
     ResetPasswordSerializer,
     VerifyEmailSerializer,
     ResendVerificationSerializer,
+    GoogleAuthSerializer,
 )
 from .models import EmailVerificationToken, PasswordResetToken
 from .email_service import EmailService
@@ -339,3 +341,155 @@ class ResetPasswordView(APIView):
         return Response({
             'meta': {'message': 'Password has been reset successfully. You can now log in with your new password.'}
         })
+
+
+class CompleteOnboardingView(APIView):
+    """Mark user's onboarding as complete."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        user.complete_onboarding()
+        serializer = UserSerializer(user)
+        return Response({
+            'success': True,
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+class GoogleAuthView(APIView):
+    """Google OAuth authentication."""
+    permission_classes = [AllowAny]
+    throttle_scope = 'auth'
+
+    def post(self, request):
+        """
+        Handle Google OAuth authentication.
+
+        Accepts Google ID token from frontend, validates it,
+        and creates/logs in user, returning JWT tokens.
+        """
+        serializer = GoogleAuthSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        google_token = serializer.validated_data['token']
+
+        try:
+            # Verify the Google token using Google's tokeninfo endpoint
+            import requests
+            response = requests.get(
+                f'https://oauth2.googleapis.com/tokeninfo?id_token={google_token}',
+                timeout=10
+            )
+
+            if response.status_code != 200:
+                logger.error(f"Google token validation failed: {response.text}")
+                return Response(
+                    {'detail': 'Invalid Google token'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            idinfo = response.json()
+
+            # Verify token is for our app (if client ID is configured)
+            google_client_id = getattr(settings, 'GOOGLE_OAUTH_CLIENT_ID', '')
+            if google_client_id:
+                if idinfo.get('aud') != google_client_id:
+                    return Response(
+                        {'detail': 'Invalid token audience'},
+                        status=status.HTTP_401_UNAUTHORIZED
+                    )
+            else:
+                # In production, this should be configured
+                if not settings.DEBUG:
+                    logger.warning(
+                        "GOOGLE_OAUTH_CLIENT_ID not configured in production. "
+                        "Token audience validation skipped - this is a security risk!"
+                    )
+
+            # Extract user info from Google token
+            email = idinfo.get('email')
+            name = idinfo.get('name', '')
+            avatar_url = idinfo.get('picture', '')
+            email_verified = idinfo.get('email_verified', 'false') == 'true'
+
+            if not email:
+                return Response(
+                    {'detail': 'Email not provided by Google'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Check if user exists
+            try:
+                user = User.objects.get(email=email)
+
+                # Check if account is deleted
+                if user.is_deleted:
+                    return Response(
+                        {'detail': 'Account has been deactivated'},
+                        status=status.HTTP_401_UNAUTHORIZED
+                    )
+
+                # Update user info if changed
+                updated = False
+                if avatar_url and user.avatar_url != avatar_url:
+                    user.avatar_url = avatar_url
+                    updated = True
+
+                # Mark email as verified if Google confirms it
+                if email_verified and not user.email_verified:
+                    user.verify_email()
+                    updated = True
+
+                if updated:
+                    user.save()
+
+                is_new_user = False
+                logger.info(f"Google OAuth login for existing user: {email}")
+
+            except User.DoesNotExist:
+                # Create new user
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                    name=name or email.split('@')[0],
+                    avatar_url=avatar_url,
+                )
+
+                # Mark email as verified if Google confirms it
+                if email_verified:
+                    user.verify_email()
+
+                is_new_user = True
+                logger.info(f"New user created via Google OAuth: {email}")
+
+                # Send welcome email for new users
+                try:
+                    EmailService.send_welcome_email(user)
+                except Exception as e:
+                    logger.error(f"Failed to send welcome email: {e}")
+
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                'data': {
+                    'user': UserSerializer(user).data,
+                    'session': {
+                        'access_token': str(refresh.access_token),
+                        'refresh_token': str(refresh),
+                    }
+                },
+                'meta': {
+                    'is_new_user': is_new_user,
+                    'message': 'Registration successful' if is_new_user else 'Login successful',
+                    'auth_provider': 'google'
+                }
+            }, status=status.HTTP_201_CREATED if is_new_user else status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Google OAuth error: {e}")
+            return Response(
+                {'detail': 'Authentication failed. Please try again.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

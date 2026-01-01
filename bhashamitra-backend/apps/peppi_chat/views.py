@@ -78,16 +78,24 @@ class PeppiChatViewSet(ViewSet):
             )
         return 8  # Default age
 
-    def check_tier_access(self, user) -> tuple:
-        """Check if user's tier allows Peppi chat access."""
+    def check_tier_access(self, user, mode: str = None) -> tuple:
+        """Check if user's tier allows Peppi chat access.
+
+        FREE tier: Only CURRICULUM_HELP mode with preset prompts (restricted)
+        PAID tiers: All modes with full chat capabilities
+        """
         # Get user's subscription tier
         tier = getattr(user, 'subscription_tier', 'FREE')
         if hasattr(user, 'get_subscription_tier'):
             tier = user.get_subscription_tier()
 
-        # FREE tier cannot use chat
+        # FREE tier can ONLY use CURRICULUM_HELP mode (for preset prompts)
         if tier == 'FREE':
-            return False, "Peppi chat is available for paid subscribers only. Upgrade to unlock!"
+            if mode == 'CURRICULUM_HELP':
+                # Allow limited access for curriculum help with preset prompts
+                return True, 'FREE'
+            else:
+                return False, "Full Peppi chat is available for paid subscribers only. Upgrade to unlock all modes!"
 
         return True, tier
 
@@ -102,8 +110,17 @@ class PeppiChatViewSet(ViewSet):
         if error:
             return error
 
-        # Check tier access
-        has_access, tier_or_msg = self.check_tier_access(request.user)
+        # Parse request data first to get the mode
+        serializer = StartConversationSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data
+        mode = data.get('mode', ChatMode.GENERAL)
+        language = data.get('language', 'HINDI')
+
+        # Check tier access with mode (FREE users can only use CURRICULUM_HELP)
+        has_access, tier_or_msg = self.check_tier_access(request.user, mode=mode)
         if not has_access:
             return Response(
                 {'error': tier_or_msg},
@@ -118,14 +135,6 @@ class PeppiChatViewSet(ViewSet):
                 status=status.HTTP_429_TOO_MANY_REQUESTS
             )
 
-        serializer = StartConversationSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        data = serializer.validated_data
-        mode = data.get('mode', ChatMode.GENERAL)
-        language = data.get('language', 'HINDI')
-
         # Get optional context references
         festival = None
         story = None
@@ -134,8 +143,17 @@ class PeppiChatViewSet(ViewSet):
         if mode == ChatMode.FESTIVAL_STORY:
             from apps.festivals.models import Festival
             from apps.stories.models import Story
-            festival = get_object_or_404(Festival, id=data['festival_id'])
-            story = get_object_or_404(Story, id=data['story_id'])
+            # Festival and story are optional for general story chat
+            if data.get('festival_id'):
+                try:
+                    festival = Festival.objects.get(id=data['festival_id'])
+                except (Festival.DoesNotExist, ValueError):
+                    festival = None
+            if data.get('story_id'):
+                try:
+                    story = Story.objects.get(id=data['story_id'])
+                except (Story.DoesNotExist, ValueError):
+                    story = None
 
         elif mode == ChatMode.CURRICULUM_HELP and data.get('lesson_id'):
             from apps.curriculum.models import Lesson
@@ -198,8 +216,8 @@ class PeppiChatViewSet(ViewSet):
             is_active=True
         )
 
-        # Check tier access
-        has_access, tier_or_msg = self.check_tier_access(request.user)
+        # Check tier access with conversation mode (FREE users can only use CURRICULUM_HELP)
+        has_access, tier_or_msg = self.check_tier_access(request.user, mode=conversation.mode)
         if not has_access:
             return Response(
                 {'error': tier_or_msg},
@@ -519,36 +537,38 @@ class PeppiChatStatusView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def check_tier_access(self, user) -> tuple:
-        """Check if user's tier allows Peppi chat access."""
-        # Get user's subscription tier
-        tier = getattr(user, 'subscription_tier', 'FREE')
-
-        # FREE tier cannot use chat
-        if tier == 'FREE':
-            return False, "Peppi chat is available for paid subscribers only. Upgrade to unlock!"
-
-        return True, tier
-
     def get(self, request, child_id=None):
-        """Check if Peppi chat is available."""
+        """Check if Peppi chat is available.
+
+        FREE tier: Limited access (CURRICULUM_HELP mode only with preset prompts)
+        PAID tiers: Full access to all modes
+        """
         gemini_available = GeminiAIService.is_available()
 
-        # Check user's tier
-        has_access, tier_or_msg = self.check_tier_access(request.user)
+        # Get user's subscription tier
+        tier = getattr(request.user, 'subscription_tier', 'FREE')
+        if hasattr(request.user, 'get_subscription_tier'):
+            tier = request.user.get_subscription_tier()
+
+        # FREE tier has LIMITED access (CURRICULUM_HELP only)
+        # PAID tiers have FULL access
+        is_free_tier = tier == 'FREE'
 
         # Determine appropriate message
         if not gemini_available:
             message = "Peppi is taking a short nap. Please try again in a moment! 😴"
-        elif not has_access:
-            message = tier_or_msg
+        elif is_free_tier:
+            message = "Peppi is ready to help with your lessons!"
         else:
             message = "Peppi is ready to chat!"
 
         return Response({
-            'available': gemini_available and has_access,
+            # FREE tier can use CURRICULUM_HELP mode (limited access)
+            # So we return available=True if gemini is up
+            'available': gemini_available,
             'gemini_status': 'online' if gemini_available else 'offline',
-            'tier_access': has_access,
-            'tier': getattr(request.user, 'subscription_tier', 'FREE'),
+            'tier_access': True,  # All tiers have some access now
+            'tier': tier,
+            'is_limited': is_free_tier,  # Flag for frontend to know it's limited
             'message': message,
         })

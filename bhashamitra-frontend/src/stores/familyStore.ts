@@ -3,6 +3,7 @@
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { api } from '@/lib/api';
 import type {
   Family,
   FamilyLeaderboard,
@@ -53,11 +54,13 @@ export const useFamilyStore = create<FamilyState>()(
         set({ isLoading: true, error: null });
 
         try {
-          // TODO: Implement API call when backend endpoint is ready
-          // const response = await api.getFamily();
-
-          // For now, check if family exists in state
-          set({ isLoading: false });
+          const response = await api.getFamily();
+          
+          if (response.success && response.data) {
+            set({ family: response.data, isLoading: false });
+          } else {
+            set({ family: null, isLoading: false });
+          }
         } catch (error) {
           set({
             isLoading: false,
@@ -70,22 +73,18 @@ export const useFamilyStore = create<FamilyState>()(
         set({ isLoading: true, error: null });
 
         try {
-          // TODO: Implement API call
-          const family: Family = {
-            id: crypto.randomUUID(),
-            name,
-            primaryParentId: '', // Will be set by API
-            memberIds: [],
-            familyCode: Math.random().toString(36).substring(2, 12).toUpperCase(),
-            discountTier: 0,
-            totalChildren: 0,
-            collectivePoints: 0,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-
-          set({ family, isLoading: false });
-          return true;
+          const response = await api.createFamily(name);
+          
+          if (response.success && response.data) {
+            set({ family: response.data, isLoading: false });
+            return true;
+          } else {
+            set({
+              isLoading: false,
+              error: response.error || 'Failed to create family',
+            });
+            return false;
+          }
         } catch (error) {
           set({
             isLoading: false,
@@ -99,11 +98,18 @@ export const useFamilyStore = create<FamilyState>()(
         set({ isLoading: true, error: null });
 
         try {
-          // TODO: Implement API call
-          console.log('Joining family with code:', familyCode);
-
-          set({ isLoading: false });
-          return true;
+          const response = await api.joinFamilyViaCode(familyCode);
+          
+          if (response.success && response.data) {
+            set({ family: response.data, isLoading: false });
+            return true;
+          } else {
+            set({
+              isLoading: false,
+              error: response.error || 'Failed to join family',
+            });
+            return false;
+          }
         } catch (error) {
           set({
             isLoading: false,

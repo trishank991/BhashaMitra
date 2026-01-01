@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, Check, X, ChevronRight, BookOpen, Sparkles, HelpCircle, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -138,7 +138,7 @@ export function LessonContentView({
       (typeof currentExercise.correct === 'number' && currentExercise.options &&
        currentExercise.options[currentExercise.correct] === answer);
 
-    setIsCorrect(correct);
+    setIsCorrect(correct ? true : false);
     setTotalAnswered(totalAnswered + 1);
     if (correct) {
       setScore(score + 1);

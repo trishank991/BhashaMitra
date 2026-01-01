@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Trophy, Star, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAgeConfig } from '@/hooks/useAgeConfig';
-import AudioButton from '@/components/ui/AudioButton';
 import PeppiSpeech from '@/components/peppi/PeppiSpeech';
 import { shuffleArray } from '@/lib/utils';
 
@@ -39,7 +38,6 @@ interface MatchItem {
 export function MatchPairsGame({
   words,
   matchType = 'word-meaning',
-  language = 'HINDI',
   timeLimit = 0,
   onGameComplete,
   onBack,
@@ -55,7 +53,7 @@ export function MatchPairsGame({
   const [score, setScore] = useState(0);
   const [timeSpent, setTimeSpent] = useState(0);
   const [gameComplete, setGameComplete] = useState(false);
-  const [peppiTrigger, setPeppiTrigger] = useState<'welcome' | 'correct' | 'incorrect' | 'celebrating' | 'encouragement'>('welcome');
+  const [peppiTrigger, setPeppiTrigger] = useState<'welcome' | 'correct' | 'incorrect' | 'lessonComplete' | 'encouragement'>('welcome');
 
   // Adjust pairs based on age
   const pairsToUse = ageConfig.variant === 'junior' ? 4 : ageConfig.variant === 'standard' ? 6 : 8;
@@ -161,7 +159,7 @@ export function MatchPairsGame({
 
     if (leftItem.wordId === rightItem.wordId) {
       // Correct match!
-      setMatchedPairs((prev) => new Set([...prev, leftItem.wordId]));
+      setMatchedPairs((prev) => new Set(Array.from(prev).concat(leftItem.wordId)));
       setScore((prev) => prev + 10);
       setSelectedLeft(null);
       setSelectedRight(null);
@@ -171,7 +169,7 @@ export function MatchPairsGame({
       if (matchedPairs.size + 1 === pairsToUse) {
         setTimeout(() => {
           setGameComplete(true);
-          setPeppiTrigger('celebrating');
+          setPeppiTrigger('lessonComplete');
           onGameComplete(score + 10, pairsToUse, timeSpent);
         }, 500);
       }

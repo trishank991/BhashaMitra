@@ -81,9 +81,8 @@ export function ShareButton({
         setIsShared(false);
       }, 3000);
 
-    } catch (error) {
-      // User cancelled sharing or error occurred
-      console.log('Share cancelled or failed:', error);
+    } catch {
+      // User cancelled sharing or error occurred - this is expected
     } finally {
       setIsSharing(false);
     }

@@ -44,7 +44,7 @@ export default function SongsPage() {
         } else {
           setError(response.error || 'Failed to load songs');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load songs');
       } finally {
         setLoading(false);

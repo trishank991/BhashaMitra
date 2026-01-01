@@ -32,23 +32,23 @@ export function PeppiSpeech({
   onSpeakComplete,
   className,
 }: PeppiSpeechProps) {
-  const { setMood, setMessage, setIsTyping } = usePeppiStore();
+  const { setMood, setCurrentMessage, setTyping } = usePeppiStore();
   const ageConfig = useAgeConfig();
   const [currentScript, setCurrentScript] = useState<PeppiScript | null>(null);
   const [showAudioButton, setShowAudioButton] = useState(false);
 
   const speak = useCallback((script: PeppiScript) => {
-    setIsTyping(true);
+    setTyping(true);
     setMood(script.mood);
 
     // Simulate typing effect
     setTimeout(() => {
-      setIsTyping(false);
-      setMessage(script.message);
+      setTyping(false);
+      setCurrentMessage(script.message);
       setCurrentScript(script);
       setShowAudioButton(true);
     }, 500);
-  }, [setIsTyping, setMood, setMessage]);
+  }, [setTyping, setMood, setCurrentMessage]);
 
   useEffect(() => {
     if (trigger === 'custom' && customMessage) {

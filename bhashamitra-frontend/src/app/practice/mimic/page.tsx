@@ -21,8 +21,9 @@ import { AudioButton } from '@/components/ui/AudioButton';
 
 export default function MimicPracticePage() {
   const router = useRouter();
-  const { selectedChild } = useAuthStore();
+  const { activeChild: selectedChild } = useAuthStore();
 
+  const [isHydrated, setIsHydrated] = useState(false);
   const [challenges, setChallenges] = useState<PeppiMimicChallengeWithProgress[]>([]);
   const [progressSummary, setProgressSummary] = useState<PeppiMimicProgressSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,9 +31,16 @@ export default function MimicPracticePage() {
   const [filters, setFilters] = useState<MimicChallengeFilters>({});
   const [showFilters, setShowFilters] = useState(false);
 
+  // Handle hydration
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   // Fetch challenges and progress
   const fetchData = useCallback(async () => {
-    if (!selectedChild?.id) return;
+    if (!isHydrated || !selectedChild?.id) {
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -52,23 +60,24 @@ export default function MimicPracticePage() {
       if (progressRes.success && progressRes.data) {
         setProgressSummary(progressRes.data);
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  }, [selectedChild?.id, filters]);
+  }, [isHydrated, selectedChild?.id, filters]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Redirect if no child selected
+  // Redirect if no child selected (only after hydration)
   useEffect(() => {
+    if (!isHydrated) return;
     if (!selectedChild) {
       router.push('/home');
     }
-  }, [selectedChild, router]);
+  }, [isHydrated, selectedChild, router]);
 
   const handleChallengeClick = (challengeId: string) => {
     router.push(`/practice/mimic/${challengeId}`);
@@ -86,6 +95,15 @@ export default function MimicPracticePage() {
   const availableCategories = Array.from(
     new Set(challenges.map(c => c.category))
   ) as MimicCategory[];
+
+  // Show loading while hydrating
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-50 to-white">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+      </div>
+    );
+  }
 
   if (!selectedChild) {
     return null;

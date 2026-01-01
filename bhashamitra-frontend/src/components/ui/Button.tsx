@@ -3,6 +3,7 @@
 import { forwardRef, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { soundService } from '@/lib/soundService';
 
 type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -17,7 +18,9 @@ interface ButtonProps {
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
   className?: string;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Disable click sound effect */
+  silent?: boolean;
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
@@ -47,10 +50,19 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       type = 'button',
       onClick,
+      silent = false,
     },
     ref
   ) => {
     const isDisabled = disabled || isLoading;
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      // Play click sound unless silent or disabled
+      if (!silent && !isDisabled) {
+        soundService.onClick();
+      }
+      onClick?.(e);
+    };
 
     return (
       <motion.button
@@ -65,7 +77,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           className
         )}
         disabled={isDisabled}
-        onClick={onClick}
+        onClick={handleClick}
         whileTap={isDisabled ? {} : { scale: 0.95 }}
         whileHover={isDisabled ? {} : { scale: 1.02 }}
       >

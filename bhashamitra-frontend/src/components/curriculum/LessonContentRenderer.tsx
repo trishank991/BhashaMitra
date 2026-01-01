@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, ChevronLeft, ChevronRight, BookOpen, Music, Sparkles, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
-import type { LessonContent, ContentType } from '@/types/curriculum';
+import type { LessonContent } from '@/types/curriculum';
 
 interface ContentData {
   // Common fields
@@ -311,7 +311,7 @@ export function LessonContentRenderer({
         </h3>
         {data.sound && (
           <p className="text-xl text-teal-600 mb-4">
-            Sound: "{data.sound}"
+            Sound: &ldquo;{data.sound}&rdquo;
           </p>
         )}
 
@@ -521,7 +521,7 @@ export function LessonContentRenderer({
         return (
           <div className="bg-gray-100 rounded-2xl p-8 text-center">
             <p className="text-gray-500">
-              Content type "{content.content_type}" not yet supported
+              Content type &ldquo;{content.content_type}&rdquo; not yet supported
             </p>
           </div>
         );

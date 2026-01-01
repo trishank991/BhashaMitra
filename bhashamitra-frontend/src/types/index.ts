@@ -20,6 +20,9 @@ export interface User {
   subscription_expires_at?: string | null;
   subscription_info?: SubscriptionInfo;
   tts_provider?: 'cache_only' | 'svara' | 'sarvam' | 'google_wavenet';
+  email_verified?: boolean;
+  is_onboarded?: boolean;
+  onboarding_completed_at?: string | null;
 }
 
 export interface Parent extends User {
@@ -197,6 +200,7 @@ export interface LoginCredentials {
 export interface RegisterData {
   email: string;
   password: string;
+  password_confirm: string;
   name: string;
   role: 'parent';
 }
@@ -314,6 +318,56 @@ export interface FestivalsByReligion {
   };
 }
 
+// Parent Dashboard types
+export interface ChildSummary {
+  id: string;
+  name: string;
+  avatar: string;
+  level: number;
+  total_xp: number;
+  streak_count: number;
+  xp_this_week: number;
+  recent_activity_count: number;
+}
+
+export interface ParentDashboard {
+  children: ChildSummary[];
+  total_family_time: number;
+  badges_this_week: number;
+}
+
+export interface Activity {
+  id: string;
+  child_name: string;
+  activity_type: 'lesson' | 'game' | 'badge';
+  description: string;
+  timestamp: string;
+}
+
+export interface ChildProgress {
+  id: string;
+  name: string;
+  avatar: string;
+  level: number;
+  total_xp: number;
+  xp_to_next_level: number;
+  streak_count: number;
+  longest_streak: number;
+  total_lessons_completed: number;
+  total_games_played: number;
+  badges_earned: Badge[];
+  recent_activities: Activity[];
+}
+
+export interface ChildStats {
+  xp_this_week: number;
+  xp_this_month: number;
+  lessons_this_week: number;
+  games_this_week: number;
+  time_spent_minutes: number;
+  favorite_activity: string;
+}
+
 // Re-export types from feature modules
 export * from './offline';
 export * from './family';
@@ -323,3 +377,11 @@ export * from './mimic';
 export * from './curriculum';
 export * from './songs';
 export * from './peppi';
+
+export interface FamilyInfo {
+  id: string;
+  name: string;
+  parents: Parent[];
+  children: ChildProfile[];
+  created_at: string;
+}

@@ -9,3 +9,4 @@ export { LanguageSelector } from './LanguageSelector';
 export { SpeakerButton } from './SpeakerButton';
 export { SubscriptionBadge } from './SubscriptionBadge';
 export { IndianLanguageKeyboard } from './IndianLanguageKeyboard';
+export { PhoneticInput } from './PhoneticInput';

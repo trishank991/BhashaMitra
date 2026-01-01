@@ -87,6 +87,26 @@ export const SUPPORTED_LANGUAGES: Record<LanguageCode, Language> = {
   },
 };
 
+// Language learning benefits (used in onboarding / Join Family screens)
+export const LANGUAGE_BENEFITS = [
+  {
+    title: 'Cognitive Development',
+    description: 'Boosts memory, focus, and problem-solving skills in children.',
+  },
+  {
+    title: 'Cultural Connection',
+    description: 'Helps children stay connected to their roots and traditions.',
+  },
+  {
+    title: 'Communication Skills',
+    description: 'Improves listening, speaking, and confidence in expression.',
+  },
+  {
+    title: 'Future Readiness',
+    description: 'Builds a strong foundation for multilingual success.',
+  },
+];
+
 // XP and Level Configuration
 export const XP_PER_LEVEL = 100;
 export const STREAK_BONUS_XP = 10;

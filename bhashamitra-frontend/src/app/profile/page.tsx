@@ -8,10 +8,12 @@ import { Card, Button, Avatar, Badge, Loading, SubscriptionBadge } from '@/compo
 import { SubscriptionTier } from '@/types';
 import { useAuthStore } from '@/stores';
 import { fadeInUp, staggerContainer, SUPPORTED_LANGUAGES } from '@/lib/constants';
+import api from '@/lib/api';
 
 export default function ProfilePage() {
   const router = useRouter();
   const [isHydrated, setIsHydrated] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const { user, activeChild, children, logout, setActiveChild, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
@@ -43,6 +45,20 @@ export default function ProfilePage() {
   const handleLogout = () => {
     logout();
     router.push('/');
+  };
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const response = await api.createCustomerPortal(window.location.href);
+      if (response.success && response.data) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error('Failed to open subscription portal:', error);
+    } finally {
+      setPortalLoading(false);
+    }
   };
 
   // Handle both string and object formats from API
@@ -178,7 +194,7 @@ export default function ProfilePage() {
               </svg>
             </Card>
 
-            <Card interactive className="flex items-center justify-between">
+            <Card interactive onClick={() => router.push('/help')} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">❓</span>
                 <span className="font-medium">Help & Support</span>
@@ -250,18 +266,30 @@ export default function ProfilePage() {
                     variant="primary"
                     size="sm"
                     className="mt-3"
-                    onClick={() => alert('Payment integration coming soon!')}
+                    onClick={() => router.push('/pricing')}
                   >
                     Upgrade Now
                   </Button>
                 </div>
               )}
 
-              {user.subscription_tier !== 'FREE' && user.subscription_info?.expires_at && (
-                <div className="text-sm text-gray-500">
-                  <p>
-                    Expires: {new Date(user.subscription_info.expires_at).toLocaleDateString()}
-                  </p>
+              {user.subscription_tier !== 'FREE' && (
+                <div className="space-y-3">
+                  {user.subscription_info?.expires_at && (
+                    <div className="text-sm text-gray-500">
+                      <p>
+                        Renews: {new Date(user.subscription_info.expires_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleManageSubscription}
+                    disabled={portalLoading}
+                  >
+                    {portalLoading ? 'Loading...' : 'Manage Subscription'}
+                  </Button>
                 </div>
               )}
             </Card>

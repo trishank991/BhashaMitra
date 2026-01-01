@@ -80,9 +80,7 @@ export function PeppiChatPanel({ childId }: PeppiChatPanelProps) {
 
   // Check status on mount
   useEffect(() => {
-    console.log('[PeppiChatPanel] useEffect triggered - isOpen:', isOpen, 'childId:', childId);
     if (isOpen && childId) {
-      console.log('[PeppiChatPanel] Calling checkStatus...');
       checkStatus(childId);
     }
   }, [isOpen, childId, checkStatus]);
@@ -104,10 +102,14 @@ export function PeppiChatPanel({ childId }: PeppiChatPanelProps) {
   // Handle send message
   const handleSendMessage = async (content: string) => {
     if (!activeConversation) {
-      // Start a new conversation first and wait for it
-      await startConversation(childId, { mode, language: childLanguage });
-      // Now send the message - the store will have activeConversation set
-      sendMessage(childId, content);
+      // Start a new conversation first and wait for it to complete
+      // startConversation now returns the conversation directly,
+      // avoiding the race condition with state updates
+      const newConversation = await startConversation(childId, { mode, language: childLanguage });
+      if (newConversation) {
+        // Send message using the returned conversation directly
+        sendMessage(childId, content);
+      }
     } else {
       sendMessage(childId, content);
     }

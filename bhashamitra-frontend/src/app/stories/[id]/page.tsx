@@ -64,9 +64,7 @@ export default function StoryDetailPage() {
       setLoading(true);
       setError(null);
       try {
-        console.log('[StoryDetailPage] Fetching story:', storyId);
         const response = await api.getStory(storyId);
-        console.log('[StoryDetailPage] API response:', response);
 
         if (response.success && response.data) {
           setStory(response.data);

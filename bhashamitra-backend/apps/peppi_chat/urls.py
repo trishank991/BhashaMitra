@@ -66,4 +66,12 @@ urlpatterns = [
         peppi_chat_end_viewset,
         name='peppi-chat-end'
     ),
+
+    # Escalation
+    # POST /api/v1/children/{child_id}/peppi-chat/{conversation_id}/escalate/
+    path(
+        '<uuid:pk>/escalate/',
+        PeppiChatViewSet.as_view({'post': 'submit_escalation'}),
+        name='peppi-chat-escalate'
+    ),
 ]

@@ -9,6 +9,7 @@ from .songs import Song
 from .peppi import PeppiPhrase, PeppiPersonality, PeppiLearningContext
 from .teacher import Teacher
 from .classroom import Classroom
+from .verified_content import VerifiedLetter, VerifiedWord
 
 __all__ = [
     'Script', 'AlphabetCategory', 'Letter', 'Matra', 'LetterProgress',
@@ -21,4 +22,5 @@ __all__ = [
     'Song',
     'PeppiPhrase', 'PeppiPersonality', 'PeppiLearningContext',
     'Teacher', 'Classroom',
+    'VerifiedLetter', 'VerifiedWord',
 ]

@@ -10,7 +10,7 @@ class LetterSerializer(serializers.ModelSerializer):
         model = Letter
         fields = [
             'id', 'character', 'romanization', 'ipa',
-            'pronunciation_guide', 'audio_url', 'order'
+            'pronunciation_guide', 'audio_url', 'example_image', 'order'
         ]
 
 
@@ -23,7 +23,7 @@ class LetterDetailSerializer(serializers.ModelSerializer):
             'id', 'character', 'romanization', 'ipa',
             'pronunciation_guide', 'audio_url', 'stroke_order_url',
             'example_word', 'example_word_romanization',
-            'example_word_translation', 'order', 'is_active'
+            'example_word_translation', 'example_image', 'order', 'is_active'
         ]
 
 

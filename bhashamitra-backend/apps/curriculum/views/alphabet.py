@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from apps.children.models import Child
 from apps.curriculum.models.script import Script, Letter, LetterProgress
+from apps.curriculum.models.verified_content import VerifiedLetter
 from apps.curriculum.serializers.script import (
     ScriptSerializer,
     ScriptDetailSerializer,
@@ -86,6 +87,7 @@ class LetterListView(APIView):
         language = request.query_params.get('language', child.language)
         category_type = request.query_params.get('category_type')
 
+        # Query Letter model (Gujarati, Tamil, Punjabi, etc.)
         letters = Letter.objects.filter(
             category__script__language=language,
             is_active=True
@@ -95,9 +97,34 @@ class LetterListView(APIView):
             letters = letters.filter(category__category_type=category_type)
 
         letters = letters.order_by('category__order', 'order')
-        serializer = LetterSerializer(letters, many=True)
+        
+        # Query VerifiedLetter model (Hindi) and merge results
+        verified_letters = VerifiedLetter.objects.filter(
+            language=language,
+            status='VERIFIED'
+        ).order_by('character')
+        
+        # Serialize Letter model results
+        letter_data = LetterSerializer(letters, many=True).data
+        
+        # Convert VerifiedLetter to Letter format
+        verified_letter_data = []
+        for vl in verified_letters:
+            verified_letter_data.append({
+                'id': str(vl.id),
+                'character': vl.character,
+                'romanization': vl.romanization,
+                'ipa': '',  # Not available in VerifiedLetter
+                'pronunciation_guide': vl.pronunciation_guide,
+                'audio_url': vl.audio_url or '',
+                'example_image': vl.example_image or '',
+                'order': 0  # VerifiedLetter doesn't have order field
+            })
+        
+        # Merge both datasets
+        all_letters = list(letter_data) + verified_letter_data
 
-        return Response({'data': serializer.data})
+        return Response({'data': all_letters})
 
 
 class LetterDetailView(APIView):

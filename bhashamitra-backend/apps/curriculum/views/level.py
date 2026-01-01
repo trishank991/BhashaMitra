@@ -462,7 +462,7 @@ class ChildHomepageProgressView(APIView):
             'summary': {
                 'levels_completed': levels_completed,
                 'total_points': total_points,
-                'current_streak': 0,  # TODO: Implement streak tracking
+                'current_streak': child.get_current_streak(),
             },
             'current_progress': None,
         }

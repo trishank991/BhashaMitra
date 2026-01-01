@@ -27,11 +27,20 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
 # CSRF trusted origins for cross-origin requests
+# Only allow specific verified domains, not all Vercel subdomains
 CSRF_TRUSTED_ORIGINS = [
     'https://bhashamitra-frontend.vercel.app',
     'https://bhasha-mitra.vercel.app',
-    'https://*.vercel.app',
+    'https://bhashamitra.vercel.app',
 ]
+
+# Add additional trusted origins from environment if needed
+_extra_csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _extra_csrf_origins:
+    CSRF_TRUSTED_ORIGINS.extend([
+        origin.strip() for origin in _extra_csrf_origins.split(',')
+        if origin.strip() and origin.strip().startswith('https://')
+    ])
 
 # Database - Support both DATABASE_URL (Render) and individual vars (Supabase)
 DATABASE_URL = os.getenv('DATABASE_URL')

@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.throttling import ScopedRateThrottle
+from django.db import models
+from django.db.models import Count, Avg
 from django.http import HttpResponse
 import logging
 
@@ -174,8 +176,8 @@ class StoryPageAudioView(APIView):
                 user=request.user,  # Pass user for tier-based routing
             )
 
-            response = HttpResponse(audio_bytes, content_type='audio/wav')
-            response['Content-Disposition'] = f'inline; filename="page_{page_number}.wav"'
+            response = HttpResponse(audio_bytes, content_type='audio/mpeg')
+            response['Content-Disposition'] = f'inline; filename="page_{page_number}.mp3"'
             response['Content-Length'] = len(audio_bytes)
             response['X-TTS-Cached'] = str(was_cached).lower()
             response['X-TTS-Provider'] = provider
@@ -326,8 +328,8 @@ class CurriculumAudioView(APIView):
             # Update access count
             audio_cache.increment_access()
 
-            response = HttpResponse(audio_bytes, content_type='audio/wav')
-            response['Content-Disposition'] = f'inline; filename="{content_id}.wav"'
+            response = HttpResponse(audio_bytes, content_type='audio/mpeg')
+            response['Content-Disposition'] = f'inline; filename="{content_id}.mp3"'
             response['Content-Length'] = len(audio_bytes)
             response['X-Audio-Cached'] = 'true'
             response['X-Content-Type'] = content_type
@@ -839,10 +841,12 @@ class AudioUploadView(APIView):
             if audio_url.startswith('/'):
                 from django.conf import settings
                 base_url = getattr(settings, 'SITE_URL', '')
-                if base_url:
-                    audio_url = f"{base_url.rstrip('/')}{audio_url}"
+                if not base_url:
+                    # Build from request in development
+                    base_url = request.build_absolute_uri('/').rstrip('/')
+                audio_url = f"{base_url.rstrip('/')}{audio_url}"
 
-            logger.info(f"Audio uploaded: {saved_path}")
+            logger.info(f"Audio uploaded: {saved_path}, url: {audio_url}")
 
             return Response({
                 'audio_url': audio_url,

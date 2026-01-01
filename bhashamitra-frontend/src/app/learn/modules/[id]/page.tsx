@@ -52,7 +52,7 @@ export default function ModuleDetailPage() {
         if (lessonsRes.success && lessonsRes.data) {
           setLessons(lessonsRes.data);
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load module data');
       } finally {
         setLoading(false);

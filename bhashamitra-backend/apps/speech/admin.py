@@ -1,7 +1,7 @@
 """Speech admin configuration."""
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import AudioCache, TTSUsageLog
+from .models import AudioCache, TTSUsageLog, VoiceCharacter
 
 
 @admin.register(AudioCache)
@@ -68,3 +68,69 @@ class TTSUsageLogAdmin(admin.ModelAdmin):
             obj.status.upper()
         )
     status_badge.short_description = 'Status'
+
+
+@admin.register(VoiceCharacter)
+class VoiceCharacterAdmin(admin.ModelAdmin):
+    list_display = [
+        'name',
+        'character_type',
+        'language',
+        'gender',
+        'voice_source',
+        'is_active',
+        'is_default',
+        'created_at'
+    ]
+    list_filter = [
+        'character_type',
+        'language',
+        'gender',
+        'voice_source',
+        'is_active',
+        'is_default'
+    ]
+    search_fields = ['name', 'name_native', 'description']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'name_native', 'description')
+        }),
+        ('Character Classification', {
+            'fields': ('character_type', 'language', 'gender')
+        }),
+        ('Voice Configuration', {
+            'fields': ('voice_source', 'voice_id', 'voice_model')
+        }),
+        ('Voice Characteristics', {
+            'fields': ('speaking_rate', 'pitch', 'volume_gain_db')
+        }),
+        ('Personality', {
+            'fields': ('warmth_phrases', 'personality_traits'),
+            'classes': ('collapse',)
+        }),
+        ('Status', {
+            'fields': ('is_active', 'is_default')
+        }),
+        ('Cloned Voice Metadata', {
+            'fields': ('cloned_from_user', 'clone_quality_score', 'clone_sample_count'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('id', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def save_model(self, request, obj, form, change):
+        """Auto-clear other defaults if setting as default."""
+        if obj.is_default:
+            VoiceCharacter.objects.filter(
+                character_type=obj.character_type,
+                language=obj.language,
+                gender=obj.gender,
+                is_default=True
+            ).exclude(id=obj.id).update(is_default=False)
+
+        super().save_model(request, obj, form, change)

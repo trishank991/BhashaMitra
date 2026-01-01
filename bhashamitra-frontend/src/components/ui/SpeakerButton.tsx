@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 interface SpeakerButtonProps {
   isPlaying: boolean;
   isLoading: boolean;
-  onClick: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
@@ -36,8 +36,15 @@ export function SpeakerButton({
   };
 
   const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event bubbling to parent elements
-    onClick();
+    e.preventDefault();
+    e.stopPropagation();
+    // Prevent event from reaching parent interactive elements
+    const target = e.target as HTMLElement;
+    const button = target.closest('button');
+    if (button) {
+      button.blur();
+    }
+    onClick?.(e);
   };
 
   return (

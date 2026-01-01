@@ -10,6 +10,7 @@ import { LanguageCode } from '@/types';
 import api from '@/lib/api';
 import { useSubscription, useChildHomepageProgress } from '@/hooks/useSubscription';
 import { FreeHomepage, PaidHomepage } from '@/components/home';
+import { EmailVerificationBanner } from '@/components/auth';
 import { motion } from 'framer-motion';
 import { fadeInUp } from '@/lib/constants';
 
@@ -152,11 +153,15 @@ export default function HomePage() {
     );
   }
 
-  // Hide the basic PeppiAssistant mascot if we're showing the AI chat button
-  const showPeppiMascot = !(subscription.isPaidTier && subscription.isActive && activeChild?.id);
+  // Always show Peppi - MainLayout decides what to show based on subscription tier:
+  // - Paid users: PeppiChatButton + PeppiChatPanel (3 modes)
+  // - Free users: PeppiAlphabetHelper (preset prompts only)
 
   return (
-    <MainLayout showPeppi={showPeppiMascot}>
+    <MainLayout showPeppi={true}>
+      {/* Email Verification Banner */}
+      <EmailVerificationBanner className="mb-4 -mx-4 sm:-mx-6 rounded-none sm:rounded-lg sm:mx-0" />
+
       {/* Language Selector at the top */}
       <motion.div
         variants={fadeInUp}

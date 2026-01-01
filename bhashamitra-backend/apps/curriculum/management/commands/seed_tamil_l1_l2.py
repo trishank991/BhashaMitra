@@ -139,18 +139,18 @@ class Command(BaseCommand):
         )
 
         vowels = [
-            {'character': 'அ', 'romanization': 'a', 'ipa': '/ʌ/', 'type': 'SHORT', 'example_word': 'அம்மா', 'example_translation': 'mother', 'mnemonic': 'அ என்றால் அம்மா', 'peppi_song': 'அ அம்மா அன்பு தருவாள்!'},
-            {'character': 'ஆ', 'romanization': 'aa', 'ipa': '/aː/', 'type': 'LONG', 'example_word': 'ஆப்பிள்', 'example_translation': 'apple', 'mnemonic': 'ஆ ஆப்பிள் சிவப்பு', 'peppi_song': 'ஆ ஆப்பிள் சாப்பிடு நல்லது!'},
-            {'character': 'இ', 'romanization': 'i', 'ipa': '/ɪ/', 'type': 'SHORT', 'example_word': 'இலை', 'example_translation': 'leaf', 'mnemonic': 'இ இலை பச்சை', 'peppi_song': 'இ இலை மரத்தில் இருக்கும்!'},
-            {'character': 'ஈ', 'romanization': 'ee', 'ipa': '/iː/', 'type': 'LONG', 'example_word': 'ஈ', 'example_translation': 'fly', 'mnemonic': 'ஈ ஈ பறக்கும்', 'peppi_song': 'ஈ ஈ சிறகு விரிக்கும்!'},
-            {'character': 'உ', 'romanization': 'u', 'ipa': '/ʊ/', 'type': 'SHORT', 'example_word': 'உடல்', 'example_translation': 'body', 'mnemonic': 'உ உடல் ஆரோக்கியம்', 'peppi_song': 'உ உடல் நல்லது வைத்திரு!'},
-            {'character': 'ஊ', 'romanization': 'oo', 'ipa': '/uː/', 'type': 'LONG', 'example_word': 'ஊசி', 'example_translation': 'needle', 'mnemonic': 'ஊ ஊசி கூர்மை', 'peppi_song': 'ஊ ஊசி நூல் கோர்க்கும்!'},
-            {'character': 'எ', 'romanization': 'e', 'ipa': '/e/', 'type': 'SHORT', 'example_word': 'எலி', 'example_translation': 'mouse', 'mnemonic': 'எ எலி சிறியது', 'peppi_song': 'எ எலி ஓடும் வேகமாக!'},
-            {'character': 'ஏ', 'romanization': 'ae', 'ipa': '/eː/', 'type': 'LONG', 'example_word': 'ஏணி', 'example_translation': 'ladder', 'mnemonic': 'ஏ ஏணி ஏறு', 'peppi_song': 'ஏ ஏணி உயரம் போகும்!'},
-            {'character': 'ஐ', 'romanization': 'ai', 'ipa': '/ʌɪ/', 'type': 'DIPHTHONG', 'example_word': 'ஐந்து', 'example_translation': 'five', 'mnemonic': 'ஐ ஐந்து விரல்', 'peppi_song': 'ஐ ஐந்து எண்ணு சரியாக!'},
-            {'character': 'ஒ', 'romanization': 'o', 'ipa': '/o/', 'type': 'SHORT', 'example_word': 'ஒட்டகம்', 'example_translation': 'camel', 'mnemonic': 'ஒ ஒட்டகம் பாலைவனம்', 'peppi_song': 'ஒ ஒட்டகம் மணலில் நடக்கும்!'},
-            {'character': 'ஓ', 'romanization': 'oa', 'ipa': '/oː/', 'type': 'LONG', 'example_word': 'ஓடு', 'example_translation': 'run', 'mnemonic': 'ஓ ஓடு வேகமாக', 'peppi_song': 'ஓ ஓடு விளையாடு!'},
-            {'character': 'ஔ', 'romanization': 'au', 'ipa': '/ʌʊ/', 'type': 'DIPHTHONG', 'example_word': 'ஔவையார்', 'example_translation': 'Avvaiyar (poet)', 'mnemonic': 'ஔ ஔவையார் புலவர்', 'peppi_song': 'ஔ ஔவையார் கவிதை எழுதினார்!'},
+            {'character': 'அ', 'romanization': 'a', 'ipa': '/ʌ/', 'type': 'SHORT', 'example_word': 'அம்மா', 'example_translation': 'mother', 'example_image': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop', 'mnemonic': 'அ என்றால் அம்மா', 'peppi_song': 'அ அம்மா அன்பு தருவாள்!'},
+            {'character': 'ஆ', 'romanization': 'aa', 'ipa': '/aː/', 'type': 'LONG', 'example_word': 'ஆடு', 'example_translation': 'goat', 'example_image': 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=120&h=120&fit=crop', 'mnemonic': 'ஆ ஆடு மேயும்', 'peppi_song': 'ஆ ஆடு மேயும் வயலில்!'},
+            {'character': 'இ', 'romanization': 'i', 'ipa': '/ɪ/', 'type': 'SHORT', 'example_word': 'இலை', 'example_translation': 'leaf', 'example_image': 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=120&h=120&fit=crop', 'mnemonic': 'இ இலை பச்சை', 'peppi_song': 'இ இலை மரத்தில் இருக்கும்!'},
+            {'character': 'ஈ', 'romanization': 'ee', 'ipa': '/iː/', 'type': 'LONG', 'example_word': 'ஈ', 'example_translation': 'fly', 'example_image': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=120&h=120&fit=crop', 'mnemonic': 'ஈ ஈ பறக்கும்', 'peppi_song': 'ஈ ஈ சிறகு விரிக்கும்!'},
+            {'character': 'உ', 'romanization': 'u', 'ipa': '/ʊ/', 'type': 'SHORT', 'example_word': 'உடல்', 'example_translation': 'body', 'example_image': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=120&h=120&fit=crop', 'mnemonic': 'உ உடல் ஆரோக்கியம்', 'peppi_song': 'உ உடல் நல்லது வைத்திரு!'},
+            {'character': 'ஊ', 'romanization': 'oo', 'ipa': '/uː/', 'type': 'LONG', 'example_word': 'ஊர்', 'example_translation': 'village', 'example_image': 'https://images.unsplash.com/photo-1516483638261-f4d223d13ce3?w=120&h=120&fit=crop', 'mnemonic': 'ஊ ஊர் சிறியது', 'peppi_song': 'ஊ ஊர் என் வீடு!'},
+            {'character': 'எ', 'romanization': 'e', 'ipa': '/e/', 'type': 'SHORT', 'example_word': 'எலி', 'example_translation': 'rat', 'example_image': 'https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=120&h=120&fit=crop', 'mnemonic': 'எ எலி சிறியது', 'peppi_song': 'எ எலி ஓடும் வேகமாக!'},
+            {'character': 'ஏ', 'romanization': 'ae', 'ipa': '/eː/', 'type': 'LONG', 'example_word': 'ஏர்', 'example_translation': 'plough', 'example_image': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=120&h=120&fit=crop', 'mnemonic': 'ஏ ஏர் உழவு', 'peppi_song': 'ஏ ஏர் நிலம் உழும்!'},
+            {'character': 'ஐ', 'romanization': 'ai', 'ipa': '/ʌɪ/', 'type': 'DIPHTHONG', 'example_word': 'ஐந்து', 'example_translation': 'five', 'example_image': 'https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?w=120&h=120&fit=crop', 'mnemonic': 'ஐ ஐந்து விரல்', 'peppi_song': 'ஐ ஐந்து எண்ணு சரியாக!'},
+            {'character': 'ஒ', 'romanization': 'o', 'ipa': '/o/', 'type': 'SHORT', 'example_word': 'ஒட்டகம்', 'example_translation': 'camel', 'example_image': 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=120&h=120&fit=crop', 'mnemonic': 'ஒ ஒட்டகம் பாலைவனம்', 'peppi_song': 'ஒ ஒட்டகம் மணலில் நடக்கும்!'},
+            {'character': 'ஓ', 'romanization': 'oa', 'ipa': '/oː/', 'type': 'LONG', 'example_word': 'ஓடு', 'example_translation': 'tile', 'example_image': 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=120&h=120&fit=crop', 'mnemonic': 'ஓ ஓடு கூரை', 'peppi_song': 'ஓ ஓடு வீட்டில் இருக்கும்!'},
+            {'character': 'ஔ', 'romanization': 'au', 'ipa': '/ʌʊ/', 'type': 'DIPHTHONG', 'example_word': 'ஔவை', 'example_translation': 'poet', 'example_image': 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=120&h=120&fit=crop', 'mnemonic': 'ஔ ஔவையார் புலவர்', 'peppi_song': 'ஔ ஔவையார் கவிதை எழுதினார்!'},
         ]
 
         for i, vowel in enumerate(vowels, 1):
@@ -164,6 +164,7 @@ class Command(BaseCommand):
                     'example_word': vowel['example_word'],
                     'example_word_romanization': vowel['romanization'],
                     'example_word_translation': vowel['example_translation'],
+                    'example_image': vowel['example_image'],
                     'order': i,
                     'is_active': True,
                 }
@@ -215,28 +216,28 @@ class Command(BaseCommand):
 
         consonants = [
             # வல்லினம் (Vallinam) - Hard consonants
-            {'character': 'க', 'romanization': 'ka', 'ipa': '/k~g/', 'group': 'VALLINAM', 'example_word': 'கடல்', 'example_translation': 'sea', 'mnemonic': 'க கடல் நீலம்'},
-            {'character': 'ச', 'romanization': 'cha', 'ipa': '/tʃ~s/', 'group': 'VALLINAM', 'example_word': 'சக்கரம்', 'example_translation': 'wheel', 'mnemonic': 'ச சக்கரம் உருளும்'},
-            {'character': 'ட', 'romanization': 'ta', 'ipa': '/ʈ~ɖ/', 'group': 'VALLINAM', 'example_word': 'டமாரம்', 'example_translation': 'drum', 'mnemonic': 'ட டமாரம் ஒலிக்கும்'},
-            {'character': 'த', 'romanization': 'tha', 'ipa': '/t̪~d̪/', 'group': 'VALLINAM', 'example_word': 'தாமரை', 'example_translation': 'lotus', 'mnemonic': 'த தாமரை அழகு'},
-            {'character': 'ப', 'romanization': 'pa', 'ipa': '/p~b/', 'group': 'VALLINAM', 'example_word': 'பழம்', 'example_translation': 'fruit', 'mnemonic': 'ப பழம் இனிப்பு'},
-            {'character': 'ற', 'romanization': 'ra', 'ipa': '/r/', 'group': 'VALLINAM', 'example_word': 'கற்றல்', 'example_translation': 'learning', 'mnemonic': 'ற கற்றல் நல்லது'},
+            {'character': 'க', 'romanization': 'ka', 'ipa': '/k~g/', 'group': 'VALLINAM', 'example_word': 'கல்', 'example_translation': 'stone', 'example_image': 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=120&h=120&fit=crop', 'mnemonic': 'க கல் கனம்'},
+            {'character': 'ச', 'romanization': 'cha', 'ipa': '/tʃ~s/', 'group': 'VALLINAM', 'example_word': 'சோறு', 'example_translation': 'rice', 'example_image': 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=120&h=120&fit=crop', 'mnemonic': 'ச சோறு சாப்பிடு'},
+            {'character': 'ட', 'romanization': 'ta', 'ipa': '/ʈ~ɖ/', 'group': 'VALLINAM', 'example_word': 'டம்', 'example_translation': 'drum', 'example_image': 'https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=120&h=120&fit=crop', 'mnemonic': 'ட டம் ஒலிக்கும்'},
+            {'character': 'த', 'romanization': 'tha', 'ipa': '/t̪~d̪/', 'group': 'VALLINAM', 'example_word': 'தண்ணீர்', 'example_translation': 'water', 'example_image': 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=120&h=120&fit=crop', 'mnemonic': 'த தண்ணீர் குடிக்க'},
+            {'character': 'ப', 'romanization': 'pa', 'ipa': '/p~b/', 'group': 'VALLINAM', 'example_word': 'பல்', 'example_translation': 'tooth', 'example_image': 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=120&h=120&fit=crop', 'mnemonic': 'ப பல் வெள்ளை'},
+            {'character': 'ற', 'romanization': 'ra', 'ipa': '/r/', 'group': 'VALLINAM', 'example_word': 'பறவை', 'example_translation': 'bird', 'example_image': 'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=120&h=120&fit=crop', 'mnemonic': 'ற பறவை பறக்கும்'},
 
             # மெல்லினம் (Mellinam) - Soft/Nasal consonants
-            {'character': 'ங', 'romanization': 'nga', 'ipa': '/ŋ/', 'group': 'MELLINAM', 'example_word': 'மாங்காய்', 'example_translation': 'raw mango', 'mnemonic': 'ங நாசி ஒலி'},
-            {'character': 'ஞ', 'romanization': 'nya', 'ipa': '/ɲ/', 'group': 'MELLINAM', 'example_word': 'ஞாயிறு', 'example_translation': 'Sunday/sun', 'mnemonic': 'ஞ ஞாயிறு ஒளி தரும்'},
-            {'character': 'ண', 'romanization': 'na', 'ipa': '/ɳ/', 'group': 'MELLINAM', 'example_word': 'மணி', 'example_translation': 'bell/time', 'mnemonic': 'ண மணி அடிக்கும்'},
-            {'character': 'ந', 'romanization': 'na', 'ipa': '/n̪/', 'group': 'MELLINAM', 'example_word': 'நதி', 'example_translation': 'river', 'mnemonic': 'ந நதி ஓடும்'},
-            {'character': 'ம', 'romanization': 'ma', 'ipa': '/m/', 'group': 'MELLINAM', 'example_word': 'மரம்', 'example_translation': 'tree', 'mnemonic': 'ம மரம் பெரியது'},
-            {'character': 'ன', 'romanization': 'na', 'ipa': '/n/', 'group': 'MELLINAM', 'example_word': 'மன்னன்', 'example_translation': 'king', 'mnemonic': 'ன மன்னன் ஆட்சி'},
+            {'character': 'ங', 'romanization': 'nga', 'ipa': '/ŋ/', 'group': 'MELLINAM', 'example_word': 'மாங்காய்', 'example_translation': 'mango', 'example_image': 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=120&h=120&fit=crop', 'mnemonic': 'ங மாங்காய் இனிப்பு'},
+            {'character': 'ஞ', 'romanization': 'nya', 'ipa': '/ɲ/', 'group': 'MELLINAM', 'example_word': 'ஞானம்', 'example_translation': 'wisdom', 'example_image': 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=120&h=120&fit=crop', 'mnemonic': 'ஞ ஞானம் அறிவு'},
+            {'character': 'ண', 'romanization': 'na', 'ipa': '/ɳ/', 'group': 'MELLINAM', 'example_word': 'பண்', 'example_translation': 'tune', 'example_image': 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=120&h=120&fit=crop', 'mnemonic': 'ண பண் இசை'},
+            {'character': 'ந', 'romanization': 'na', 'ipa': '/n̪/', 'group': 'MELLINAM', 'example_word': 'நண்டு', 'example_translation': 'crab', 'example_image': 'https://images.unsplash.com/photo-1550747545-c896b5f89ff7?w=120&h=120&fit=crop', 'mnemonic': 'ந நண்டு நடக்கும்'},
+            {'character': 'ம', 'romanization': 'ma', 'ipa': '/m/', 'group': 'MELLINAM', 'example_word': 'மலை', 'example_translation': 'mountain', 'example_image': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=120&h=120&fit=crop', 'mnemonic': 'ம மலை உயரம்'},
+            {'character': 'ன', 'romanization': 'na', 'ipa': '/n/', 'group': 'MELLINAM', 'example_word': 'பனி', 'example_translation': 'dew', 'example_image': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=120&h=120&fit=crop', 'mnemonic': 'ன பனி குளிர்'},
 
             # இடையினம் (Idaiyinam) - Medium consonants
-            {'character': 'ய', 'romanization': 'ya', 'ipa': '/j/', 'group': 'IDAIYINAM', 'example_word': 'யானை', 'example_translation': 'elephant', 'mnemonic': 'ய யானை பெரியது'},
-            {'character': 'ர', 'romanization': 'ra', 'ipa': '/ɾ/', 'group': 'IDAIYINAM', 'example_word': 'ரயில்', 'example_translation': 'train', 'mnemonic': 'ர ரயில் ஓடும்'},
-            {'character': 'ல', 'romanization': 'la', 'ipa': '/l/', 'group': 'IDAIYINAM', 'example_word': 'லட்டு', 'example_translation': 'laddu', 'mnemonic': 'ல லட்டு இனிப்பு'},
-            {'character': 'வ', 'romanization': 'va', 'ipa': '/ʋ/', 'group': 'IDAIYINAM', 'example_word': 'வாழை', 'example_translation': 'banana', 'mnemonic': 'வ வாழை மஞ்சள்'},
-            {'character': 'ழ', 'romanization': 'zha', 'ipa': '/ɻ/', 'group': 'IDAIYINAM', 'example_word': 'தமிழ்', 'example_translation': 'Tamil', 'mnemonic': 'ழ தமிழ் அழகு'},
-            {'character': 'ள', 'romanization': 'la', 'ipa': '/ɭ/', 'group': 'IDAIYINAM', 'example_word': 'பள்ளி', 'example_translation': 'school', 'mnemonic': 'ள பள்ளி படிப்பு'},
+            {'character': 'ய', 'romanization': 'ya', 'ipa': '/j/', 'group': 'IDAIYINAM', 'example_word': 'யானை', 'example_translation': 'elephant', 'example_image': 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=120&h=120&fit=crop', 'mnemonic': 'ய யானை பெரியது'},
+            {'character': 'ர', 'romanization': 'ra', 'ipa': '/ɾ/', 'group': 'IDAIYINAM', 'example_word': 'ரோஜா', 'example_translation': 'rose', 'example_image': 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=120&h=120&fit=crop', 'mnemonic': 'ர ரோஜா மலர்'},
+            {'character': 'ல', 'romanization': 'la', 'ipa': '/l/', 'group': 'IDAIYINAM', 'example_word': 'லட்டு', 'example_translation': 'laddu sweet', 'example_image': 'https://images.unsplash.com/photo-1666190094553-d8cfcfb80124?w=120&h=120&fit=crop', 'mnemonic': 'ல லட்டு இனிப்பு'},
+            {'character': 'வ', 'romanization': 'va', 'ipa': '/ʋ/', 'group': 'IDAIYINAM', 'example_word': 'வாழை', 'example_translation': 'banana', 'example_image': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=120&h=120&fit=crop', 'mnemonic': 'வ வாழை மஞ்சள்'},
+            {'character': 'ழ', 'romanization': 'zha', 'ipa': '/ɻ/', 'group': 'IDAIYINAM', 'example_word': 'தமிழ்', 'example_translation': 'tamil', 'example_image': 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=120&h=120&fit=crop', 'mnemonic': 'ழ தமிழ் அழகு'},
+            {'character': 'ள', 'romanization': 'la', 'ipa': '/ɭ/', 'group': 'IDAIYINAM', 'example_word': 'வள்', 'example_translation': 'bangle', 'example_image': 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=120&h=120&fit=crop', 'mnemonic': 'ள வள் அணிவு'},
         ]
 
         for i, cons in enumerate(consonants, 1):
@@ -250,6 +251,7 @@ class Command(BaseCommand):
                     'example_word': cons['example_word'],
                     'example_word_romanization': cons['romanization'],
                     'example_word_translation': cons['example_translation'],
+                    'example_image': cons['example_image'],
                     'order': i,
                     'is_active': True,
                 }

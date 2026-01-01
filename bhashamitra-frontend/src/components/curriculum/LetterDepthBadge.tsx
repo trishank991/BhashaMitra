@@ -80,8 +80,6 @@ export function LetterMasteryIndicator({
   progress,
   className,
 }: LetterMasteryIndicatorProps) {
-  const info = LETTER_DEPTH_INFO[depth];
-
   const getProgressColor = () => {
     if (progress >= 80) return 'bg-green-500';
     if (progress >= 50) return 'bg-yellow-500';

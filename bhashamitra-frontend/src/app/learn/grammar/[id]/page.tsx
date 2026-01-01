@@ -36,8 +36,8 @@ export default function GrammarTopicDetailPage() {
     voiceStyle: 'kid_friendly',
   });
 
-  // State to track which text is currently playing
-  const [playingText, setPlayingText] = useState<string | null>(null);
+  // State to track which example is currently playing - use unique ID for stability
+  const [playingId, setPlayingId] = useState<string | null>(null);
 
   // Track audio error for display
   const [displayError, setDisplayError] = useState<string | null>(null);
@@ -48,13 +48,19 @@ export default function GrammarTopicDetailPage() {
       console.error('[Grammar] Audio error:', audioError);
       setDisplayError(audioError);
       // Clear error after 3 seconds
-      const timer = setTimeout(() => setDisplayError(null), 3000);
+      const timer = setTimeout(() => {
+        setDisplayError(null);
+        setPlayingId(null);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [audioError]);
 
-  // Handle playing text audio - extract text from examples
-  const handlePlayExample = useCallback(async (example: string | GrammarExample) => {
+  // Handle playing text audio - use unique ID for tracking
+  const handlePlayExample = useCallback(async (example: string | GrammarExample, ruleId: string, exampleIndex: number) => {
+    // Create a unique ID for this example
+    const exampleId = `${ruleId}-${exampleIndex}`;
+    
     // Handle both string and object example formats
     let textToPlay: string;
     if (typeof example === 'string') {
@@ -67,27 +73,29 @@ export default function GrammarTopicDetailPage() {
     }
 
     console.log('[Grammar] handlePlayExample called:', {
+      exampleId,
       textToPlay,
       language: currentLanguage,
       isPlaying,
-      playingText
+      playingId
     });
 
-    if (playingText === textToPlay && isPlaying) {
+    if (playingId === exampleId && isPlaying) {
       console.log('[Grammar] Stopping audio');
       stopAudio();
-      setPlayingText(null);
+      setPlayingId(null);
     } else {
       console.log('[Grammar] Starting audio playback for:', textToPlay);
-      setPlayingText(textToPlay);
+      setPlayingId(exampleId);
       try {
         await playAudio(textToPlay);
         console.log('[Grammar] playAudio called successfully');
       } catch (err) {
         console.error('[Grammar] playAudio error:', err);
+        setPlayingId(null);
       }
     }
-  }, [playingText, isPlaying, stopAudio, playAudio, currentLanguage]);
+  }, [playingId, isPlaying, stopAudio, playAudio, currentLanguage]);
 
   // Format example for display
   const formatExample = (example: string | GrammarExample): string => {
@@ -174,7 +182,7 @@ export default function GrammarTopicDetailPage() {
         <div className="flex flex-col items-center justify-center py-12">
           <span className="text-6xl mb-4">📚</span>
           <h1 className="text-xl font-bold text-gray-900 mb-2">Topic Not Found</h1>
-          <p className="text-gray-500 mb-6">This grammar topic doesn&apos;t exist.</p>
+          <p className="text-gray-500 mb-6">This grammar topic doesn't exist.</p>
           <Link href="/learn/grammar">
             <Button>Back to Grammar</Button>
           </Link>
@@ -276,14 +284,9 @@ export default function GrammarTopicDetailPage() {
                       </svg>
                     </div>
 
-                    {/* Expanded Content */}
+                    {/* Expanded Content - using regular div to avoid motion animation conflicts */}
                     {expandedRule === rule.id && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className="mt-4 pt-4 border-t border-gray-100 space-y-4"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
                         {/* Explanation */}
                         <div>
                           <h4 className="text-sm font-semibold text-gray-700 mb-2">Explanation</h4>
@@ -299,7 +302,7 @@ export default function GrammarTopicDetailPage() {
                         )}
 
                         {/* Examples */}
-                        <div>
+                        <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                           <h4 className="text-sm font-semibold text-gray-700 mb-2">Examples</h4>
                           <div className="space-y-2">
                             {rule.examples.map((example, i) => {
@@ -311,21 +314,30 @@ export default function GrammarTopicDetailPage() {
                               } else {
                                 textToPlay = example.hindi || example.romanized || '';
                               }
+                              // Create unique ID for this example
+                              const exampleId = `${rule.id}-${i}`;
+                              // Check if this example is currently playing or loading
+                              const isThisPlaying = playingId === exampleId && isPlaying;
+                              const isThisLoading = playingId === exampleId && audioLoading;
+                              
                               return (
                                 <div
                                   key={i}
-                                  className="p-3 bg-gray-50 rounded-lg text-sm text-gray-700 flex items-center justify-between gap-3"
+                                  className="p-3 bg-gray-50 rounded-lg text-sm text-gray-700 flex items-center justify-between gap-3 pointer-events-none"
+                                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
                                 >
-                                  <span className="flex-1">{formatExample(example)}</span>
-                                  <SpeakerButton
-                                    isPlaying={playingText === textToPlay && isPlaying}
-                                    isLoading={playingText === textToPlay && audioLoading}
-                                    onClick={() => {
-                                      console.log('[Grammar] Playing audio for:', textToPlay);
-                                      handlePlayExample(example);
-                                    }}
-                                    size="sm"
-                                  />
+                                  <span className="flex-1 pointer-events-auto">{formatExample(example)}</span>
+                                  <div className="pointer-events-auto" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                                    <SpeakerButton
+                                      isPlaying={isThisPlaying}
+                                      isLoading={isThisLoading}
+                                      onClick={() => {
+                                        console.log('[Grammar] Playing audio for:', textToPlay);
+                                        handlePlayExample(example, rule.id, i);
+                                      }}
+                                      size="sm"
+                                    />
+                                  </div>
                                 </div>
                               );
                             })}
@@ -339,7 +351,7 @@ export default function GrammarTopicDetailPage() {
                             <p className="text-sm text-yellow-600">{rule.tips}</p>
                           </div>
                         )}
-                      </motion.div>
+                      </div>
                     )}
                   </Card>
                 </motion.div>

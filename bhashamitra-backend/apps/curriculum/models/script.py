@@ -59,6 +59,7 @@ class Letter(TimeStampedModel):
     example_word = models.CharField(max_length=100, blank=True)
     example_word_romanization = models.CharField(max_length=100, blank=True)
     example_word_translation = models.CharField(max_length=200, blank=True)
+    example_image = models.URLField(blank=True, null=True)
     order = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
 

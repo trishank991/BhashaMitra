@@ -219,7 +219,16 @@ export function FreeHomepage({
           </span>
           Explore More
         </h2>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
+          <Link href="/practice/mimic">
+            <Card interactive className="text-center py-4 bg-cyan-50">
+              <div className="text-3xl mb-1">
+                <span role="img" aria-label="microphone">&#x1F3A4;</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 text-sm">Mimic</h3>
+            </Card>
+          </Link>
+
           <Link href="/festivals">
             <Card interactive className="text-center py-4 bg-red-50">
               <div className="text-3xl mb-1">
@@ -235,6 +244,15 @@ export function FreeHomepage({
                 <span role="img" aria-label="trophy">&#x1F3C6;</span>
               </div>
               <h3 className="font-semibold text-gray-900 text-sm">Badges</h3>
+            </Card>
+          </Link>
+
+          <Link href="/challenges">
+            <Card interactive className="text-center py-4 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
+              <div className="text-3xl mb-1">
+                <span role="img" aria-label="competition">&#x1F465;</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 text-sm">Challenge Friends</h3>
             </Card>
           </Link>
 

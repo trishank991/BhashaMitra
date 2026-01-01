@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Card, Badge } from '@/components/ui';
-import { fadeInUp, staggerContainer, SUPPORTED_LANGUAGES } from '@/lib/constants';
+import { fadeInUp, staggerContainer, SUPPORTED_LANGUAGES, LEVEL_TITLES, XP_PER_LEVEL } from '@/lib/constants';
 import { ChildProfile } from '@/types';
 import { SubscriptionFeatures, SubscriptionLimits } from '@/lib/api';
 import { ChildProgress } from '@/hooks/useSubscription';
@@ -55,6 +55,13 @@ export function PaidHomepage({
 
   const isPremium = tier === 'PREMIUM';
 
+  // Get level from child profile or use default
+  const currentLevel = child?.level || 1;
+  const levelTitle = LEVEL_TITLES[currentLevel] || `Level ${currentLevel}`;
+  const xpForNextLevel = XP_PER_LEVEL * currentLevel;
+  const currentXp = childProgress?.summary.total_points || 0;
+  const xpProgress = Math.min((currentXp / xpForNextLevel) * 100, 100);
+
   return (
     <motion.div
       variants={staggerContainer}
@@ -93,6 +100,27 @@ export function PaidHomepage({
             <p className="text-white/90 mt-1">
               Ready for today&apos;s lesson, {child?.name || 'friend'}?
             </p>
+
+            {/* Level Display with Progress */}
+            <div className="mt-3 flex items-center gap-3">
+              <div className="bg-white/20 rounded-full px-3 py-1">
+                <span className="text-sm font-medium">Level {currentLevel}</span>
+              </div>
+              <div className="flex-1">
+                <div className="flex justify-between text-xs text-white/80 mb-1">
+                  <span>{levelTitle}</span>
+                  <span>{currentXp} / {xpForNextLevel} XP</span>
+                </div>
+                <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-yellow-400 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${xpProgress}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           <div className="text-5xl">
             <span role="img" aria-label="school">&#x1F3EB;</span>
@@ -296,7 +324,16 @@ export function PaidHomepage({
           </span>
           Quick Actions
         </h2>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-3">
+          <Link href="/practice/mimic">
+            <Card interactive className="text-center py-4 bg-cyan-50">
+              <div className="text-2xl mb-1">
+                <span role="img" aria-label="microphone">&#x1F3A4;</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 text-xs">Mimic</h3>
+            </Card>
+          </Link>
+
           <Link href="/games">
             <Card interactive className="text-center py-4 bg-yellow-50">
               <div className="text-2xl mb-1">
@@ -321,6 +358,15 @@ export function PaidHomepage({
                 <span role="img" aria-label="trophy">&#x1F3C6;</span>
               </div>
               <h3 className="font-semibold text-gray-900 text-xs">Badges</h3>
+            </Card>
+          </Link>
+
+          <Link href="/challenges">
+            <Card interactive className="text-center py-4 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
+              <div className="text-2xl mb-1">
+                <span role="img" aria-label="competition">&#x1F465;</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 text-xs">Challenge Friends</h3>
             </Card>
           </Link>
 

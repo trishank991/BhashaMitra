@@ -1,11 +1,11 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { BottomNav } from './BottomNav';
 import { Header } from './Header';
-import { PeppiAssistant } from '@/components/peppi';
+import { PeppiAlphabetHelper } from '@/components/peppi';
 import { PeppiChatButton, PeppiChatPanel } from '@/components/peppi-chat';
-import { useAuthStore } from '@/stores';
+import { useAuthStore, useSubscriptionStore } from '@/stores';
 import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 
@@ -15,7 +15,6 @@ interface MainLayoutProps {
   showProgress?: boolean;
   showNav?: boolean;
   showPeppi?: boolean;
-  showPeppiChat?: boolean;
   headerTitle?: string;
   showBack?: boolean;
   onBack?: () => void;
@@ -28,7 +27,6 @@ export function MainLayout({
   showProgress = true,
   showNav = true,
   showPeppi = true,
-  showPeppiChat = true,
   headerTitle,
   showBack = false,
   onBack,
@@ -36,9 +34,30 @@ export function MainLayout({
 }: MainLayoutProps) {
   const { activeChild } = useAuthStore();
   const subscription = useSubscription();
+  const subscriptionStore = useSubscriptionStore();
+  const [hasRefreshedSubscription, setHasRefreshedSubscription] = useState(false);
 
-  // Show Peppi chat for paid tier users
-  const shouldShowPeppiChat = showPeppiChat && subscription.isPaidTier && subscription.isActive && activeChild?.id;
+  // Get current language from active child
+  const currentLanguage = activeChild?.language
+    ? (typeof activeChild.language === 'string' ? activeChild.language : activeChild.language.code)
+    : 'HINDI';
+
+  // Premium users get full Peppi chat with 3 modes (Chat, Story, Learn)
+  // Free users get restricted chat with preset prompts only
+  const isPaidUser = subscription.isPaidTier && subscription.isActive;
+
+  // Auto-refresh subscription on first mount to ensure tier is detected correctly
+  useEffect(() => {
+    if (!hasRefreshedSubscription && subscription.loading) {
+      const timer = setTimeout(() => {
+        console.log('[MainLayout] Auto-refreshing subscription...');
+        localStorage.removeItem('subscription-storage');
+        subscriptionStore.fetchSubscription();
+        setHasRefreshedSubscription(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [subscription.loading, hasRefreshedSubscription, subscriptionStore]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,14 +82,19 @@ export function MainLayout({
 
       {showNav && <BottomNav />}
 
-      {/* Peppi Assistant (basic) - for free users */}
-      {showPeppi && !shouldShowPeppiChat && <PeppiAssistant />}
-
-      {/* Peppi Chat (full) - for paid tier users */}
-      {shouldShowPeppiChat && activeChild?.id && (
+      {/* Peppi Chat - different experience based on subscription */}
+      {showPeppi && (
         <>
-          <PeppiChatButton childId={activeChild.id} />
-          <PeppiChatPanel childId={activeChild.id} />
+          {/* PAID users: Full Peppi chat with 3 modes (Chat, Story, Learn) */}
+          {isPaidUser && activeChild?.id && (
+            <>
+              <PeppiChatButton childId={activeChild.id} />
+              <PeppiChatPanel childId={activeChild.id} />
+            </>
+          )}
+
+          {/* FREE users: Restricted chat with preset prompts only */}
+          {!isPaidUser && <PeppiAlphabetHelper language={currentLanguage} />}
         </>
       )}
     </div>

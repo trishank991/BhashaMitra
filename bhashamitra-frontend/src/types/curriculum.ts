@@ -16,9 +16,11 @@ export type ContentType =
   | 'VOCABULARY_THEME'
   | 'VOCABULARY_WORD'
   | 'LETTER'
+  | 'MATRA'
   | 'GRAMMAR_TOPIC'
   | 'GAME'
   | 'STORY'
+  | 'SONG'
   | 'ASSESSMENT';
 
 // Curriculum Level (L1-L10)
@@ -160,6 +162,7 @@ export interface LessonProgress {
   attempts: number;
   best_score: number;
   is_complete: boolean;
+  points_awarded?: number; // Points awarded when lesson is completed
 }
 
 // API Response types for curriculum

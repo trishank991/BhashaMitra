@@ -3,10 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Volume2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores';
 import { api } from '@/lib/api';
-import { cn } from '@/lib/utils';
 import {
   PeppiMimicChallenge,
   PeppiMimicChallengeProgress,
@@ -28,17 +27,25 @@ export default function MimicChallengePage() {
   const router = useRouter();
   const params = useParams();
   const challengeId = params.challengeId as string;
-  const { selectedChild } = useAuthStore();
+  const { activeChild: selectedChild } = useAuthStore();
 
+  const [isHydrated, setIsHydrated] = useState(false);
   const [challenge, setChallenge] = useState<ChallengeWithProgress | null>(null);
   const [pageState, setPageState] = useState<PageState>('loading');
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PeppiMimicAttemptResult | null>(null);
-  const [recordingResult, setRecordingResult] = useState<RecordingResult | null>(null);
+  const [, setRecordingResult] = useState<{ blob: Blob; duration_ms: number } | null>(null);
+
+  // Handle hydration
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Fetch challenge details
   const fetchChallenge = useCallback(async () => {
-    if (!selectedChild?.id || !challengeId) return;
+    if (!isHydrated || !selectedChild?.id || !challengeId) {
+      return;
+    }
 
     setPageState('loading');
     setError(null);
@@ -53,22 +60,23 @@ export default function MimicChallengePage() {
         setError(response.error || 'Failed to load challenge');
         setPageState('error');
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.');
       setPageState('error');
     }
-  }, [selectedChild?.id, challengeId]);
+  }, [isHydrated, selectedChild?.id, challengeId]);
 
   useEffect(() => {
     fetchChallenge();
   }, [fetchChallenge]);
 
-  // Redirect if no child selected
+  // Redirect if no child selected (only after hydration)
   useEffect(() => {
+    if (!isHydrated) return;
     if (!selectedChild) {
       router.push('/home');
     }
-  }, [selectedChild, router]);
+  }, [isHydrated, selectedChild, router]);
 
   // Handle recording completion
   const handleRecordingComplete = useCallback(async (recording: RecordingResult) => {
@@ -133,6 +141,15 @@ export default function MimicChallengePage() {
       // Sharing tracking failed, but user already shared via WhatsApp
     }
   }, [selectedChild?.id, result]);
+
+  // Show loading while hydrating
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-50 to-white">
+        <Loader2 className="w-10 h-10 animate-spin text-primary-500" />
+      </div>
+    );
+  }
 
   if (!selectedChild) {
     return null;

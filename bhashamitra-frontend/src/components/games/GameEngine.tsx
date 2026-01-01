@@ -78,7 +78,7 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function GameEngine({ gameCode, childAge, onComplete, onExit }: GameEngineProps) {
-  const { setMood, setMessage } = usePeppiStore();
+  const { setMood, setCurrentMessage } = usePeppiStore();
 
   const [gameState, setGameState] = useState<GameState>({
     currentQuestion: 0,
@@ -129,7 +129,7 @@ export function GameEngine({ gameCode, childAge, onComplete, onExit }: GameEngin
         setQuestions(mockQuestions);
         setGameState(prev => ({ ...prev, totalQuestions: mockQuestions.length }));
         setMood('happy');
-        setMessage('चलो खेलते हैं! Let\'s play!');
+        setCurrentMessage('चलो खेलते हैं! Let\'s play!');
       } catch (error) {
         console.error('Failed to load game:', error);
       } finally {
@@ -138,7 +138,7 @@ export function GameEngine({ gameCode, childAge, onComplete, onExit }: GameEngin
     };
 
     loadGame();
-  }, [gameCode, childAge, setMood, setMessage]);
+  }, [gameCode, childAge, setMood, setCurrentMessage]);
 
   // Update display options when question changes
   useEffect(() => {
@@ -186,9 +186,9 @@ export function GameEngine({ gameCode, childAge, onComplete, onExit }: GameEngin
 
       // Check for streak milestone
       if (streakMessages[newStreak]) {
-        setMessage(streakMessages[newStreak]);
+        setCurrentMessage(streakMessages[newStreak]);
       } else {
-        setMessage(getRandomItem(correctMessages));
+        setCurrentMessage(getRandomItem(correctMessages));
       }
 
       setGameState(prev => ({
@@ -205,7 +205,7 @@ export function GameEngine({ gameCode, childAge, onComplete, onExit }: GameEngin
     } else {
       playSound('incorrect');
       setMood('encouraging');
-      setMessage(getRandomItem(encouragementMessages));
+      setCurrentMessage(getRandomItem(encouragementMessages));
 
       setGameState(prev => ({
         ...prev,
@@ -221,7 +221,7 @@ export function GameEngine({ gameCode, childAge, onComplete, onExit }: GameEngin
     setIsCorrect(null);
     setShowFeedback(false);
     setMood('happy');
-    setMessage('फिर से try करो! You can do it!');
+    setCurrentMessage('फिर से try करो! You can do it!');
   };
 
   // Handle next question
@@ -234,7 +234,7 @@ export function GameEngine({ gameCode, childAge, onComplete, onExit }: GameEngin
       // Game complete
       setGameState(prev => ({ ...prev, isComplete: true }));
       setMood('celebrating');
-      setMessage('बहुत बढ़िया! You completed the game! 🎉');
+      setCurrentMessage('बहुत बढ़िया! You completed the game! 🎉');
 
       const accuracy = ((gameState.correctCount + 1) / gameState.totalQuestions) * 100;
       setTimeout(() => {
@@ -246,7 +246,7 @@ export function GameEngine({ gameCode, childAge, onComplete, onExit }: GameEngin
         currentQuestion: prev.currentQuestion + 1,
       }));
       setMood('happy');
-      setMessage('अगला सवाल! Next question!');
+      setCurrentMessage('अगला सवाल! Next question!');
     }
   };
 

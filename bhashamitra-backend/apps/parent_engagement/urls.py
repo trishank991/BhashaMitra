@@ -4,9 +4,12 @@ Parent Engagement API URL Configuration.
 
 from django.urls import path
 from .views import (
+    ParentDashboardView,
     ParentChildrenListView,
     ChildSummaryView,
+    ChildDetailedProgressView,
     ChildActivityView,
+    ChildStatsView,
     ChildWeeklyReportView,
     ChildGoalsView,
     GoalDetailView,
@@ -21,6 +24,9 @@ from .views import (
 app_name = 'parent_engagement'
 
 urlpatterns = [
+    # Parent Dashboard - Summary of all children
+    path('dashboard/', ParentDashboardView.as_view(), name='dashboard'),
+
     # Parent preferences
     path('preferences/', ParentPreferencesView.as_view(), name='preferences'),
 
@@ -42,6 +48,16 @@ urlpatterns = [
         name='child-activity'
     ),
     path(
+        'children/<uuid:child_id>/progress/',
+        ChildDetailedProgressView.as_view(),
+        name='child-detailed-progress'
+    ),
+    path(
+        'children/<uuid:child_id>/stats/',
+        ChildStatsView.as_view(),
+        name='child-stats'
+    ),
+    path(
         'children/<uuid:child_id>/weekly-report/',
         ChildWeeklyReportView.as_view(),
         name='child-weekly-report'
@@ -57,9 +73,9 @@ urlpatterns = [
         name='goal-detail'
     ),
     path(
-        'children/<uuid:child_id>/progress/',
+        'children/<uuid:child_id>/progress-update/',
         ProgressUpdateView.as_view(),
-        name='child-progress'
+        name='child-progress-update'
     ),
     # Report Card endpoints
     path(

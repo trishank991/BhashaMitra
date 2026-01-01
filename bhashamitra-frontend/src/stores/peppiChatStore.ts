@@ -47,7 +47,7 @@ interface PeppiChatActions {
   startConversation: (
     childId: string,
     request: StartConversationRequest
-  ) => Promise<void>;
+  ) => Promise<PeppiConversation | null>;
   sendMessage: (childId: string, content: string) => Promise<void>;
   loadConversationHistory: (
     childId: string,
@@ -139,17 +139,20 @@ export const usePeppiChatStore = create<PeppiChatStore>((set, get) => ({
           mode: request.mode,
           isLoading: false,
         });
+        return conversation;
       } else {
         set({
           error: response.error || 'Failed to start conversation',
           isLoading: false,
         });
+        return null;
       }
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Network error',
         isLoading: false,
       });
+      return null;
     }
   },
 
@@ -343,10 +346,7 @@ export const usePeppiChatStore = create<PeppiChatStore>((set, get) => ({
 
   // Check service status
   checkStatus: async (childId) => {
-    console.log('[PeppiChat] checkStatus called with childId:', childId);
-
     if (!childId) {
-      console.error('[PeppiChat] No childId provided to checkStatus');
       set({
         isAvailable: false,
         statusMessage: 'No child profile selected',
@@ -355,9 +355,7 @@ export const usePeppiChatStore = create<PeppiChatStore>((set, get) => ({
     }
 
     try {
-      console.log('[PeppiChat] Making status request...');
       const response = await api.getPeppiChatStatus(childId);
-      console.log('[PeppiChat] Status response:', response);
 
       if (response.success && response.data) {
         set({
@@ -370,8 +368,7 @@ export const usePeppiChatStore = create<PeppiChatStore>((set, get) => ({
           statusMessage: response.error || 'Service unavailable',
         });
       }
-    } catch (error) {
-      console.error('[PeppiChat] checkStatus error:', error);
+    } catch {
       set({
         isAvailable: false,
         statusMessage: 'Unable to check status',

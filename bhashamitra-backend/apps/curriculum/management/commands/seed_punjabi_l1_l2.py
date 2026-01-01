@@ -178,16 +178,16 @@ class Command(BaseCommand):
         )
 
         vowels = [
-            {'character': 'ਅ', 'romanization': 'a', 'ipa': '/ə/', 'example_word': 'ਅੱਖ', 'example_translation': 'eye', 'mnemonic': 'ਅ ਤੋਂ ਅੱਖ ਵੇਖੋ ਸਭ ਕੁਝ'},
-            {'character': 'ਆ', 'romanization': 'aa', 'ipa': '/aː/', 'example_word': 'ਆਮ', 'example_translation': 'mango', 'mnemonic': 'ਆ ਤੋਂ ਆਮ ਮਿੱਠਾ ਫਲ'},
-            {'character': 'ਇ', 'romanization': 'i', 'ipa': '/ɪ/', 'example_word': 'ਇਮਲੀ', 'example_translation': 'tamarind', 'mnemonic': 'ਇ ਤੋਂ ਇਮਲੀ ਖੱਟੀ ਮਿੱਠੀ'},
-            {'character': 'ਈ', 'romanization': 'ee', 'ipa': '/iː/', 'example_word': 'ਈਦ', 'example_translation': 'Eid', 'mnemonic': 'ਈ ਤੋਂ ਈਦ ਖੁਸ਼ੀ ਦਾ ਤਿਉਹਾਰ'},
-            {'character': 'ਉ', 'romanization': 'u', 'ipa': '/ʊ/', 'example_word': 'ਊਠ', 'example_translation': 'camel', 'mnemonic': 'ਉ ਤੋਂ ਊਠ ਰੇਗਿਸਤਾਨ ਦਾ ਜਹਾਜ਼'},
-            {'character': 'ਊ', 'romanization': 'oo', 'ipa': '/uː/', 'example_word': 'ਊਨ', 'example_translation': 'wool', 'mnemonic': 'ਊ ਤੋਂ ਊਨ ਨਰਮ ਅਤੇ ਗਰਮ'},
-            {'character': 'ਏ', 'romanization': 'e', 'ipa': '/eː/', 'example_word': 'ਏਕਤਾ', 'example_translation': 'unity', 'mnemonic': 'ਏ ਤੋਂ ਏਕਤਾ ਮਿਲ ਕੇ ਰਹੋ'},
-            {'character': 'ਐ', 'romanization': 'ai', 'ipa': '/ɛː/', 'example_word': 'ਐਨਕ', 'example_translation': 'spectacles', 'mnemonic': 'ਐ ਤੋਂ ਐਨਕ ਚੰਗਾ ਦੇਖੋ'},
-            {'character': 'ਓ', 'romanization': 'o', 'ipa': '/oː/', 'example_word': 'ਓਖਲੀ', 'example_translation': 'mortar', 'mnemonic': 'ਓ ਤੋਂ ਓਖਲੀ'},
-            {'character': 'ਔ', 'romanization': 'au', 'ipa': '/ɔː/', 'example_word': 'ਔਰਤ', 'example_translation': 'woman', 'mnemonic': 'ਔ ਤੋਂ ਔਰਤ ਮਾਂ ਵਰਗੀ'},
+            {'character': 'ਅ', 'romanization': 'a', 'ipa': '/ə/', 'example_word': 'ਅੰਬ', 'example_translation': 'mango', 'example_image': 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=120&h=120&fit=crop', 'mnemonic': 'ਅ ਤੋਂ ਅੰਬ ਮਿੱਠਾ ਫਲ'},
+            {'character': 'ਆ', 'romanization': 'aa', 'ipa': '/aː/', 'example_word': 'ਆਲੂ', 'example_translation': 'potato', 'example_image': 'https://images.unsplash.com/photo-1518977676601-b53f82afe9e7?w=120&h=120&fit=crop', 'mnemonic': 'ਆ ਤੋਂ ਆਲੂ ਸਵਾਦ ਵਧੀਆ'},
+            {'character': 'ਇ', 'romanization': 'i', 'ipa': '/ɪ/', 'example_word': 'ਇਮਲੀ', 'example_translation': 'tamarind', 'example_image': 'https://images.unsplash.com/photo-1590502160462-58b41354f588?w=120&h=120&fit=crop', 'mnemonic': 'ਇ ਤੋਂ ਇਮਲੀ ਖੱਟੀ ਮਿੱਠੀ'},
+            {'character': 'ਈ', 'romanization': 'ee', 'ipa': '/iː/', 'example_word': 'ਈਖ', 'example_translation': 'sugarcane', 'example_image': 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=120&h=120&fit=crop', 'mnemonic': 'ਈ ਤੋਂ ਈਖ ਮਿੱਠੀ ਮਿੱਠੀ'},
+            {'character': 'ਉ', 'romanization': 'u', 'ipa': '/ʊ/', 'example_word': 'ਉੱਲੂ', 'example_translation': 'owl', 'example_image': 'https://images.unsplash.com/photo-1543549790-8b5f4a028cfb?w=120&h=120&fit=crop', 'mnemonic': 'ਉ ਤੋਂ ਉੱਲੂ ਰਾਤ ਨੂੰ ਜਾਗਦਾ'},
+            {'character': 'ਊ', 'romanization': 'oo', 'ipa': '/uː/', 'example_word': 'ਊਠ', 'example_translation': 'camel', 'example_image': 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=120&h=120&fit=crop', 'mnemonic': 'ਊ ਤੋਂ ਊਠ ਰੇਗਿਸਤਾਨ ਦਾ ਜਹਾਜ਼'},
+            {'character': 'ਏ', 'romanization': 'e', 'ipa': '/eː/', 'example_word': 'ਏਕ', 'example_translation': 'one', 'example_image': 'https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?w=120&h=120&fit=crop', 'mnemonic': 'ਏ ਤੋਂ ਏਕ ਇੱਕ ਗਿਣਤੀ'},
+            {'character': 'ਐ', 'romanization': 'ai', 'ipa': '/ɛː/', 'example_word': 'ਐਨਕ', 'example_translation': 'glasses', 'example_image': 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=120&h=120&fit=crop', 'mnemonic': 'ਐ ਤੋਂ ਐਨਕ ਚੰਗਾ ਦੇਖੋ'},
+            {'character': 'ਓ', 'romanization': 'o', 'ipa': '/oː/', 'example_word': 'ਓਖਲੀ', 'example_translation': 'mortar', 'example_image': 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?w=120&h=120&fit=crop', 'mnemonic': 'ਓ ਤੋਂ ਓਖਲੀ ਮਸਾਲੇ ਕੁੱਟੋ'},
+            {'character': 'ਔ', 'romanization': 'au', 'ipa': '/ɔː/', 'example_word': 'ਔਰਤ', 'example_translation': 'woman', 'example_image': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop', 'mnemonic': 'ਔ ਤੋਂ ਔਰਤ ਮਾਂ ਵਰਗੀ'},
         ]
 
         for i, vowel in enumerate(vowels, 1):
@@ -201,6 +201,7 @@ class Command(BaseCommand):
                     'example_word': vowel['example_word'],
                     'example_word_romanization': vowel['romanization'],
                     'example_word_translation': vowel['example_translation'],
+                    'example_image': vowel.get('example_image', ''),
                     'order': i,
                     'is_active': True,
                 }
@@ -225,44 +226,44 @@ class Command(BaseCommand):
 
         consonants = [
             # Mool letters
-            {'character': 'ਸ', 'romanization': 'sa', 'ipa': '/s/', 'group': 'MOOL', 'example_word': 'ਸੇਬ', 'example_translation': 'apple', 'mnemonic': 'ਸ ਤੋਂ ਸੇਬ ਲਾਲ ਲਾਲ'},
-            {'character': 'ਹ', 'romanization': 'ha', 'ipa': '/h/', 'group': 'MOOL', 'example_word': 'ਹਾਥੀ', 'example_translation': 'elephant', 'mnemonic': 'ਹ ਤੋਂ ਹਾਥੀ ਵੱਡਾ ਵੱਡਾ'},
+            {'character': 'ਸ', 'romanization': 'sa', 'ipa': '/s/', 'group': 'MOOL', 'example_word': 'ਸੇਬ', 'example_translation': 'apple', 'example_image': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=120&h=120&fit=crop', 'mnemonic': 'ਸ ਤੋਂ ਸੇਬ ਲਾਲ ਲਾਲ'},
+            {'character': 'ਹ', 'romanization': 'ha', 'ipa': '/h/', 'group': 'MOOL', 'example_word': 'ਹਾਥੀ', 'example_translation': 'elephant', 'example_image': 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=120&h=120&fit=crop', 'mnemonic': 'ਹ ਤੋਂ ਹਾਥੀ ਵੱਡਾ ਵੱਡਾ'},
             # Ka Varga
-            {'character': 'ਕ', 'romanization': 'ka', 'ipa': '/k/', 'group': 'KA_VARGA', 'example_word': 'ਕੱਛੂ', 'example_translation': 'tortoise', 'mnemonic': 'ਕ ਤੋਂ ਕੱਛੂ ਹੌਲੀ ਹੌਲੀ'},
-            {'character': 'ਖ', 'romanization': 'kha', 'ipa': '/kʰ/', 'group': 'KA_VARGA', 'example_word': 'ਖਰਗੋਸ਼', 'example_translation': 'rabbit', 'mnemonic': 'ਖ ਤੋਂ ਖਰਗੋਸ਼ ਤੇਜ਼ ਭੱਜੇ'},
-            {'character': 'ਗ', 'romanization': 'ga', 'ipa': '/g/', 'group': 'KA_VARGA', 'example_word': 'ਗਾਂ', 'example_translation': 'cow', 'mnemonic': 'ਗ ਤੋਂ ਗਾਂ ਦੁੱਧ ਦਿੰਦੀ'},
-            {'character': 'ਘ', 'romanization': 'gha', 'ipa': '/gʰ/', 'group': 'KA_VARGA', 'example_word': 'ਘੜੀ', 'example_translation': 'clock', 'mnemonic': 'ਘ ਤੋਂ ਘੜੀ ਟਿੱਕ ਟਿੱਕ'},
-            {'character': 'ਙ', 'romanization': 'nga', 'ipa': '/ŋ/', 'group': 'KA_VARGA', 'example_word': 'ਰੰਗ', 'example_translation': 'color', 'mnemonic': 'ਙ ਨੱਕ ਵਿੱਚੋਂ ਆਵਾਜ਼'},
+            {'character': 'ਕ', 'romanization': 'ka', 'ipa': '/k/', 'group': 'KA_VARGA', 'example_word': 'ਕਬੂਤਰ', 'example_translation': 'pigeon', 'example_image': 'https://images.unsplash.com/photo-1555169062-013468b47731?w=120&h=120&fit=crop', 'mnemonic': 'ਕ ਤੋਂ ਕਬੂਤਰ ਗੁਟਰ ਗੂੰ'},
+            {'character': 'ਖ', 'romanization': 'kha', 'ipa': '/kʰ/', 'group': 'KA_VARGA', 'example_word': 'ਖਰਗੋਸ਼', 'example_translation': 'rabbit', 'example_image': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=120&h=120&fit=crop', 'mnemonic': 'ਖ ਤੋਂ ਖਰਗੋਸ਼ ਤੇਜ਼ ਭੱਜੇ'},
+            {'character': 'ਗ', 'romanization': 'ga', 'ipa': '/g/', 'group': 'KA_VARGA', 'example_word': 'ਗਾਂ', 'example_translation': 'cow', 'example_image': 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=120&h=120&fit=crop', 'mnemonic': 'ਗ ਤੋਂ ਗਾਂ ਦੁੱਧ ਦਿੰਦੀ'},
+            {'character': 'ਘ', 'romanization': 'gha', 'ipa': '/gʰ/', 'group': 'KA_VARGA', 'example_word': 'ਘਰ', 'example_translation': 'house', 'example_image': 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=120&h=120&fit=crop', 'mnemonic': 'ਘ ਤੋਂ ਘਰ ਪਿਆਰਾ ਪਿਆਰਾ'},
+            {'character': 'ਙ', 'romanization': 'nga', 'ipa': '/ŋ/', 'group': 'KA_VARGA', 'example_word': 'ਅੰਗ', 'example_translation': 'limb', 'example_image': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=120&h=120&fit=crop', 'mnemonic': 'ਙ ਨੱਕ ਵਿੱਚੋਂ ਆਵਾਜ਼'},
             # Cha Varga
-            {'character': 'ਚ', 'romanization': 'cha', 'ipa': '/tʃ/', 'group': 'CHA_VARGA', 'example_word': 'ਚੱਮਚ', 'example_translation': 'spoon', 'mnemonic': 'ਚ ਤੋਂ ਚੱਮਚ ਖਾਣਾ ਖਾਓ'},
-            {'character': 'ਛ', 'romanization': 'chha', 'ipa': '/tʃʰ/', 'group': 'CHA_VARGA', 'example_word': 'ਛੱਤਰੀ', 'example_translation': 'umbrella', 'mnemonic': 'ਛ ਤੋਂ ਛੱਤਰੀ ਮੀਂਹ ਵਿੱਚ'},
-            {'character': 'ਜ', 'romanization': 'ja', 'ipa': '/dʒ/', 'group': 'CHA_VARGA', 'example_word': 'ਜਹਾਜ਼', 'example_translation': 'airplane', 'mnemonic': 'ਜ ਤੋਂ ਜਹਾਜ਼ ਉੱਡਦਾ ਜਾਵੇ'},
-            {'character': 'ਝ', 'romanization': 'jha', 'ipa': '/dʒʰ/', 'group': 'CHA_VARGA', 'example_word': 'ਝੰਡਾ', 'example_translation': 'flag', 'mnemonic': 'ਝ ਤੋਂ ਝੰਡਾ ਲਹਿਰਾਵੇ'},
-            {'character': 'ਞ', 'romanization': 'nya', 'ipa': '/ɲ/', 'group': 'CHA_VARGA', 'example_word': '', 'example_translation': 'palatal nasal', 'mnemonic': 'ਞ ਨਾਸਿਕ ਧੁਨੀ'},
+            {'character': 'ਚ', 'romanization': 'cha', 'ipa': '/tʃ/', 'group': 'CHA_VARGA', 'example_word': 'ਚਿੜੀ', 'example_translation': 'sparrow', 'example_image': 'https://images.unsplash.com/photo-1486365227551-f3f90034a57c?w=120&h=120&fit=crop', 'mnemonic': 'ਚ ਤੋਂ ਚਿੜੀ ਚੂੰ ਚੂੰ'},
+            {'character': 'ਛ', 'romanization': 'chha', 'ipa': '/tʃʰ/', 'group': 'CHA_VARGA', 'example_word': 'ਛਤਰੀ', 'example_translation': 'umbrella', 'example_image': 'https://images.unsplash.com/photo-1534309466160-70b22cc6252c?w=120&h=120&fit=crop', 'mnemonic': 'ਛ ਤੋਂ ਛਤਰੀ ਮੀਂਹ ਵਿੱਚ'},
+            {'character': 'ਜ', 'romanization': 'ja', 'ipa': '/dʒ/', 'group': 'CHA_VARGA', 'example_word': 'ਜਹਾਜ਼', 'example_translation': 'ship', 'example_image': 'https://images.unsplash.com/photo-1534343821789-89dd78d50b53?w=120&h=120&fit=crop', 'mnemonic': 'ਜ ਤੋਂ ਜਹਾਜ਼ ਉੱਡਦਾ ਜਾਵੇ'},
+            {'character': 'ਝ', 'romanization': 'jha', 'ipa': '/dʒʰ/', 'group': 'CHA_VARGA', 'example_word': 'ਝੰਡਾ', 'example_translation': 'flag', 'example_image': 'https://images.unsplash.com/photo-1569974507005-6dc61f97fb5c?w=120&h=120&fit=crop', 'mnemonic': 'ਝ ਤੋਂ ਝੰਡਾ ਲਹਿਰਾਵੇ'},
+            {'character': 'ਞ', 'romanization': 'nya', 'ipa': '/ɲ/', 'group': 'CHA_VARGA', 'example_word': 'ਮਿੱਤਰ', 'example_translation': 'friend', 'example_image': 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=120&h=120&fit=crop', 'mnemonic': 'ਞ ਨਾਸਿਕ ਧੁਨੀ'},
             # Ta Varga (Retroflex)
-            {'character': 'ਟ', 'romanization': 'ta', 'ipa': '/ʈ/', 'group': 'TA_VARGA', 'example_word': 'ਟਮਾਟਰ', 'example_translation': 'tomato', 'mnemonic': 'ਟ ਤੋਂ ਟਮਾਟਰ ਲਾਲ ਲਾਲ'},
-            {'character': 'ਠ', 'romanization': 'tha', 'ipa': '/ʈʰ/', 'group': 'TA_VARGA', 'example_word': 'ਠੰਡਾ', 'example_translation': 'cold', 'mnemonic': 'ਠ ਤੋਂ ਠੰਡਾ ਬਰਫ਼ ਵਰਗਾ'},
-            {'character': 'ਡ', 'romanization': 'da', 'ipa': '/ɖ/', 'group': 'TA_VARGA', 'example_word': 'ਡੱਬਾ', 'example_translation': 'box', 'mnemonic': 'ਡ ਤੋਂ ਡੱਬਾ ਚੀਜ਼ਾਂ ਰੱਖੋ'},
-            {'character': 'ਢ', 'romanization': 'dha', 'ipa': '/ɖʰ/', 'group': 'TA_VARGA', 'example_word': 'ਢੋਲ', 'example_translation': 'drum', 'mnemonic': 'ਢ ਤੋਂ ਢੋਲ ਭੰਗੜਾ ਪਾਓ'},
-            {'character': 'ਣ', 'romanization': 'na', 'ipa': '/ɳ/', 'group': 'TA_VARGA', 'example_word': 'ਕੰਨ', 'example_translation': 'ear', 'mnemonic': 'ਣ ਜੀਭ ਉੱਪਰ ਨੱਕ ਦੀ ਆਵਾਜ਼'},
+            {'character': 'ਟ', 'romanization': 'ta', 'ipa': '/ʈ/', 'group': 'TA_VARGA', 'example_word': 'ਟਮਾਟਰ', 'example_translation': 'tomato', 'example_image': 'https://images.unsplash.com/photo-1558818498-28c1e002674f?w=120&h=120&fit=crop', 'mnemonic': 'ਟ ਤੋਂ ਟਮਾਟਰ ਲਾਲ ਲਾਲ'},
+            {'character': 'ਠ', 'romanization': 'tha', 'ipa': '/ʈʰ/', 'group': 'TA_VARGA', 'example_word': 'ਠੰਡਾ', 'example_translation': 'cold', 'example_image': 'https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=120&h=120&fit=crop', 'mnemonic': 'ਠ ਤੋਂ ਠੰਡਾ ਬਰਫ਼ ਵਰਗਾ'},
+            {'character': 'ਡ', 'romanization': 'da', 'ipa': '/ɖ/', 'group': 'TA_VARGA', 'example_word': 'ਡੱਬਾ', 'example_translation': 'box', 'example_image': 'https://images.unsplash.com/photo-1607166452427-7e4477079cb9?w=120&h=120&fit=crop', 'mnemonic': 'ਡ ਤੋਂ ਡੱਬਾ ਚੀਜ਼ਾਂ ਰੱਖੋ'},
+            {'character': 'ਢ', 'romanization': 'dha', 'ipa': '/ɖʰ/', 'group': 'TA_VARGA', 'example_word': 'ਢੋਲ', 'example_translation': 'drum', 'example_image': 'https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=120&h=120&fit=crop', 'mnemonic': 'ਢ ਤੋਂ ਢੋਲ ਭੰਗੜਾ ਪਾਓ'},
+            {'character': 'ਣ', 'romanization': 'na', 'ipa': '/ɳ/', 'group': 'TA_VARGA', 'example_word': 'ਕੰਨ', 'example_translation': 'ear', 'example_image': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop', 'mnemonic': 'ਣ ਜੀਭ ਉੱਪਰ ਨੱਕ ਦੀ ਆਵਾਜ਼'},
             # Ta Varga 2 (Dental)
-            {'character': 'ਤ', 'romanization': 'ta', 'ipa': '/t̪/', 'group': 'TA_VARGA_2', 'example_word': 'ਤਾਰਾ', 'example_translation': 'star', 'mnemonic': 'ਤ ਤੋਂ ਤਾਰਾ ਚਮਕਦਾ'},
-            {'character': 'ਥ', 'romanization': 'tha', 'ipa': '/t̪ʰ/', 'group': 'TA_VARGA_2', 'example_word': 'ਥਾਲੀ', 'example_translation': 'plate', 'mnemonic': 'ਥ ਤੋਂ ਥਾਲੀ ਖਾਣਾ ਖਾਓ'},
-            {'character': 'ਦ', 'romanization': 'da', 'ipa': '/d̪/', 'group': 'TA_VARGA_2', 'example_word': 'ਦਵਾਈ', 'example_translation': 'medicine', 'mnemonic': 'ਦ ਤੋਂ ਦਵਾਈ ਸਿਹਤ ਲਈ'},
-            {'character': 'ਧ', 'romanization': 'dha', 'ipa': '/d̪ʰ/', 'group': 'TA_VARGA_2', 'example_word': 'ਧਰਤੀ', 'example_translation': 'earth', 'mnemonic': 'ਧ ਤੋਂ ਧਰਤੀ ਸਾਡਾ ਘਰ'},
-            {'character': 'ਨ', 'romanization': 'na', 'ipa': '/n/', 'group': 'TA_VARGA_2', 'example_word': 'ਨੱਕ', 'example_translation': 'nose', 'mnemonic': 'ਨ ਤੋਂ ਨੱਕ ਸੁੰਘੋ ਫੁੱਲ'},
+            {'character': 'ਤ', 'romanization': 'ta', 'ipa': '/t̪/', 'group': 'TA_VARGA_2', 'example_word': 'ਤਾਰਾ', 'example_translation': 'star', 'example_image': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=120&h=120&fit=crop', 'mnemonic': 'ਤ ਤੋਂ ਤਾਰਾ ਚਮਕਦਾ'},
+            {'character': 'ਥ', 'romanization': 'tha', 'ipa': '/t̪ʰ/', 'group': 'TA_VARGA_2', 'example_word': 'ਥਾਲੀ', 'example_translation': 'plate', 'example_image': 'https://images.unsplash.com/photo-1544025162-d76694265947?w=120&h=120&fit=crop', 'mnemonic': 'ਥ ਤੋਂ ਥਾਲੀ ਖਾਣਾ ਖਾਓ'},
+            {'character': 'ਦ', 'romanization': 'da', 'ipa': '/d̪/', 'group': 'TA_VARGA_2', 'example_word': 'ਦੁੱਧ', 'example_translation': 'milk', 'example_image': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=120&h=120&fit=crop', 'mnemonic': 'ਦ ਤੋਂ ਦੁੱਧ ਚਿੱਟਾ ਚਿੱਟਾ'},
+            {'character': 'ਧ', 'romanization': 'dha', 'ipa': '/d̪ʰ/', 'group': 'TA_VARGA_2', 'example_word': 'ਧਨੁਸ਼', 'example_translation': 'bow', 'example_image': 'https://images.unsplash.com/photo-1533381748829-78674b3e9632?w=120&h=120&fit=crop', 'mnemonic': 'ਧ ਤੋਂ ਧਨੁਸ਼ ਤੀਰ ਚਲਾਓ'},
+            {'character': 'ਨ', 'romanization': 'na', 'ipa': '/n/', 'group': 'TA_VARGA_2', 'example_word': 'ਨਾਰੀਅਲ', 'example_translation': 'coconut', 'example_image': 'https://images.unsplash.com/photo-1550689960-d9c8ab6f7c4f?w=120&h=120&fit=crop', 'mnemonic': 'ਨ ਤੋਂ ਨਾਰੀਅਲ ਮਿੱਠਾ ਪਾਣੀ'},
             # Pa Varga
-            {'character': 'ਪ', 'romanization': 'pa', 'ipa': '/p/', 'group': 'PA_VARGA', 'example_word': 'ਪੱਖਾ', 'example_translation': 'fan', 'mnemonic': 'ਪ ਤੋਂ ਪੱਖਾ ਹਵਾ ਦਿੰਦਾ'},
-            {'character': 'ਫ', 'romanization': 'pha', 'ipa': '/pʰ/', 'group': 'PA_VARGA', 'example_word': 'ਫੁੱਲ', 'example_translation': 'flower', 'mnemonic': 'ਫ ਤੋਂ ਫੁੱਲ ਸੁੰਦਰ ਸੁੰਦਰ'},
-            {'character': 'ਬ', 'romanization': 'ba', 'ipa': '/b/', 'group': 'PA_VARGA', 'example_word': 'ਬੱਕਰੀ', 'example_translation': 'goat', 'mnemonic': 'ਬ ਤੋਂ ਬੱਕਰੀ ਮੈਂ ਮੈਂ'},
-            {'character': 'ਭ', 'romanization': 'bha', 'ipa': '/bʰ/', 'group': 'PA_VARGA', 'example_word': 'ਭਾਲੂ', 'example_translation': 'bear', 'mnemonic': 'ਭ ਤੋਂ ਭਾਲੂ ਜੰਗਲ ਵਿੱਚ'},
-            {'character': 'ਮ', 'romanization': 'ma', 'ipa': '/m/', 'group': 'PA_VARGA', 'example_word': 'ਮੱਛੀ', 'example_translation': 'fish', 'mnemonic': 'ਮ ਤੋਂ ਮੱਛੀ ਪਾਣੀ ਵਿੱਚ'},
+            {'character': 'ਪ', 'romanization': 'pa', 'ipa': '/p/', 'group': 'PA_VARGA', 'example_word': 'ਪਤੰਗ', 'example_translation': 'kite', 'example_image': 'https://images.unsplash.com/photo-1601580184474-24f0dbbcf7fe?w=120&h=120&fit=crop', 'mnemonic': 'ਪ ਤੋਂ ਪਤੰਗ ਉੱਚੀ ਉੱਡੇ'},
+            {'character': 'ਫ', 'romanization': 'pha', 'ipa': '/pʰ/', 'group': 'PA_VARGA', 'example_word': 'ਫੁੱਲ', 'example_translation': 'flower', 'example_image': 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=120&h=120&fit=crop', 'mnemonic': 'ਫ ਤੋਂ ਫੁੱਲ ਸੁੰਦਰ ਸੁੰਦਰ'},
+            {'character': 'ਬ', 'romanization': 'ba', 'ipa': '/b/', 'group': 'PA_VARGA', 'example_word': 'ਬੱਕਰੀ', 'example_translation': 'goat', 'example_image': 'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=120&h=120&fit=crop', 'mnemonic': 'ਬ ਤੋਂ ਬੱਕਰੀ ਮੈਂ ਮੈਂ'},
+            {'character': 'ਭ', 'romanization': 'bha', 'ipa': '/bʰ/', 'group': 'PA_VARGA', 'example_word': 'ਭਾਲੂ', 'example_translation': 'bear', 'example_image': 'https://images.unsplash.com/photo-1589656966895-2f33e7653819?w=120&h=120&fit=crop', 'mnemonic': 'ਭ ਤੋਂ ਭਾਲੂ ਜੰਗਲ ਵਿੱਚ'},
+            {'character': 'ਮ', 'romanization': 'ma', 'ipa': '/m/', 'group': 'PA_VARGA', 'example_word': 'ਮੱਛੀ', 'example_translation': 'fish', 'example_image': 'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=120&h=120&fit=crop', 'mnemonic': 'ਮ ਤੋਂ ਮੱਛੀ ਪਾਣੀ ਵਿੱਚ'},
             # Antastha
-            {'character': 'ਯ', 'romanization': 'ya', 'ipa': '/j/', 'group': 'ANTASTHA', 'example_word': 'ਯਾਦ', 'example_translation': 'memory', 'mnemonic': 'ਯ ਤੋਂ ਯਾਦ ਦਿਲ ਵਿੱਚ ਰੱਖੋ'},
-            {'character': 'ਰ', 'romanization': 'ra', 'ipa': '/r/', 'group': 'ANTASTHA', 'example_word': 'ਰੁੱਖ', 'example_translation': 'tree', 'mnemonic': 'ਰ ਤੋਂ ਰੁੱਖ ਹਰਾ ਭਰਾ'},
-            {'character': 'ਲ', 'romanization': 'la', 'ipa': '/l/', 'group': 'ANTASTHA', 'example_word': 'ਲੱਸੀ', 'example_translation': 'lassi', 'mnemonic': 'ਲ ਤੋਂ ਲੱਸੀ ਠੰਡੀ ਮਿੱਠੀ'},
-            {'character': 'ਵ', 'romanization': 'va', 'ipa': '/ʋ/', 'group': 'ANTASTHA', 'example_word': 'ਵਾਲ', 'example_translation': 'hair', 'mnemonic': 'ਵ ਤੋਂ ਵਾਲ ਸਿਰ ਤੇ'},
-            {'character': 'ੜ', 'romanization': 'rha', 'ipa': '/ɽ/', 'group': 'ANTASTHA', 'example_word': 'ਘੋੜਾ', 'example_translation': 'horse', 'mnemonic': 'ੜ ਪੰਜਾਬੀ ਦੀ ਖ਼ਾਸ ਆਵਾਜ਼'},
+            {'character': 'ਯ', 'romanization': 'ya', 'ipa': '/j/', 'group': 'ANTASTHA', 'example_word': 'ਯੋਗਾ', 'example_translation': 'yoga', 'example_image': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=120&h=120&fit=crop', 'mnemonic': 'ਯ ਤੋਂ ਯੋਗਾ ਸਿਹਤ ਚੰਗੀ'},
+            {'character': 'ਰ', 'romanization': 'ra', 'ipa': '/r/', 'group': 'ANTASTHA', 'example_word': 'ਰੱਸੀ', 'example_translation': 'rope', 'example_image': 'https://images.unsplash.com/photo-1583395838144-09be6e04e84f?w=120&h=120&fit=crop', 'mnemonic': 'ਰ ਤੋਂ ਰੱਸੀ ਖਿੱਚ ਖਿੱਚ'},
+            {'character': 'ਲ', 'romanization': 'la', 'ipa': '/l/', 'group': 'ANTASTHA', 'example_word': 'ਲੱਸੀ', 'example_translation': 'lassi', 'example_image': 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=120&h=120&fit=crop', 'mnemonic': 'ਲ ਤੋਂ ਲੱਸੀ ਠੰਡੀ ਮਿੱਠੀ'},
+            {'character': 'ਵ', 'romanization': 'va', 'ipa': '/ʋ/', 'group': 'ANTASTHA', 'example_word': 'ਵਾਇਲਨ', 'example_translation': 'violin', 'example_image': 'https://images.unsplash.com/photo-1612225330812-01a9c6b355ec?w=120&h=120&fit=crop', 'mnemonic': 'ਵ ਤੋਂ ਵਾਇਲਨ ਸੰਗੀਤ ਸੁਣੋ'},
+            {'character': 'ੜ', 'romanization': 'rha', 'ipa': '/ɽ/', 'group': 'ANTASTHA', 'example_word': 'ਪੜ੍ਹਨਾ', 'example_translation': 'to read', 'example_image': 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=120&h=120&fit=crop', 'mnemonic': 'ੜ ਪੰਜਾਬੀ ਦੀ ਖ਼ਾਸ ਆਵਾਜ਼'},
         ]
 
         for i, cons in enumerate(consonants, 1):
@@ -276,6 +277,7 @@ class Command(BaseCommand):
                     'example_word': cons['example_word'],
                     'example_word_romanization': cons['romanization'],
                     'example_word_translation': cons['example_translation'],
+                    'example_image': cons.get('example_image', ''),
                     'order': i,
                     'is_active': True,
                 }

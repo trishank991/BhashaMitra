@@ -2,10 +2,9 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, RefreshCw, Trophy, Star } from 'lucide-react';
+import { RefreshCw, Trophy, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAgeConfig } from '@/hooks/useAgeConfig';
-import AudioButton from '@/components/ui/AudioButton';
 import PeppiSpeech from '@/components/peppi/PeppiSpeech';
 import { shuffleArray } from '@/lib/utils';
 
@@ -37,7 +36,6 @@ interface GameCard {
 
 export function LetterMatchGame({
   letters,
-  language = 'HINDI',
   onGameComplete,
   onBack,
   className,
@@ -50,7 +48,7 @@ export function LetterMatchGame({
   const [isChecking, setIsChecking] = useState(false);
   const [gameComplete, setGameComplete] = useState(false);
   const [streak, setStreak] = useState(0);
-  const [peppiTrigger, setPeppiTrigger] = useState<'welcome' | 'correct' | 'incorrect' | 'celebrating' | 'encouragement'>('welcome');
+  const [peppiTrigger, setPeppiTrigger] = useState<'welcome' | 'correct' | 'incorrect' | 'lessonComplete' | 'encouragement'>('welcome');
 
   // Adjust number of pairs based on age
   const pairsToUse = ageConfig.variant === 'junior' ? 4 : ageConfig.variant === 'standard' ? 6 : 8;
@@ -137,7 +135,7 @@ export function LetterMatchGame({
           // Check for game complete
           if (matchedPairs + 1 === pairsToUse) {
             setGameComplete(true);
-            setPeppiTrigger('celebrating');
+            setPeppiTrigger('lessonComplete');
             onGameComplete(calculateScore(), pairsToUse);
           }
         }, 500);

@@ -106,7 +106,7 @@ export function PeppiChatHeader({
         </div>
       </div>
 
-      {/* Mode selector */}
+      {/* Mode selector - 3 modes: Chat, Story, Learn */}
       <div className="flex gap-1 bg-white/10 rounded-lg p-1">
         {(Object.keys(MODE_LABELS) as PeppiChatMode[]).map((m) => (
           <button

@@ -101,6 +101,13 @@ const PREVIEW_MESSAGES: Record<LanguageCode, { byName: string; cultural: { male:
       female: 'السلام علیکم آپا! آج ہم کہانی سنیں گے۔',
     },
   },
+  FIJI_HINDI: {
+    byName: 'Namaste {name}! Aaj ham kahani sunenge.',
+    cultural: {
+      male: 'Namaste bhaiya! Aaj ham kahani sunenge.',
+      female: 'Namaste didi! Aaj ham kahani sunenge.',
+    },
+  },
 };
 
 // Gender label translations
@@ -117,6 +124,7 @@ const GENDER_LABELS: Record<LanguageCode, { male: string; female: string }> = {
   ODIA: { male: 'Peppi Bhai (ପୁଅ)', female: 'Peppi Bhauni (ଝିଅ)' },
   ASSAMESE: { male: 'Peppi Bhaiti (ল\'ৰা)', female: 'Peppi Bahini (ছোৱালী)' },
   URDU: { male: 'پیپی بھائی (لڑکا)', female: 'پیپی آپا (لڑکی)' },
+  FIJI_HINDI: { male: 'Peppi Bhaiya (Boy)', female: 'Peppi Didi (Girl)' },
 };
 
 export function PeppiPreferenceSelector({

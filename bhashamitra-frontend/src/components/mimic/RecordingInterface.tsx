@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Square, Loader2, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { soundService } from '@/lib/soundService';
 import { RecordingState, RecordingResult } from '@/types';
 
 interface RecordingInterfaceProps {
@@ -35,12 +36,23 @@ export function RecordingInterface({
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const blobUrlRef = useRef<string | null>(null);
 
   // Check microphone permission on mount
   useEffect(() => {
-    checkPermission();
+    let permissionCleanup: (() => void) | undefined;
+
+    const initPermission = async () => {
+      permissionCleanup = await checkPermission();
+    };
+
+    initPermission();
+
     return () => {
       cleanup();
+      if (permissionCleanup) {
+        permissionCleanup();
+      }
     };
   }, []);
 
@@ -49,12 +61,20 @@ export function RecordingInterface({
       const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
       setHasPermission(result.state === 'granted');
 
-      result.addEventListener('change', () => {
+      // Store the handler to remove it on cleanup
+      const handleChange = () => {
         setHasPermission(result.state === 'granted');
-      });
+      };
+      result.addEventListener('change', handleChange);
+
+      // Return cleanup function for useEffect
+      return () => {
+        result.removeEventListener('change', handleChange);
+      };
     } catch {
       // permissions API not supported, will check when recording
       setHasPermission(null);
+      return undefined;
     }
   };
 
@@ -68,6 +88,11 @@ export function RecordingInterface({
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
     }
+    // Revoke blob URL on unmount to prevent memory leaks
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
   };
 
   const startCountdown = useCallback(() => {
@@ -76,6 +101,9 @@ export function RecordingInterface({
     setState('countdown');
     setCountdown(countdownDuration);
 
+    // Play initial beep for the first countdown number
+    soundService.playCountdownBeep(countdownDuration);
+
     const countdownInterval = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
@@ -83,6 +111,8 @@ export function RecordingInterface({
           startRecording();
           return 0;
         }
+        // Play beep for each countdown number
+        soundService.playCountdownBeep(prev - 1);
         return prev - 1;
       });
     }, 1000);
@@ -125,7 +155,14 @@ export function RecordingInterface({
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         const duration_ms = Date.now() - startTimeRef.current;
+
+        // Revoke previous blob URL to prevent memory leaks
+        if (blobUrlRef.current) {
+          URL.revokeObjectURL(blobUrlRef.current);
+        }
+
         const url = URL.createObjectURL(blob);
+        blobUrlRef.current = url;
 
         setState('complete');
         onRecordingComplete({ blob, duration_ms, url });
@@ -146,6 +183,9 @@ export function RecordingInterface({
       setState('recording');
       onRecordingStart?.();
       setRecordingProgress(0);
+
+      // Play recording start sound
+      soundService.onRecordingStart();
 
       // Progress tracking
       progressIntervalRef.current = setInterval(() => {
@@ -180,10 +220,17 @@ export function RecordingInterface({
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       setState('processing');
       mediaRecorderRef.current.stop();
+      // Play recording stop sound
+      soundService.onRecordingStop();
     }
   }, []);
 
   const resetRecording = useCallback(() => {
+    // Revoke blob URL to prevent memory leaks
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
     setState('idle');
     setCountdown(countdownDuration);
     setRecordingProgress(0);

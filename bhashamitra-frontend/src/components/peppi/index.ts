@@ -5,4 +5,7 @@ export { PeppiSongNarrator } from './PeppiSongNarrator';
 export { PeppiPreferenceSelector } from './PeppiPreferenceSelector';
 export { PeppiMascot } from './PeppiMascot';
 export { PeppiCharacter } from './PeppiCharacter';
+export { PeppiSpeech } from './PeppiSpeech';
+export { PeppiFeedbackBubble } from './PeppiFeedbackBubble';
+export { PeppiAlphabetHelper } from './PeppiAlphabetHelper';
 export type { PeppiExpression, PeppiSize } from './PeppiCharacter';

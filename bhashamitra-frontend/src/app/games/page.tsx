@@ -30,13 +30,22 @@ const games = [
     available: true,
   },
   {
-    id: 'fill-blanks',
-    name: 'Fill the Blanks',
-    description: 'Complete the sentences',
-    icon: '✏️',
+    id: 'letter-match',
+    name: 'Letter Match',
+    description: 'Match letters with their sounds',
+    icon: '🔤',
+    difficulty: 'easy',
+    xpReward: 35,
+    available: true,
+  },
+  {
+    id: 'match-pairs',
+    name: 'Match Pairs',
+    description: 'Match words with meanings',
+    icon: '🎴',
     difficulty: 'medium',
     xpReward: 30,
-    available: false,
+    available: true,
   },
   {
     id: 'picture-word',
@@ -45,7 +54,16 @@ const games = [
     icon: '🖼️',
     difficulty: 'easy',
     xpReward: 20,
-    available: false,
+    available: true,
+  },
+    {
+    id: 'fill-blanks',
+    name: 'Fill the Blanks',
+    description: 'Complete the sentences',
+    icon: '✏️',
+    difficulty: 'medium',
+    xpReward: 30,
+    available: true,
   },
   {
     id: 'spelling-bee',
@@ -54,7 +72,7 @@ const games = [
     icon: '🐝',
     difficulty: 'hard',
     xpReward: 40,
-    available: false,
+    available: true,
   },
   {
     id: 'story-builder',
@@ -63,7 +81,7 @@ const games = [
     icon: '📝',
     difficulty: 'hard',
     xpReward: 50,
-    available: false,
+    available: true,
   },
 ];
 

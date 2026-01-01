@@ -10,6 +10,10 @@ import { useAuthStore } from '@/stores';
 import { fadeInUp, staggerContainer, SUPPORTED_LANGUAGES } from '@/lib/constants';
 import { useAudio } from '@/hooks/useAudio';
 import api, { GameWord } from '@/lib/api';
+import { useSounds } from '@/hooks';
+import { LetterMatchGame } from '@/components/games/LetterMatchGame';
+import { MatchPairsGame } from '@/components/games/MatchPairsGame';
+import { PictureWordGame } from '@/components/games/PictureWordGame';
 
 // Game data - descriptions update based on language
 const getGamesData = (languageName: string) => ({
@@ -24,6 +28,24 @@ const getGamesData = (languageName: string) => ({
     icon: '🎤',
     description: `Practice ${languageName} pronunciation by listening and speaking`,
     xpReward: 30,
+  },
+  'letter-match': {
+    name: 'Letter Match',
+    icon: '🔤',
+    description: `Match ${languageName} letters with their sounds`,
+    xpReward: 35,
+  },
+  'match-pairs': {
+    name: 'Match Pairs',
+    icon: '🎴',
+    description: `Match ${languageName} words with meanings`,
+    xpReward: 30,
+  },
+  'picture-word': {
+    name: 'Picture Word',
+    icon: '🖼️',
+    description: `Match pictures with ${languageName} words`,
+    xpReward: 20,
   },
 });
 
@@ -72,6 +94,117 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
+// Convert GameWord to Letter format for LetterMatchGame
+function convertToLetters(gameWords: GameWord[]): Array<{
+  id: string;
+  letter: string;
+  transliteration: string;
+  audioUrl?: string;
+}> {
+  return gameWords.map((word, index) => ({
+    id: `letter-${index}`,
+    letter: word.word.charAt(0), // Use first character as the letter
+    transliteration: word.romanized,
+    audioUrl: undefined, // Could be populated if available
+  }));
+}
+
+// Convert GameWord to Word format for MatchPairsGame
+function convertToWords(gameWords: GameWord[]): Array<{
+  id: string;
+  word: string;
+  transliteration: string;
+  meaning: string;
+  audioUrl?: string;
+  imageUrl?: string;
+}> {
+  return gameWords.map((word, index) => ({
+    id: `word-${index}`,
+    word: word.word,
+    transliteration: word.romanized,
+    meaning: word.english,
+    audioUrl: undefined, // Could be populated if available
+    imageUrl: undefined, // Could be populated if available
+  }));
+}
+
+// Image mapping for common vocabulary words - using reliable Unsplash direct links
+const WORD_IMAGES: Record<string, string> = {
+  // Family
+  mother: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=300&fit=crop',
+  father: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
+  sister: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=300&fit=crop',
+  brother: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=300&fit=crop',
+  grandmother: 'https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=400&h=300&fit=crop',
+  grandfather: 'https://images.unsplash.com/photo-1566616213894-2d4e1baee5d8?w=400&h=300&fit=crop',
+  // Colors
+  red: 'https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=400&h=300&fit=crop',
+  blue: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
+  green: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop',
+  yellow: 'https://images.unsplash.com/photo-1596568860011-0b9c2238c1a6?w=400&h=300&fit=crop',
+  white: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=400&h=300&fit=crop',
+  black: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop',
+  // Food & Drinks
+  water: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=400&h=300&fit=crop',
+  food: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop',
+  milk: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&h=300&fit=crop',
+  bread: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop',
+  rice: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=400&h=300&fit=crop',
+  fruit: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=400&h=300&fit=crop',
+  apple: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop',
+  banana: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=300&fit=crop',
+  // Animals
+  dog: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop',
+  cat: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop',
+  cow: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=400&h=300&fit=crop',
+  bird: 'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=400&h=300&fit=crop',
+  fish: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=400&h=300&fit=crop',
+  elephant: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=400&h=300&fit=crop',
+  // Nature
+  sun: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
+  moon: 'https://images.unsplash.com/photo-1532693322450-2cb5c511067d?w=400&h=300&fit=crop',
+  star: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&h=300&fit=crop',
+  tree: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&h=300&fit=crop',
+  flower: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400&h=300&fit=crop',
+  rain: 'https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=400&h=300&fit=crop',
+  // Body parts
+  hand: 'https://images.unsplash.com/photo-1577017040065-650ee4d43339?w=400&h=300&fit=crop',
+  eye: 'https://images.unsplash.com/photo-1511527661048-7fe73d85e9a4?w=400&h=300&fit=crop',
+  ear: 'https://images.unsplash.com/photo-1590698933947-a202b069a861?w=400&h=300&fit=crop',
+  // Objects
+  book: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=300&fit=crop',
+  house: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop',
+  car: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400&h=300&fit=crop',
+  phone: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop',
+};
+
+// Fallback placeholder image generator with emoji
+function getPlaceholderImage(word: string): string {
+  // Use a gradient placeholder with the word
+  const colors = ['FF6B6B', '4ECDC4', 'FFE66D', '95E1D3', 'AA96DA', 'F38181'];
+  const colorIndex = word.length % colors.length;
+  return `https://via.placeholder.com/400x300/${colors[colorIndex]}/FFFFFF?text=${encodeURIComponent(word)}`;
+}
+
+// Convert GameWord to Word format for PictureWordGame
+function convertToPictureWords(gameWords: GameWord[]): Array<{
+  id: string;
+  word: string;
+  transliteration: string;
+  meaning: string;
+  imageUrl: string;
+  audioUrl?: string;
+}> {
+  return gameWords.map((word, index) => ({
+    id: `word-${index}`,
+    word: word.word,
+    transliteration: word.romanized,
+    meaning: word.english,
+    // Use curated image if available, otherwise use placeholder
+    imageUrl: WORD_IMAGES[word.english.toLowerCase()] || getPlaceholderImage(word.english),
+  }));
+}
+
 // Word Match Game Component
 function WordMatchGame({
   onComplete,
@@ -97,8 +230,12 @@ function WordMatchGame({
     voiceStyle: 'enthusiastic', // Use enthusiastic voice for games
   });
 
+  // Sound effects hook
+  const { onClick, onCorrect, onWrong, onCelebration } = useSounds();
+
   const handleWordClick = (index: number) => {
     if (matches[index] !== undefined) return;
+    onClick(); // Play click sound when selecting a word
     setSelectedWord(index);
     setWrongMatch(null);
   };
@@ -110,14 +247,19 @@ function WordMatchGame({
     const selectedEnglishWord = shuffledEnglish[englishIndex];
 
     if (correctEnglish === selectedEnglishWord) {
+      onCorrect(); // Play correct sound on match
       setMatches(prev => ({ ...prev, [selectedWord]: englishIndex }));
       setScore(prev => prev + 1);
       setSelectedWord(null);
 
       if (Object.keys(matches).length + 1 === words.length) {
-        setTimeout(() => onComplete(score + 1), 500);
+        setTimeout(() => {
+          onCelebration(); // Play celebration sound on game completion
+          onComplete(score + 1);
+        }, 500);
       }
     } else {
+      onWrong(); // Play wrong sound on mismatch
       setWrongMatch(englishIndex);
       setTimeout(() => {
         setWrongMatch(null);
@@ -206,12 +348,10 @@ function ListenSpeakGame({
   onComplete,
   gameWords,
   language,
-  languageName
 }: {
   onComplete: (score: number) => void;
   gameWords: GameWord[];
   language: string;
-  languageName: string;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -224,6 +364,9 @@ function ListenSpeakGame({
     voiceStyle: 'kid_friendly', // Use kid_friendly voice for pronunciation
   });
 
+  // Sound effects hook
+  const { onCorrect, onCelebration } = useSounds();
+
   const currentWord = words[currentIndex];
 
   // Play pronunciation when the card loads
@@ -232,12 +375,14 @@ function ListenSpeakGame({
   };
 
   const handleCorrect = () => {
+    onCorrect(); // Play correct sound
     setScore(prev => prev + 1);
     handleNext();
   };
 
   const handleNext = () => {
     if (currentIndex + 1 >= words.length) {
+      onCelebration(); // Play celebration sound on game complete
       onComplete(score + 1);
     } else {
       setCurrentIndex(prev => prev + 1);
@@ -503,7 +648,28 @@ export default function GameDetailPage() {
                   onComplete={handleGameComplete}
                   gameWords={gameWords}
                   language={languageCode}
-                  languageName={languageName}
+                />
+              )}
+              {gameId === 'letter-match' && (
+                <LetterMatchGame
+                  letters={convertToLetters(gameWords)}
+                  language={languageCode}
+                  onGameComplete={(score) => handleGameComplete(score)}
+                />
+              )}
+              {gameId === 'match-pairs' && (
+                <MatchPairsGame
+                  words={convertToWords(gameWords)}
+                  matchType="word-meaning"
+                  language={languageCode}
+                  onGameComplete={(score) => handleGameComplete(score)}
+                />
+              )}
+              {gameId === 'picture-word' && (
+                <PictureWordGame
+                  words={convertToPictureWords(gameWords)}
+                  language={languageCode}
+                  onGameComplete={(score) => handleGameComplete(score)}
                 />
               )}
             </>

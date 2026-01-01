@@ -190,6 +190,24 @@ class GeminiAIService:
                 top_p=cls.TOP_P,
                 top_k=cls.TOP_K,
                 max_output_tokens=cls.get_max_tokens(),
+                safety_settings=[
+                    types.SafetySetting(
+                        category='HARM_CATEGORY_HARASSMENT',
+                        threshold='BLOCK_MEDIUM_AND_ABOVE'
+                    ),
+                    types.SafetySetting(
+                        category='HARM_CATEGORY_HATE_SPEECH',
+                        threshold='BLOCK_MEDIUM_AND_ABOVE'
+                    ),
+                    types.SafetySetting(
+                        category='HARM_CATEGORY_SEXUALLY_EXPLICIT',
+                        threshold='BLOCK_LOW_AND_ABOVE'
+                    ),
+                    types.SafetySetting(
+                        category='HARM_CATEGORY_DANGEROUS_CONTENT',
+                        threshold='BLOCK_MEDIUM_AND_ABOVE'
+                    ),
+                ],
             )
 
             if stream:
@@ -275,6 +293,24 @@ class GeminiAIService:
                 top_p=cls.TOP_P,
                 top_k=cls.TOP_K,
                 max_output_tokens=cls.get_max_tokens(),
+                safety_settings=[
+                    types.SafetySetting(
+                        category='HARM_CATEGORY_HARASSMENT',
+                        threshold='BLOCK_MEDIUM_AND_ABOVE'
+                    ),
+                    types.SafetySetting(
+                        category='HARM_CATEGORY_HATE_SPEECH',
+                        threshold='BLOCK_MEDIUM_AND_ABOVE'
+                    ),
+                    types.SafetySetting(
+                        category='HARM_CATEGORY_SEXUALLY_EXPLICIT',
+                        threshold='BLOCK_LOW_AND_ABOVE'
+                    ),
+                    types.SafetySetting(
+                        category='HARM_CATEGORY_DANGEROUS_CONTENT',
+                        threshold='BLOCK_MEDIUM_AND_ABOVE'
+                    ),
+                ],
             )
 
             # Generate response

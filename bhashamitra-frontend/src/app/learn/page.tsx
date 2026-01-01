@@ -10,7 +10,6 @@ import { Card, Loading } from '@/components/ui';
 import { fadeInUp, staggerContainer } from '@/lib/constants';
 import { useSubscription } from '@/hooks/useSubscription';
 import api from '@/lib/api';
-import { LanguageCode } from '@/types';
 
 const CURRICULUM_MODULES = [
   {
@@ -84,11 +83,6 @@ export default function LearnPage() {
   const hasFetchedStats = useRef(false);
   const { isAuthenticated, activeChild } = useAuthStore();
   const subscription = useSubscription();
-
-  // Get current language
-  const languageCode = activeChild?.language
-    ? (typeof activeChild.language === 'string' ? activeChild.language : activeChild.language.code)
-    : 'HINDI';
 
   // Filter modules based on subscription tier
   const availableModules = CURRICULUM_MODULES.filter(

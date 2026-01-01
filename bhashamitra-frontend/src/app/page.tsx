@@ -81,11 +81,11 @@ const FEATURES = [
     gradient: 'from-pink-50 to-pink-100',
   },
   {
-    icon: '🗣️',
-    title: 'Pronunciation Practice',
-    description: 'Hear correct pronunciation with our AI-powered TTS. Premium members get human-quality voices for authentic learning.',
-    tag: 'Native Accents',
-    gradient: 'from-teal-50 to-teal-100',
+    icon: '🎤',
+    title: 'Peppi Mimic',
+    description: 'Practice pronunciation by mimicking Peppi! Record yourself, get instant AI feedback on accuracy, and improve with each try.',
+    tag: 'Speech Scoring',
+    gradient: 'from-cyan-50 to-teal-100',
   },
   {
     icon: '🎯',
@@ -107,6 +107,13 @@ const FEATURES = [
     description: 'Earn badges, maintain streaks, and unlock achievements. Gamification that keeps kids coming back!',
     tag: 'Badges & Rewards',
     gradient: 'from-purple-50 to-purple-100',
+  },
+  {
+    icon: '👨‍👩‍👧‍👦',
+    title: 'Family Challenges',
+    description: 'Create family groups, challenge each other with fun quizzes, and learn together! Share codes via WhatsApp to invite family members.',
+    tag: 'Multiplayer Learning',
+    gradient: 'from-emerald-50 to-emerald-100',
   },
 ];
 
@@ -147,31 +154,31 @@ const PRICING_TIERS = [
       { text: 'Unlimited stories & games', enabled: true },
       { text: '3 child profiles', enabled: true },
       { text: 'Progress reports', enabled: true },
-      { text: 'Live classes', enabled: false },
     ],
     ctaClass: 'bg-yellow-400 text-gray-900 hover:bg-yellow-300',
     featured: true,
   },
   {
     name: 'Premium',
-    price: 'NZD $30',
-    period: '/month',
+    price: 'Coming Soon',
+    period: '',
     icon: '👑',
-    voiceType: 'Live Classes',
+    voiceType: 'Live Teachers',
     voiceBadgeClass: 'bg-purple-100 text-purple-700',
+    comingSoon: true,
     features: [
       { text: 'Everything in Standard', enabled: true },
-      { text: '2 FREE live classes/month', enabled: true },
-      { text: 'Premium human-quality voices', enabled: true },
+      { text: '1 live class per month with real teachers', enabled: true, comingSoon: true },
+      { text: 'Premium human-quality voices', enabled: true, comingSoon: true },
       { text: '5 child profiles', enabled: true },
       { text: 'Priority support', enabled: true },
       { text: 'Early access to new content', enabled: true },
-      { text: 'Offline downloads (coming soon)', enabled: true },
-      { text: 'Additional live sessions available*', enabled: true },
+      { text: 'Offline downloads', enabled: true, comingSoon: true },
+      { text: 'Family group sessions', enabled: true, comingSoon: true },
     ],
-    ctaClass: 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-500 hover:to-purple-600',
+    ctaClass: 'bg-gray-400 text-white cursor-not-allowed',
     featured: false,
-    note: '* Contact support for custom pricing',
+    note: 'Launching Q2 2025 - Join waitlist!',
   },
 ];
 
@@ -520,7 +527,7 @@ export default function LandingPage() {
               <div className="space-y-4">
                 {[
                   { icon: '📚', title: 'Story Narrator', desc: 'Peppi reads stories aloud with emotion and excitement. Available in Standard & Premium tiers.' },
-                  { icon: '🎓', title: 'Language Coach', desc: 'Practice conversations with Peppi. Get real-time feedback on pronunciation.', comingSoon: true },
+                  { icon: '🎤', title: 'Peppi Mimic', desc: 'Practice pronunciation by mimicking Peppi! Record yourself and get instant AI-powered feedback on accuracy.' },
                   { icon: '💬', title: 'AI Conversation Partner', desc: 'Chat with Peppi in your heritage language. Powered by Google Gemini AI. Available for paid tiers.' },
                 ].map((item) => (
                   <div
@@ -533,11 +540,6 @@ export default function LandingPage() {
                     <div>
                       <h4 className="font-bold text-white mb-1">{item.title}</h4>
                       <p className="text-sm text-white/80">{item.desc}</p>
-                      {item.comingSoon && (
-                        <span className="inline-block mt-2 text-xs font-semibold bg-yellow-400/20 text-yellow-300 px-2 py-1 rounded-lg uppercase">
-                          Coming Soon
-                        </span>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -600,6 +602,11 @@ export default function LandingPage() {
                     Most Popular
                   </div>
                 )}
+                {(tier as { comingSoon?: boolean }).comingSoon && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
+                    Coming Soon
+                  </div>
+                )}
 
                 <div className="text-center pb-6 border-b border-current/10 mb-6">
                   <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl ${
@@ -634,16 +641,36 @@ export default function LandingPage() {
                       </span>
                       <span className={tier.featured ? 'text-white/90' : 'text-gray-700'}>
                         {feature.text}
+                        {(feature as { comingSoon?: boolean }).comingSoon && (
+                          <span className="ml-2 text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">
+                            Soon
+                          </span>
+                        )}
                       </span>
                     </li>
                   ))}
                 </ul>
 
-                <Link href="/register" className="block">
-                  <button className={`w-full py-3 rounded-full font-bold transition-all duration-300 ${tier.ctaClass}`}>
-                    {tier.name === 'Free' ? 'Start Free' : `Get ${tier.name}`}
+                {(tier as { comingSoon?: boolean }).comingSoon ? (
+                  <button
+                    className={`w-full py-3 rounded-full font-bold transition-all duration-300 ${tier.ctaClass}`}
+                    disabled
+                  >
+                    Join Waitlist
                   </button>
-                </Link>
+                ) : (
+                  <Link href="/register" className="block">
+                    <button className={`w-full py-3 rounded-full font-bold transition-all duration-300 ${tier.ctaClass}`}>
+                      {tier.name === 'Free' ? 'Start Free' : `Get ${tier.name}`}
+                    </button>
+                  </Link>
+                )}
+
+                {tier.note && (
+                  <p className={`mt-4 text-xs text-center ${tier.featured ? 'text-white/60' : 'text-gray-500'}`}>
+                    {tier.note}
+                  </p>
+                )}
               </motion.div>
             ))}
           </div>

@@ -118,13 +118,20 @@ class CurriculumLevelDetailSerializer(serializers.ModelSerializer):
 class LessonProgressSerializer(serializers.ModelSerializer):
     """Serializer for lesson progress."""
     lesson = LessonSerializer(read_only=True)
+    points_awarded = serializers.SerializerMethodField()
 
     class Meta:
         model = LessonProgress
         fields = [
             'id', 'lesson', 'started_at', 'completed_at', 'score',
-            'attempts', 'best_score', 'is_complete'
+            'attempts', 'best_score', 'is_complete', 'points_awarded'
         ]
+
+    def get_points_awarded(self, obj):
+        """Calculate points awarded based on completion status."""
+        if obj.is_complete:
+            return obj.lesson.points_available
+        return 0
 
 
 class ModuleProgressSerializer(serializers.ModelSerializer):

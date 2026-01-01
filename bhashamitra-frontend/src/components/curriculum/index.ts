@@ -10,3 +10,5 @@ export { LessonContentView } from './LessonContentView';
 export { FlashcardReview } from './FlashcardReview';
 export { LetterCard } from './LetterCard';
 export { WordCard } from './WordCard';
+export { AlphabetQuiz } from './AlphabetQuiz';
+export { VisualFlashcard } from './VisualFlashcard';

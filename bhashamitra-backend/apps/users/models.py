@@ -55,6 +55,28 @@ class User(AbstractUser):
         help_text='When the email was verified'
     )
 
+    # Onboarding status
+    is_onboarded = models.BooleanField(
+        default=False,
+        help_text='Whether the user has completed the onboarding process'
+    )
+    onboarding_completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='When the user completed onboarding'
+    )
+
+    # Live class tracking
+    live_classes_used_this_month = models.IntegerField(
+        default=0,
+        help_text='Number of live classes used in the current month'
+    )
+    live_classes_month = models.DateField(
+        null=True,
+        blank=True,
+        help_text='The month for which live_classes_used_this_month is tracked'
+    )
+
     deleted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -197,10 +219,42 @@ class User(AbstractUser):
     @property
     def free_live_classes_remaining(self) -> int:
         """Get remaining free live classes for this month."""
-        # TODO: Implement tracking of used live classes per month
         if not self.can_access_live_classes:
             return 0
-        return self.tier_features.free_live_classes_per_month
+
+        # Check if we need to reset the monthly counter
+        current_month = timezone.now().date().replace(day=1)
+        if self.live_classes_month is None or self.live_classes_month < current_month:
+            # New month or first time - full allowance available
+            return self.tier_features.free_live_classes_per_month
+
+        # Calculate remaining
+        total_allowed = self.tier_features.free_live_classes_per_month
+        remaining = total_allowed - self.live_classes_used_this_month
+        return max(0, remaining)
+
+    def record_live_class_usage(self) -> bool:
+        """
+        Record that the user attended a live class.
+        Returns True if a free class was used, False if they need to pay.
+        """
+        if not self.can_access_live_classes:
+            return False
+
+        current_month = timezone.now().date().replace(day=1)
+
+        # Reset counter if new month
+        if self.live_classes_month is None or self.live_classes_month < current_month:
+            self.live_classes_used_this_month = 0
+            self.live_classes_month = current_month
+
+        # Check if free classes remaining
+        if self.free_live_classes_remaining > 0:
+            self.live_classes_used_this_month += 1
+            self.save(update_fields=['live_classes_used_this_month', 'live_classes_month'])
+            return True
+
+        return False
 
     @property
     def content_access_mode(self) -> str:
@@ -243,6 +297,12 @@ class User(AbstractUser):
         self.email_verified = True
         self.email_verified_at = timezone.now()
         self.save(update_fields=['email_verified', 'email_verified_at'])
+
+    def complete_onboarding(self):
+        """Mark user as having completed onboarding."""
+        self.is_onboarded = True
+        self.onboarding_completed_at = timezone.now()
+        self.save(update_fields=['is_onboarded', 'onboarding_completed_at'])
 
 
 class EmailVerificationToken(models.Model):

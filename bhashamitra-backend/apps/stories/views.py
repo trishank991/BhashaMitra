@@ -34,12 +34,12 @@ class StoryListView(APIView):
         # Filter by tier based on user's subscription
         # FREE users can only see free stories
         # STANDARD/PREMIUM users can see all stories up to their tier
-        # Note: User tier is uppercase ('FREE'), Story.tier is lowercase ('free')
+        # Note: Use case-insensitive filtering since tier values may be 'free' or 'FREE'
         user_tier_lower = user_tier.lower() if user_tier else 'free'
         if user_tier_lower == 'free':
-            queryset = queryset.filter(tier='free')
+            queryset = queryset.filter(tier__iexact='free')
         elif user_tier_lower == 'standard':
-            queryset = queryset.filter(tier__in=['free', 'standard'])
+            queryset = queryset.filter(tier__iregex=r'^(free|standard)$')
         # PREMIUM users see all stories (no filter needed)
 
         # Additional filters

@@ -11,6 +11,7 @@ urlpatterns = [
     path('login/', views.LoginView.as_view(), name='login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('google/', views.GoogleAuthView.as_view(), name='google-auth'),
 
     # Email verification
     path('verify-email/', views.VerifyEmailView.as_view(), name='verify-email'),
@@ -22,6 +23,7 @@ urlpatterns = [
 
     # User profile
     path('me/', views.MeView.as_view(), name='me'),
+    path('complete-onboarding/', views.CompleteOnboardingView.as_view(), name='complete-onboarding'),
 
     # Subscription
     path('subscription-tiers/', views.SubscriptionTiersView.as_view(), name='subscription-tiers'),

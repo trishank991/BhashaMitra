@@ -52,7 +52,7 @@ export default function SongDetailPage() {
         } else {
           setError(response.error || 'Failed to load song');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load song');
       } finally {
         setLoading(false);

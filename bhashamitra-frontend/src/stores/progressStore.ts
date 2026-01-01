@@ -1,7 +1,29 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Badge, GameSession } from '@/types';
-import { XP_PER_LEVEL, STREAK_BONUS_XP } from '@/lib/constants';
+import { XP_PER_LEVEL, STREAK_BONUS_XP, API_BASE_URL } from '@/lib/constants';
+import api from '@/lib/api';
+
+// Helper function to make authenticated requests
+async function fetchWithAuth<T>(endpoint: string): Promise<T | null> {
+  const token = api.getAccessToken();
+  if (!token) return null;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data;
+  } catch {
+    return null;
+  }
+}
 
 interface ProgressState {
   xp: number;
@@ -16,6 +38,7 @@ interface ProgressState {
   // Actions
   addXp: (amount: number) => void;
   updateStreak: () => void;
+  syncWithBackend: (childId: string) => Promise<void>;
   addBadge: (badge: Omit<Badge, 'earnedAt'>) => void;
   addGameSession: (session: GameSession) => void;
   markStoryRead: (storyId: string) => void;
@@ -48,8 +71,6 @@ export const useProgressStore = create<ProgressState>()(
         while (newXp >= XP_PER_LEVEL * newLevel) {
           newXp -= XP_PER_LEVEL * newLevel;
           newLevel += 1;
-
-          // Could trigger level up celebration here
         }
 
         set({ xp: newXp, level: newLevel });
@@ -106,6 +127,33 @@ export const useProgressStore = create<ProgressState>()(
         }
       },
 
+      syncWithBackend: async (childId: string) => {
+        try {
+          // Fetch streak from backend
+          const streakData = await fetchWithAuth<{ data: { current_streak: number; longest_streak: number; last_activity_date: string | null; is_active: boolean } }>('/gamification/streak/');
+          if (streakData?.data) {
+            set({ streak: streakData.data.current_streak || 0 });
+          }
+
+          // Fetch badges from backend
+          const badgesData = await fetchWithAuth<{ data: { earned: Array<{ id: string; name: string; description: string; icon: string; earned_at: string }>; available: Array<{ id: string; name: string; description: string; icon: string }> } }>('/gamification/badges/');
+          if (badgesData?.data?.earned) {
+            set({
+              badges: badgesData.data.earned.map((b) => ({
+                id: b.id,
+                name: b.name,
+                description: b.description,
+                icon: b.icon,
+                type: 'achievement' as const,
+                earnedAt: b.earned_at,
+              })),
+            });
+          }
+        } catch (error) {
+          console.error('Failed to sync gamification data with backend:', error);
+        }
+      },
+
       addBadge: (badge) => {
         const { badges } = get();
 
@@ -141,6 +189,9 @@ export const useProgressStore = create<ProgressState>()(
 
         set({ storiesRead: [...storiesRead, storyId] });
         get().updateStreak();
+
+        // Add story completion XP
+        get().addXp(50); // STORY_COMPLETE_XP
 
         // Check for story badges
         const totalStories = storiesRead.length + 1;

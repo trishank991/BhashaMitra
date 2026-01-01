@@ -46,3 +46,7 @@ google-genai>=1.0.0
 # Hugging Face Spaces (for Svara TTS)
 gradio-client>=2.0.0
 google-cloud-texttospeech>=2.33.0
+google-cloud-speech>=2.27.0
+
+# Stripe Payments
+stripe>=7.0.0

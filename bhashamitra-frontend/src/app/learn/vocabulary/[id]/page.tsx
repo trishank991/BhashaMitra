@@ -7,9 +7,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores';
 import { MainLayout } from '@/components/layout';
 import { Card, Loading, Badge, Button, SpeakerButton } from '@/components/ui';
+import { VisualFlashcard } from '@/components/curriculum';
 import { fadeInUp, staggerContainer } from '@/lib/constants';
 import api, { VocabularyWord, VocabularyTheme } from '@/lib/api';
 import { useAudio } from '@/hooks/useAudio';
+import { useSounds } from '@/hooks';
 
 const THEME_ICONS: Record<string, string> = {
   'Family': '👨‍👩‍👧‍👦',
@@ -20,6 +22,21 @@ const THEME_ICONS: Record<string, string> = {
   'Body Parts': '🖐️',
   'Greetings': '👋',
   'Actions': '🏃',
+};
+
+const THEME_EMOJIS: Record<string, string> = {
+  'Family': '👨‍👩‍👧',
+  'Colors': '🎨',
+  'Numbers': '🔢',
+  'Animals': '🐾',
+  'Food': '🍎',
+  'Body Parts': '🖐️',
+  'Greetings': '👋',
+  'Actions': '🏃',
+};
+
+const getThemeEmoji = (themeName?: string): string => {
+  return THEME_EMOJIS[themeName || ''] || '📚';
 };
 
 export default function VocabularyThemeDetailPage() {
@@ -51,6 +68,9 @@ export default function VocabularyThemeDetailPage() {
     language: currentLanguage,
     voiceStyle: 'kid_friendly',
   });
+
+  // Sound effects hook
+  const { onClick, onCorrect, onPageTurn, onCelebration } = useSounds();
 
   // Handle playing word audio
   const handlePlayWord = (word: string, e?: React.MouseEvent) => {
@@ -178,6 +198,7 @@ export default function VocabularyThemeDetailPage() {
       // Call flashcard review API (quality 4 = good recall)
       const response = await api.reviewFlashcard(activeChild.id, wordId, quality);
       if (response.success) {
+        onCorrect(); // Play correct sound when word is reviewed
         setReviewedWords(prev => new Set(prev).add(wordId));
         // Award 5 XP per word reviewed
         setCompletionXP(prev => prev + 5);
@@ -194,17 +215,20 @@ export default function VocabularyThemeDetailPage() {
     }
 
     if (currentWordIndex < words.length - 1) {
+      onClick(); // Play click sound when navigating
       setCurrentWordIndex((prev) => prev + 1);
       setShowMeaning(false);
     } else if (currentWordIndex === words.length - 1 && showMeaning) {
       // Last word reviewed - mark as complete
       handleWordReviewed(currentWord.id);
+      onCelebration(); // Play celebration sound on completion
       setShowCompletion(true);
     }
   };
 
   const handlePrevWord = () => {
     if (currentWordIndex > 0) {
+      onClick(); // Play click sound when navigating
       setCurrentWordIndex((prev) => prev - 1);
       setShowMeaning(false);
     }
@@ -239,7 +263,7 @@ export default function VocabularyThemeDetailPage() {
         {/* Mode Toggle */}
         <motion.div variants={fadeInUp} className="flex gap-2">
           <button
-            onClick={() => setMode('list')}
+            onClick={() => { onClick(); setMode('list'); }}
             className={`flex-1 py-2 px-4 rounded-xl font-medium transition-colors ${
               mode === 'list'
                 ? 'bg-primary-500 text-white'
@@ -249,7 +273,7 @@ export default function VocabularyThemeDetailPage() {
             Word List
           </button>
           <button
-            onClick={() => { setMode('flashcard'); setCurrentWordIndex(0); setShowMeaning(false); }}
+            onClick={() => { onClick(); setMode('flashcard'); setCurrentWordIndex(0); setShowMeaning(false); }}
             className={`flex-1 py-2 px-4 rounded-xl font-medium transition-colors ${
               mode === 'flashcard'
                 ? 'bg-primary-500 text-white'
@@ -263,12 +287,28 @@ export default function VocabularyThemeDetailPage() {
         {mode === 'list' ? (
           /* Word List Mode */
           <motion.div variants={fadeInUp} className="space-y-3">
-            {words.map((word, index) => (
-              <Card key={word.id} className="hover:shadow-md transition-shadow">
+            {words.map((word) => (
+              <Card key={word.id} className="hover:shadow-md transition-shadow overflow-hidden">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
-                    <span className="text-lg font-bold text-purple-600">{index + 1}</span>
-                  </div>
+                  {/* Add image */}
+                  {word.image_url ? (
+                    <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                      <img
+                        src={word.image_url}
+                        alt={word.translation}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to placeholder on error
+                          e.currentTarget.src = '';
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">{getThemeEmoji(theme?.name)}</span>
+                    </div>
+                  )}
                   <div className="flex-1">
                     <p className="text-2xl font-bold text-gray-900">{word.word}</p>
                     <p className="text-sm text-purple-600">{word.romanization}</p>
@@ -327,46 +367,19 @@ export default function VocabularyThemeDetailPage() {
                 exit={{ opacity: 0, x: -50 }}
                 transition={{ duration: 0.2 }}
               >
-                <Card
-                  className="min-h-[300px] flex flex-col items-center justify-center cursor-pointer"
-                  onClick={() => setShowMeaning(!showMeaning)}
-                >
-                  {!showMeaning ? (
-                    /* Front of card - Word */
-                    <div className="text-center">
-                      <p className="text-6xl font-bold text-gray-900 mb-4">{currentWord.word}</p>
-                      <p className="text-xl text-purple-600 mb-4">{currentWord.romanization}</p>
-                      <SpeakerButton
-                        isPlaying={playingWord === currentWord.word && isPlaying}
-                        isLoading={playingWord === currentWord.word && audioLoading}
-                        onClick={() => handlePlayWord(currentWord.word)}
-                        size="lg"
-                      />
-                      <p className="text-sm text-gray-400 mt-4">Tap card to see meaning</p>
-                    </div>
-                  ) : (
-                    /* Back of card - Meaning */
-                    <div className="text-center">
-                      <p className="text-4xl font-bold text-gray-900 mb-2">{currentWord.word}</p>
-                      <p className="text-lg text-purple-600 mb-4">{currentWord.romanization}</p>
-                      <div className="w-16 h-0.5 bg-gray-200 mx-auto mb-4" />
-                      <p className="text-2xl text-primary-600 font-bold mb-2">{currentWord.translation}</p>
-                      <div className="flex items-center justify-center gap-2 mb-4">
-                        {currentWord.gender && (
-                          <Badge variant={currentWord.gender === 'masculine' ? 'primary' : 'secondary'}>
-                            {currentWord.gender}
-                          </Badge>
-                        )}
-                        <Badge variant="neutral">{currentWord.part_of_speech}</Badge>
-                      </div>
-                      {currentWord.example_sentence && (
-                        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                          <p className="text-sm text-gray-600">{currentWord.example_sentence}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </Card>
+                <VisualFlashcard
+                  word={currentWord.word}
+                  romanization={currentWord.romanization}
+                  translation={currentWord.translation}
+                  imageUrl={currentWord.image_url}
+                  gender={currentWord.gender}
+                  partOfSpeech={currentWord.part_of_speech}
+                  exampleSentence={currentWord.example_sentence}
+                  category={theme?.name}
+                  isFlipped={showMeaning}
+                  onFlip={() => { onPageTurn(); setShowMeaning(!showMeaning); }}
+                  onAudioPlay={(word) => handlePlayWord(word)}
+                />
               </motion.div>
             </AnimatePresence>
 
@@ -412,6 +425,7 @@ export default function VocabularyThemeDetailPage() {
                   <Button
                     variant="outline"
                     onClick={() => {
+                      onClick();
                       setCurrentWordIndex(0);
                       setShowMeaning(false);
                       setShowCompletion(false);
@@ -422,7 +436,7 @@ export default function VocabularyThemeDetailPage() {
                     Practice Again
                   </Button>
                   <Link href="/learn/vocabulary">
-                    <Button>Back to Vocabulary</Button>
+                    <Button onClick={onClick}>Back to Vocabulary</Button>
                   </Link>
                 </div>
               </Card>

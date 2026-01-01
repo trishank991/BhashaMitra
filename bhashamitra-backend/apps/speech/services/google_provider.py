@@ -156,10 +156,14 @@ class GoogleTTSProvider:
     def _create_simple_ssml(cls, text: str) -> str:
         """
         Create simple, clear SSML for short text like vocabulary and grammar examples.
-        Uses slower rate for clarity without complex prosody variations.
+        Uses child-friendly settings with natural pitch and comfortable pace.
+
+        Settings optimized for kids:
+        - rate="95%": Slightly slower for clarity, but not too slow
+        - pitch="+2st": Slightly higher pitch (more engaging for kids, less robotic)
         """
-        # Simple, clear pronunciation - slightly slower for learning
-        return f'<speak><prosody rate="90%" pitch="0">{text}</prosody></speak>'
+        # Child-friendly pronunciation - natural pace with slightly higher pitch
+        return f'<speak><prosody rate="95%" pitch="+2st">{text}</prosody></speak>'
 
     @classmethod
     def _create_storytelling_ssml(cls, text: str) -> str:
@@ -454,7 +458,7 @@ class GoogleTTSProvider:
             "audioConfig": {
                 "audioEncoding": "MP3",
                 "speakingRate": base_speaking_rate,  # Slower for songs, normal for stories
-                "pitch": 0.0,  # Base pitch (SSML controls variations)
+                "pitch": 1.5,  # Slightly higher base pitch for kid-friendly voice
                 "sampleRateHertz": 24000,
                 "effectsProfileId": ["headphone-class-device"],  # High quality output
             }
@@ -554,7 +558,7 @@ class GoogleTTSProvider:
             audio_config = texttospeech.AudioConfig(
                 audio_encoding=texttospeech.AudioEncoding.MP3,
                 speaking_rate=base_speaking_rate,  # Slower for songs, natural for stories
-                pitch=0.0,  # SSML controls pitch variations
+                pitch=1.5,  # Slightly higher base pitch for kid-friendly voice
                 sample_rate_hertz=24000,
                 effects_profile_id=['headphone-class-device'],  # High quality output
             )

@@ -271,7 +271,7 @@ class ContentModerator:
 
         # Rate limits by tier
         limits = {
-            'FREE': {'messages': 0, 'conversations': 0},
+            'FREE': {'messages': 10, 'conversations': 3},  # Limited access for curriculum help
             'STANDARD': {'messages': 50, 'conversations': 10},
             'PREMIUM': {'messages': 200, 'conversations': 100},
         }

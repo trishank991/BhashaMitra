@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import api, {
-  CurrentSubscriptionResponse,
-  ChildHomepageProgressResponse,
   SubscriptionFeatures,
   SubscriptionLimits,
   UpgradeCTA,
 } from '@/lib/api';
-import { useAuthStore } from '@/stores';
+import { useAuthStore, useSubscriptionStore } from '@/stores';
 
 export interface SubscriptionState {
   tier: 'FREE' | 'STANDARD' | 'PREMIUM';
@@ -50,107 +48,41 @@ export interface ChildProgress {
   error: string | null;
 }
 
-const defaultFeatures: SubscriptionFeatures = {
-  has_curriculum_progression: false,
-  has_peppi_ai_chat: false,
-  has_peppi_narration: false,
-  has_live_classes: false,
-  has_progress_reports: false,
-  content_access_mode: 'browse',
-  tts_provider: 'cache_only',
-};
-
-const defaultLimits: SubscriptionLimits = {
-  story_limit: 5,
-  games_per_day: 2,
-  child_profiles: 1,
-  free_live_classes: 0,
-};
-
 export function useSubscription() {
   const { isAuthenticated } = useAuthStore();
-  const [subscription, setSubscription] = useState<SubscriptionState>({
-    tier: 'FREE',
-    isPaidTier: false,
-    isActive: false,
-    homepageMode: 'playground',
-    homepageTitle: "Peppi's Playground",
-    features: defaultFeatures,
-    limits: defaultLimits,
-    upgradeCta: null,
-    loading: true,
-    error: null,
-  });
+  const store = useSubscriptionStore();
 
-  const fetchSubscription = useCallback(async () => {
-    if (!isAuthenticated) {
-      setSubscription((prev) => ({
-        ...prev,
-        loading: false,
-        tier: 'FREE',
-        isPaidTier: false,
-        isActive: false,
-        homepageMode: 'playground',
-        homepageTitle: "Peppi's Playground",
-        features: defaultFeatures,
-        limits: defaultLimits,
-        upgradeCta: {
-          message: 'Unlock the full learning journey!',
-          button_text: 'Upgrade to Standard',
-          price: 'NZD $20/month',
-        },
-      }));
-      return;
-    }
-
-    setSubscription((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const response = await api.getCurrentSubscription();
-
-      if (response.success && response.data) {
-        const data = response.data.data;
-        setSubscription({
-          tier: data.tier,
-          isPaidTier: data.is_paid_tier,
-          isActive: data.is_subscription_active,
-          homepageMode: data.homepage_mode,
-          homepageTitle: data.homepage_title,
-          features: data.features,
-          limits: data.limits,
-          upgradeCta: data.upgrade_cta,
-          loading: false,
-          error: null,
-        });
-      } else {
-        setSubscription((prev) => ({
-          ...prev,
-          loading: false,
-          error: response.error || 'Failed to load subscription',
-        }));
-      }
-    } catch (err) {
-      setSubscription((prev) => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
-      }));
-    }
-  }, [isAuthenticated]);
-
+  // Fetch subscription on mount if authenticated and not recently fetched
   useEffect(() => {
-    fetchSubscription();
-  }, [fetchSubscription]);
+    if (isAuthenticated && store._hasHydrated) {
+      store.fetchSubscription();
+    } else if (!isAuthenticated && store._hasHydrated) {
+      store.clearSubscription();
+    }
+  }, [isAuthenticated, store._hasHydrated]);
+
+  // Show loading while store is hydrating or data is loading
+  const isLoading = !store._hasHydrated || store.loading;
 
   return {
-    ...subscription,
-    refetch: fetchSubscription,
-    isFree: subscription.tier === 'FREE',
-    isStandard: subscription.tier === 'STANDARD',
-    isPremium: subscription.tier === 'PREMIUM',
-    canAccessCurriculum: subscription.features.has_curriculum_progression,
-    canAccessPeppiChat: subscription.features.has_peppi_ai_chat,
-    canAccessLiveClasses: subscription.features.has_live_classes,
+    tier: store.tier,
+    isPaidTier: store.isPaidTier,
+    isActive: store.isActive,
+    homepageMode: store.homepageMode,
+    homepageTitle: store.homepageTitle,
+    features: store.features,
+    limits: store.limits,
+    upgradeCta: store.upgradeCta,
+    loading: isLoading,
+    error: store.error,
+    hasHydrated: store._hasHydrated,
+    refetch: store.fetchSubscription,
+    isFree: store.tier === 'FREE',
+    isStandard: store.tier === 'STANDARD',
+    isPremium: store.tier === 'PREMIUM',
+    canAccessCurriculum: store.features.has_curriculum_progression,
+    canAccessPeppiChat: store.features.has_peppi_ai_chat,
+    canAccessLiveClasses: store.features.has_live_classes,
   };
 }
 

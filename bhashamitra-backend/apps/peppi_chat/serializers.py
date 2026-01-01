@@ -130,14 +130,8 @@ class StartConversationSerializer(serializers.Serializer):
     )
 
     def validate(self, data):
-        mode = data.get('mode')
-
-        if mode == ChatMode.FESTIVAL_STORY:
-            if not data.get('festival_id') or not data.get('story_id'):
-                raise serializers.ValidationError({
-                    'festival_id': 'Festival and story IDs are required for FESTIVAL_STORY mode'
-                })
-
+        # Festival and story IDs are now optional for FESTIVAL_STORY mode
+        # Users can chat about stories in general without specific context
         return data
 
 

@@ -15,9 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'name', 'role', 'avatar_url', 'created_at',
-            'subscription_tier', 'subscription_expires_at', 'subscription_info', 'tts_provider'
+            'subscription_tier', 'subscription_expires_at', 'subscription_info', 'tts_provider',
+            'email_verified', 'is_onboarded', 'onboarding_completed_at'
         ]
-        read_only_fields = ['id', 'role', 'created_at', 'subscription_tier', 'subscription_expires_at']
+        read_only_fields = ['id', 'role', 'created_at', 'subscription_tier', 'subscription_expires_at',
+                            'email_verified', 'is_onboarded', 'onboarding_completed_at']
 
     def get_subscription_info(self, obj):
         """Return subscription details with full tier features."""
@@ -118,3 +120,17 @@ class ResendVerificationSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         return value.lower()
+
+
+class GoogleAuthSerializer(serializers.Serializer):
+    """Google OAuth token serializer."""
+    token = serializers.CharField(
+        required=True,
+        help_text="Google OAuth ID token from frontend"
+    )
+
+    def validate_token(self, value):
+        """Validate the Google token."""
+        if not value:
+            raise serializers.ValidationError("Token is required")
+        return value

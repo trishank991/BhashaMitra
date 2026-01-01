@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores';
 import { Button, Input, Card } from '@/components/ui';
 import { PeppiMascot } from '@/components/peppi';
+import { SocialLoginButtons } from '@/components/auth';
 import { fadeInUp } from '@/lib/constants';
 
 export default function LoginPage() {
@@ -127,6 +128,14 @@ export default function LoginPage() {
                 </div>
               </form>
 
+              {/* Social Login */}
+              <div className="mt-6">
+                <SocialLoginButtons
+                  mode="login"
+                  onError={(err) => setError(err)}
+                />
+              </div>
+
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-500">
                   Don&apos;t have an account?{' '}
@@ -134,6 +143,43 @@ export default function LoginPage() {
                     Sign up
                   </Link>
                 </p>
+              </div>
+
+              {/* Demo Login Section */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="text-xs text-gray-400 text-center mb-3">Quick Demo Login (for testing)</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('free@test.bhashamitra.co.nz');
+                      setPassword('TestPass123!');
+                    }}
+                    className="text-xs bg-green-50 text-green-700 px-2 py-2 rounded-lg hover:bg-green-100 transition-colors border border-green-200"
+                  >
+                    Free Tier
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('standard@test.bhashamitra.co.nz');
+                      setPassword('TestPass123!');
+                    }}
+                    className="text-xs bg-yellow-50 text-yellow-700 px-2 py-2 rounded-lg hover:bg-yellow-100 transition-colors border border-yellow-200"
+                  >
+                    Standard
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('premium@test.bhashamitra.co.nz');
+                      setPassword('TestPass123!');
+                    }}
+                    className="text-xs bg-purple-50 text-purple-700 px-2 py-2 rounded-lg hover:bg-purple-100 transition-colors border border-purple-200"
+                  >
+                    Premium
+                  </button>
+                </div>
               </div>
             </Card>
           </motion.div>

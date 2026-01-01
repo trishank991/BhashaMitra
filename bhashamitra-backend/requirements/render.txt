@@ -48,5 +48,8 @@ gradio-client>=0.10.0
 # Google Cloud TTS (for Peppi narration)
 google-cloud-texttospeech>=2.33.0
 
+# Google Cloud STT (for Peppi Mimic pronunciation scoring)
+google-cloud-speech>=2.27.0
+
 # Google Gemini AI (for Peppi Chat) - new unified SDK (replaces deprecated google-generativeai)
 google-genai>=1.0.0

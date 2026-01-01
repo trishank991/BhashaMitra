@@ -34,6 +34,15 @@ urlpatterns = [
     # Parent dashboard API
     path('api/v1/parent/', include('apps.parent_engagement.urls', namespace='parent_engagement')),
 
+    # Family API (multi-child competitions and challenges)
+    path('api/v1/family/', include('apps.family.urls', namespace='family')),
+
+    # Payments API
+    path('api/v1/payments/', include('apps.payments.urls', namespace='payments')),
+
+    # Challenges API (viral quiz sharing)
+    path('api/v1/challenges/', include('apps.challenges.urls', namespace='challenges')),
+
     # Child-specific nested routes
     path('api/v1/children/<uuid:child_id>/progress/', include('apps.progress.urls', namespace='progress')),
     path('api/v1/children/<uuid:child_id>/', include('apps.gamification.urls', namespace='gamification')),

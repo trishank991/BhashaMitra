@@ -1,0 +1,243 @@
+'use client';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { Card } from '@/components/ui';
+import MainLayout from '@/components/layout/MainLayout';
+import { useSubscription } from '@/hooks/useSubscription';
+
+export default function LiveClassesPage() {
+  const router = useRouter();
+  const subscription = useSubscription();
+  const isPremium = subscription.isPaidTier;
+  const isLoading = subscription.isLoading;
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  // Features to highlight
+  const features = [
+    {
+      icon: '👨‍🏫',
+      title: 'Real Teachers from India',
+      description: 'Learn from experienced native Hindi speakers',
+    },
+    {
+      icon: '👥',
+      title: 'Small Group Sessions',
+      description: 'Maximum 6 kids per class for personalized attention',
+    },
+    {
+      icon: '💬',
+      title: 'Conversational Practice',
+      description: 'Build speaking confidence through dialogue',
+    },
+    {
+      icon: '🎭',
+      title: 'Cultural Context',
+      description: 'Learn language through stories and traditions',
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <MainLayout showBack onBack={handleBack} headerTitle="Live Classes">
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  return (
+    <MainLayout showBack onBack={handleBack} headerTitle="Live Classes">
+      <div className="space-y-6">
+        {/* Coming Soon Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 rounded-3xl p-6 text-white text-center"
+        >
+          <div className="text-5xl mb-3">🎉</div>
+          <h1 className="text-2xl font-bold mb-2">Coming Soon!</h1>
+          <p className="text-white/90">
+            Live classes with real teachers are on their way!
+          </p>
+        </motion.div>
+
+        {/* What's Coming */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-200">
+            <div className="text-center py-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-2">
+                Live Classes with Real Teachers
+              </h2>
+              <p className="text-gray-600 text-sm">
+                Soon your child will be able to join live video sessions with
+                experienced Hindi teachers from India for real conversational practice.
+              </p>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Premium Benefits */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <span className="text-2xl">⭐</span>
+            Premium Benefits
+          </h3>
+          <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">🎁</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900">One Free Class Per Month</h4>
+                  <p className="text-sm text-gray-600">
+                    Premium subscribers get one complimentary live class each month
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">📅</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900">Flexible Scheduling</h4>
+                  <p className="text-sm text-gray-600">
+                    Book classes at times that work for your family
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">👶</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900">Age-Appropriate Groups</h4>
+                  <p className="text-sm text-gray-600">
+                    Classes tailored for young learners (5-12 years)
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Features Preview */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <span className="text-2xl">✨</span>
+            What to Expect
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            {features.map((feature, index) => (
+              <Card key={index} className="text-center py-4 bg-gray-50">
+                <div className="text-3xl mb-2">{feature.icon}</div>
+                <h4 className="font-bold text-gray-900 text-sm">{feature.title}</h4>
+                <p className="text-xs text-gray-600 mt-1">{feature.description}</p>
+              </Card>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Upgrade CTA for Standard/Free Users */}
+        {!isPremium && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="bg-gradient-to-r from-orange-100 to-pink-100 border-2 border-orange-300">
+              <div className="text-center py-4">
+                <div className="text-4xl mb-2">🚀</div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">
+                  Upgrade to Premium
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Be the first to know when live classes launch and get exclusive access!
+                </p>
+                <Link href="/pricing">
+                  <button className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-6 py-3 rounded-full font-bold hover:shadow-lg transition-all">
+                    View Plans
+                  </button>
+                </Link>
+                <p className="text-xs text-gray-500 mt-3">
+                  7-day free trial on all paid plans
+                </p>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Already Premium Message */}
+        {isPremium && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="bg-gradient-to-r from-purple-100 to-pink-100 border-2 border-purple-300">
+              <div className="text-center py-4">
+                <div className="text-4xl mb-2">👑</div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">
+                  You're a Premium Member!
+                </h3>
+                <p className="text-gray-600 text-sm mb-3">
+                  Thanks for your patience. Live classes are coming soon and
+                  you'll be the first to know when they launch!
+                </p>
+                <p className="text-sm text-purple-600 font-medium">
+                  One free class per month will be yours to book.
+                </p>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Notify Me CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card className="text-center py-4 bg-gray-50">
+            <p className="text-sm text-gray-600">
+              Want to be notified when live classes launch?
+            </p>
+            <button className="mt-3 text-orange-600 font-medium hover:text-orange-700 text-sm">
+              Join the Waitlist →
+            </button>
+          </Card>
+        </motion.div>
+
+        {/* Footer Note */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="text-center pb-8"
+        >
+          <p className="text-xs text-gray-500">
+            In the meantime, keep exploring with Peppi's Classroom! 📚
+          </p>
+        </motion.div>
+      </div>
+    </MainLayout>
+  );
+}

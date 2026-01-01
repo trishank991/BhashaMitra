@@ -168,14 +168,18 @@ TIER_PRICING = {
         'display_name': 'Standard',
         'tagline': 'Full curriculum journey',
     },
-    'PREMIUM': {
+}
+
+# Add Premium pricing if enabled
+from django.conf import settings as django_settings
+if getattr(django_settings, 'ENABLE_PREMIUM_TIER', False):
+    TIER_PRICING['PREMIUM'] = {
         'monthly': Decimal('30.00'),
         'yearly': Decimal('300.00'),  # 2 months free
         'currency': 'NZD',
         'display_name': 'Premium',
         'tagline': 'Live classes + premium features',
-    },
-}
+    }
 
 
 # Feature Display Matrix for Frontend
@@ -226,7 +230,12 @@ TIER_FEATURE_MATRIX = {
         'cta': 'Get Standard',
         'featured': True,
     },
-    'PREMIUM': {
+}
+
+# Check if Premium tier should be included (based on settings)
+from django.conf import settings as django_settings
+if getattr(django_settings, 'ENABLE_PREMIUM_TIER', False):
+    TIER_FEATURE_MATRIX['PREMIUM'] = {
         'name': 'Premium',
         'price': '$30/mo',
         'price_yearly': '$300/yr',
@@ -245,8 +254,7 @@ TIER_FEATURE_MATRIX = {
         ],
         'cta': 'Get Premium',
         'featured': False,
-    },
-}
+    }
 
 
 def get_tier_features(tier: str) -> TierFeatures:

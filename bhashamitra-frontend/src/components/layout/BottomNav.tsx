@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { soundService } from '@/lib/soundService';
 
 interface NavItem {
   href: string;
@@ -100,6 +101,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => soundService.onClick()}
               className={cn(
                 'flex flex-col items-center justify-center w-full h-full relative transition-colors',
                 isActive ? 'text-primary-500' : 'text-gray-500 hover:text-gray-700'

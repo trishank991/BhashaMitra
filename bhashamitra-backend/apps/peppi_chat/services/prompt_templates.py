@@ -48,13 +48,19 @@ class PromptTemplates:
 - Mix the target language naturally with English (like friends do)
 
 ## LANGUAGE-SPECIFIC GUIDELINES
-If language is HINDI: Use Hindi/Hinglish. Example: "बहुत अच्छा! (Bahut accha!)"
-If language is TAMIL: Use Tamil/Tanglish. Example: "மிகவும் நல்லது! (Migavum nalladhu!)"
-If language is TELUGU: Use Telugu/Tenglish. Example: "చాలా బాగుంది! (Chaala baagundi!)"
-If language is PUNJABI: Use Punjabi/Punglish. Example: "ਬਹੁਤ ਵਧੀਆ! (Bahut vadiya!)"
-If language is GUJARATI: Use Gujarati/Gujlish. Example: "ખૂબ સરસ! (Khub saras!)"
-If language is BENGALI: Use Bengali/Banglish. Example: "খুব ভালো! (Khub bhalo!)"
-If language is MALAYALAM: Use Malayalam/Manglish. Example: "വളരെ നല്ലത്! (Valare nallathu!)"
+If language is HINDI: Use Hindi/Hinglish. Example: "बहुत अच्छा! (Bahut accha!)" Meow: म्याऊं!
+If language is TAMIL: Use Tamil/Tanglish. Example: "மிகவும் நல்லது! (Migavum nalladhu!)" Meow: மியாவ்!
+If language is TELUGU: Use Telugu/Tenglish. Example: "చాలా బాగుంది! (Chaala baagundi!)" Meow: మియావ్!
+If language is PUNJABI: Use Punjabi/Punglish. Example: "ਬਹੁਤ ਵਧੀਆ! (Bahut vadiya!)" Meow: ਮਿਆਊਂ!
+If language is GUJARATI: Use Gujarati/Gujlish. Example: "ખૂબ સરસ! (Khub saras!)" Meow: મ્યાઉં!
+If language is BENGALI: Use Bengali/Banglish. Example: "খুব ভালো! (Khub bhalo!)" Meow: মিয়াউ!
+If language is MALAYALAM: Use Malayalam/Manglish. Example: "വളരെ നല്ലത്! (Valare nallathu!)" Meow: മിയാവ്!
+If language is KANNADA: Use Kannada with English mix. Example: "ತುಂಬಾ ಚೆನ್ನಾಗಿದೆ! (Tumba chennagide!)" Meow: ಮಿಯಾವ್!
+If language is MARATHI: Use Marathi with English mix. Example: "खूप छान! (Khup chaan!)" Meow: म्याऊ!
+If language is ODIA: Use Odia with English mix. Example: "ବହୁତ ଭଲ! (Bahut bhala!)" Meow: ମିଆଉଁ!
+If language is ASSAMESE: Use Assamese with English mix. Example: "বহুত ভাল! (Bohut bhal!)" Meow: মিয়াউ!
+If language is URDU: Use Urdu with English mix. Example: "بہت اچھا! (Bahut accha!)" Meow: میاؤں!
+If language is FIJI_HINDI: Use Fiji Hindi with English. Example: "बहुत अच्छा! (Bahut accha!)" Meow: म्याऊं!
 
 ## SAFETY RULES (CRITICAL - NEVER VIOLATE)
 1. NEVER discuss violence, weapons, death, or anything scary
@@ -212,49 +218,111 @@ If you cannot help with something or the child seems frustrated after multiple a
 - Include "[NEEDS_ESCALATION]" at the END of your message (this is a hidden flag, don't show to user)
 """
 
-    # Language-specific greeting templates
+    # Language-specific greeting templates with meow sounds
     GREETINGS_BY_LANGUAGE = {
         'HINDI': {
             'hello': 'Namaste',
             'friend': 'yaar',
             'good': 'accha',
             'ready': 'ready hai',
+            'meow': 'म्याऊं!',
+            'meow_romanized': 'Myaoon!',
         },
         'TAMIL': {
             'hello': 'Vanakkam',
             'friend': 'nanba',
             'good': 'nalla',
             'ready': 'ready ah iruken',
+            'meow': 'மியாவ்!',
+            'meow_romanized': 'Miyaav!',
         },
         'TELUGU': {
             'hello': 'Namaskaram',
             'friend': 'friend',
             'good': 'baaga',
             'ready': 'ready ga unna',
+            'meow': 'మియావ్!',
+            'meow_romanized': 'Miyaav!',
         },
         'PUNJABI': {
             'hello': 'Sat Sri Akal',
             'friend': 'yaar',
             'good': 'vadiya',
             'ready': 'ready haan',
+            'meow': 'ਮਿਆਊਂ!',
+            'meow_romanized': 'Miaoon!',
         },
         'GUJARATI': {
             'hello': 'Kem cho',
             'friend': 'dost',
             'good': 'saras',
             'ready': 'ready chhu',
+            'meow': 'મ્યાઉં!',
+            'meow_romanized': 'Myaaun!',
         },
         'BENGALI': {
             'hello': 'Nomoshkar',
             'friend': 'bondhu',
             'good': 'bhalo',
             'ready': 'ready achi',
+            'meow': 'মিয়াউ!',
+            'meow_romanized': 'Miyau!',
         },
         'MALAYALAM': {
             'hello': 'Namasthe',
             'friend': 'kootukara',
             'good': 'nalla',
             'ready': 'ready aanu',
+            'meow': 'മിയാവ്!',
+            'meow_romanized': 'Miyaav!',
+        },
+        'KANNADA': {
+            'hello': 'Namaskara',
+            'friend': 'friend',
+            'good': 'chennagi',
+            'ready': 'ready ide',
+            'meow': 'ಮಿಯಾವ್!',
+            'meow_romanized': 'Miyaav!',
+        },
+        'MARATHI': {
+            'hello': 'Namaskar',
+            'friend': 'dost',
+            'good': 'chaan',
+            'ready': 'ready ahe',
+            'meow': 'म्याऊ!',
+            'meow_romanized': 'Myaau!',
+        },
+        'ODIA': {
+            'hello': 'Namaskara',
+            'friend': 'bandhu',
+            'good': 'bhala',
+            'ready': 'ready achi',
+            'meow': 'ମିଆଉଁ!',
+            'meow_romanized': 'Miaun!',
+        },
+        'ASSAMESE': {
+            'hello': 'Nomoskar',
+            'friend': 'bandhu',
+            'good': 'bhaal',
+            'ready': 'ready asu',
+            'meow': 'মিয়াউ!',
+            'meow_romanized': 'Miyau!',
+        },
+        'URDU': {
+            'hello': 'Assalam-o-Alaikum',
+            'friend': 'yaar',
+            'good': 'accha',
+            'ready': 'ready hoon',
+            'meow': 'میاؤں!',
+            'meow_romanized': 'Myaoon!',
+        },
+        'FIJI_HINDI': {
+            'hello': 'Namaste',
+            'friend': 'yaar',
+            'good': 'accha',
+            'ready': 'ready hai',
+            'meow': 'म्याऊं!',
+            'meow_romanized': 'Myaoon!',
         },
     }
 

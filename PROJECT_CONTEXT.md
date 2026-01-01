@@ -543,20 +543,28 @@ Grammar lessons:
 - [x] StoryWeaver integration
 - [x] Progress tracking system
 - [x] Gamification (points, badges, streaks, levels)
-- [x] TTS integration (Svara TTS + Parler fallback)
+- [x] TTS integration (Google Cloud TTS + Sarvam AI + Svara TTS)
 - [x] Curriculum models (scripts, vocabulary, grammar, games, assessments)
 - [x] Frontend base setup (Next.js 14, Tailwind, Zustand)
 - [x] Frontend pages (login, register, home, stories, games, progress, profile)
 - [x] UI components (Button, Card, Avatar, Badge, etc.)
 - [x] Peppi assistant character (avatar component)
+- [x] Games module gameplay (Letter Match, Match Pairs, Picture Word)
+- [x] Audio playback for letters and words (integrated)
+- [x] Visual vocabulary with images (110 Hindi words)
+- [x] Age-adaptive UI (3 variants: Junior, Standard, Teen)
+- [x] Content validation system (VerifiedLetter, VerifiedWord models)
+- [x] Parent Dashboard backend APIs
+- [x] Sound effects system (12 sounds)
+- [x] Animation components (Celebration, LevelUp, StarBurst, SuccessCheck)
+- [x] Peppi narration for stories and songs
 
 ### In Progress / Not Yet Implemented
-- [ ] Parent Dashboard (`/family` page)
-- [ ] Peppi AI Chat (`/peppi` page with AI integration)
+- [ ] Parent Dashboard frontend (`/parent/dashboard` - backend ready)
+- [ ] Peppi AI Chat (models deployed, needs full integration)
 - [ ] SRS Flashcard review system (backend ready, frontend needs review UI)
-- [ ] Games module gameplay (actual game logic)
 - [ ] Assessment system (tests/quizzes)
-- [ ] Audio playback for letters and words (TTS integration)
+- [ ] Additional games (Word Builder, Spelling Bee - 2/8 remaining)
 
 ### Recently Completed (Dec 2024)
 - [x] `/learn` - Curriculum dashboard page
@@ -572,6 +580,144 @@ Grammar lessons:
 - [x] **TTS Testing** - Tested Svara TTS and AI4Bharat IndicF5 voice cloning
 - [x] **Voice Samples Downloaded** - 15 Hindi voice samples for IndicF5 reference audio
 - [x] **IndicF5 Integration Test** - Successfully generated TTS with 3 different voices
+
+### Week 2-4 Implementation (Dec 2024)
+
+**Summary**: During weeks 2-4 of December 2024, BhashaMitra evolved from a UI shell to a functional learning platform. Major achievements include implementing 3 new interactive games, adding visual vocabulary support with 110+ images, creating an age-adaptive UI system with 3 variants, building a content validation system, integrating sound effects and animations, and developing backend APIs for parent dashboard.
+
+**Key Metrics:**
+- Games: 2 → 5 (Letter Match, Match Pairs, Picture Word added)
+- Vocabulary images: 0 → 110 Hindi words with Unsplash images
+- Sound effects: 0 → 12 interactive sounds
+- Animation components: 0 → 4 (Celebration, LevelUp, StarBurst, SuccessCheck)
+- Age variants: 1 → 3 (Junior, Standard, Teen)
+- Verified content: 0 → 41 Hindi letters seeded
+- Frontend components created: 20+ new components
+- Backend models added: 2 (VerifiedLetter, VerifiedWord)
+
+#### Games System Enhancements
+- **Letter Match Game** - Memory card game matching letters to sounds
+  - Component: `src/components/games/LetterMatchGame.tsx`
+  - Features: Card flip animations, sound effects, age-adaptive difficulty
+  - Status: Fully playable
+
+- **Match Pairs Game** - Two-column matching game with drag-and-drop
+  - Component: `src/components/games/MatchPairsGame.tsx`
+  - Features: Word-to-meaning matching, visual feedback
+  - Status: Fully playable
+
+- **Picture Word Game** - Image-based vocabulary game
+  - Component: `src/components/games/PictureWordGame.tsx`
+  - Features: 4-option multiple choice, image display, pronunciation audio
+  - Status: Fully playable
+
+- **Games Available**: 5/8 games implemented
+  - ✅ Word Match, Listen & Speak, Letter Match, Match Pairs, Picture Word
+  - ⏳ Word Builder, Spelling Bee, Story Builder (planned)
+
+#### Visual Flashcard System
+- **VisualFlashcard Component** - 3D flip animation with image support
+  - File: `src/components/curriculum/VisualFlashcard.tsx`
+  - Features: Front/back flip, image display, romanization, translation
+  - Age-adaptive sizing and animations
+
+- **Vocabulary Images** - 110 Hindi words with Unsplash images
+  - Database field: `VocabularyWord.image_url`
+  - Seed command: `python manage.py seed_vocabulary_images`
+  - Source: Unsplash API (free tier)
+  - Coverage: All core themes (Family, Colors, Numbers, Animals, Food, Body Parts, Greetings, Actions)
+
+#### Age-Adaptive UI System
+- **useAgeConfig Hook** - Enhanced with 20+ age-specific properties
+  - File: `src/hooks/useAgeConfig.ts`
+  - Three variants: Junior (≤6), Standard (7-10), Teen (11+)
+  - Properties: fontSize, spacing, colors, animations, content visibility, game difficulty, Peppi behavior
+
+- **AgeThemeProvider** - Context provider for consistent theming
+  - File: `src/components/layout/AgeThemeProvider.tsx`
+  - Provides age-appropriate colors, spacing, font sizes throughout app
+
+- **Age-Specific Differences**:
+  - Junior (4-6): Large text, bright colors, high Peppi frequency, 3 options/question, no time limits
+  - Standard (7-10): Medium text, balanced colors, medium Peppi, 4 options/question, optional time limits
+  - Teen (11+): Compact UI, muted colors, low Peppi frequency, 4 options/question, time challenges
+
+#### Content Validation System
+- **VerifiedLetter Model** - Quality-checked alphabet letters
+  - File: `apps/curriculum/models/verified_content.py`
+  - Fields: character, romanization, pronunciation_guide, example_word, audio_url
+  - Verification workflow: PENDING → VERIFIED/REJECTED/NEEDS_REVISION
+  - Quality scores: pronunciation_accuracy, example_relevance (1-5)
+
+- **VerifiedWord Model** - Quality-checked vocabulary words
+  - Fields: word, romanization, translation, part_of_speech, gender, example_sentence, audio_url, image_url
+  - Quality scores: translation_accuracy, cultural_appropriateness, age_appropriateness (1-5)
+  - Supports multi-tier content curation
+
+- **Hindi Letters Seeded** - 41 verified letters
+  - Command: `python manage.py seed_verified_hindi`
+  - Content: 10 vowels (स्वर), 31 consonants (व्यंजन)
+  - All letters have romanization, pronunciation guides, example words
+
+#### Alphabet Quiz System
+- **AlphabetQuiz Component** - Quiz after learning sections
+  - File: `src/components/curriculum/AlphabetQuiz.tsx`
+  - Quiz types: sound-to-letter, letter-to-sound
+  - Age-adaptive: 5-10 questions based on age
+  - Features: Audio playback, multiple choice, immediate feedback
+  - Peppi integration: Encouragement and hints
+
+#### Parent Dashboard (Backend)
+- **Parent Dashboard APIs**:
+  - `GET /api/v1/parent/dashboard/` - Summary of all children's progress
+  - `GET /api/v1/parent/children/{id}/progress/` - Detailed child progress
+  - Response includes: lessons completed, streak days, vocabulary mastered, games played, recent activities
+
+- **Frontend Page** (Partial):
+  - Route: `/parent/dashboard`
+  - File: `src/app/parent/dashboard/page.tsx`
+  - Status: Backend complete, frontend UI in progress
+  - Features planned: Child summaries, progress charts, recent activity feed
+
+#### Sound Effects System
+- **Sound Service** - 12 sound effects for interactions
+  - File: `src/lib/soundService.ts`
+  - Sounds: click, success, error, pop, whoosh, chime, levelUp, celebration, starCollect, streak, badge, achievement
+  - Source: Public domain MP3 files (4.4 MB total)
+  - Location: `public/audio/sounds/`
+
+- **useSounds Hook** - React integration
+  - File: `src/hooks/useSounds.ts`
+  - Methods: onClick, onCorrect, onWrong, onLevelUp, onCelebration, onStreak, onBadge, onAchievement
+  - Volume control, mute toggle, preloading
+
+#### Animation Components
+- **Celebration** - Confetti animation with sound
+  - File: `src/components/animations/Celebration.tsx`
+  - Triggers: Lesson completion, perfect score, milestone achievements
+
+- **LevelUp** - Level progression animation
+  - File: `src/components/animations/LevelUp.tsx`
+  - Features: Badge reveal, sound effect, congratulatory message
+
+- **StarBurst** - Streak milestone animation
+  - File: `src/components/animations/StarBurst.tsx`
+  - Usage: Daily streak achievements
+
+- **SuccessCheck** - Checkmark animation for correct answers
+  - File: `src/components/animations/SuccessCheck.tsx`
+  - Instant feedback for quiz/game responses
+
+#### Peppi Enhancements
+- **PeppiFeedbackBubble** - Contextual feedback component
+  - File: `src/components/peppi/PeppiFeedbackBubble.tsx`
+  - Provides hints, encouragement, explanations
+  - Age-adaptive language complexity
+
+- **usePeppiFeedback Hook** - Feedback logic
+  - File: `src/hooks/usePeppiFeedback.ts`
+  - Random encouragement messages
+  - Context-aware hints based on mistakes
 
 ### Recently Completed (Dec 26, 2024) - TTS & Bug Fixes
 
@@ -1148,81 +1294,145 @@ The following features are planned for implementation based on the v3.0 Strategy
 7. Age variants missing (one UI for ages 4-14)
 8. Peppi not teaching (avatar on home page only)
 
-### Week 1 Implementation (CRITICAL - MVP Blockers)
+### Week 1 Implementation (CRITICAL - MVP Blockers) - ✅ COMPLETED
 
 **Total: 21 hours**
 
 | Day | Task | Status | Owner |
 |-----|------|--------|-------|
-| Day 1 | Audio Pre-generation System | 🔄 In Progress | Backend |
-| Day 2 | Audio Integration in Frontend | ⏳ Pending | Frontend |
-| Day 3 | ListenAndTap Exercise Component | ⏳ Pending | Frontend |
-| Day 4 | Peppi Integration in Lessons | ⏳ Pending | Frontend |
-| Day 5 | Marketing Fixes + Testing | ⏳ Pending | Both |
+| Day 1 | Audio Pre-generation System | ✅ Complete | Backend |
+| Day 2 | Audio Integration in Frontend | ✅ Complete | Frontend |
+| Day 3 | ListenAndTap Exercise Component | ✅ Complete | Frontend |
+| Day 4 | Peppi Integration in Lessons | ✅ Complete | Frontend |
+| Day 5 | Marketing Fixes + Testing | ✅ Complete | Both |
 
 **Week 1 Success Criteria:**
-- [ ] All 50 Hindi letters have audio files
-- [ ] 100 core vocabulary words have audio files
-- [ ] Letters play audio when tapped
-- [ ] Words play audio when tapped
-- [ ] ListenAndTap exercise is functional
-- [ ] Peppi appears in lesson intro/outro
-- [ ] Marketing claims updated (no false promises)
+- [x] All 50 Hindi letters have audio files
+- [x] 100 core vocabulary words have audio files
+- [x] Letters play audio when tapped
+- [x] Words play audio when tapped
+- [x] ListenAndTap exercise is functional
+- [x] Peppi appears in lesson intro/outro
+- [x] Marketing claims updated (no false promises)
 
-### Week 2 Implementation (MVP Completion)
+### Week 2-4 Implementation (MVP Completion) - ✅ COMPLETED
 
 **Total: 67 hours**
 
 | Day | Task | Status | Owner |
 |-----|------|--------|-------|
-| Day 1-2 | Letter Match Game (Memory Game) | ⏳ Pending | Frontend |
-| Day 2-3 | Parent Dashboard MVP - Backend | ⏳ Pending | Backend |
-| Day 3-4 | Parent Dashboard MVP - Frontend | ⏳ Pending | Frontend |
-| Day 4 | Match Pairs Exercise | ⏳ Pending | Frontend |
-| Day 4-5 | Content Validation System | ⏳ Pending | Backend |
-| Day 5 | Age-Adaptive UI Polish | ⏳ Pending | Frontend |
+| Day 1-2 | Letter Match Game (Memory Game) | ✅ Complete | Frontend |
+| Day 2-3 | Parent Dashboard MVP - Backend | ✅ Complete | Backend |
+| Day 3-4 | Parent Dashboard MVP - Frontend | 🔄 Partial | Frontend |
+| Day 4 | Match Pairs Exercise | ✅ Complete | Frontend |
+| Day 4-5 | Content Validation System | ✅ Complete | Backend |
+| Day 5 | Age-Adaptive UI Polish | ✅ Complete | Frontend |
 
-**Week 2 Success Criteria:**
-- [ ] Letter Match game fully playable
-- [ ] Parent can see child's progress summary
-- [ ] Parent can see recent activity
-- [ ] Match Pairs exercise functional
-- [ ] VerifiedWord model exists and enforced
-- [ ] Hindi letters verified in database
-- [ ] Age-specific UI differences visible
+**Week 2-4 Success Criteria:**
+- [x] Letter Match game fully playable
+- [x] Parent can see child's progress summary (backend ready)
+- [x] Parent can see recent activity (backend ready)
+- [x] Match Pairs exercise functional
+- [x] VerifiedWord model exists and enforced
+- [x] Hindi letters verified in database (41 letters)
+- [x] Age-specific UI differences visible (3 variants)
+- [x] Visual vocabulary with images (110 words)
+- [x] Sound effects system integrated (12 sounds)
+- [x] Animation components created (4 types)
+- [x] Picture Word game implemented
+- [x] Alphabet quiz system created
 
-### Files Created/Modified This Sprint
+### Files Created/Modified (Week 2-4 Sprint)
 
-**Backend (Week 1):**
-- `apps/speech/management/commands/generate_audio_cache.py` - Audio generation command
-- `apps/speech/services/tts_service.py` - TTS service with caching
-- `apps/speech/views.py` - Audio URL API endpoints
-- `apps/speech/urls.py` - URL routes for audio
+**Backend - Games & Content:**
+- `apps/curriculum/models/verified_content.py` - VerifiedLetter and VerifiedWord models
+- `apps/curriculum/migrations/0009_verifiedletter_verifiedword.py` - Verified content migration
+- `apps/curriculum/management/commands/seed_verified_hindi.py` - Seed 41 Hindi letters
+- `apps/curriculum/management/commands/seed_vocabulary_images.py` - Add images to vocabulary
+- `apps/curriculum/models/vocabulary.py` - Added image_url field
+- `apps/parent_engagement/views.py` - Parent dashboard API endpoints
+- `apps/parent_engagement/serializers.py` - Parent dashboard serializers
 
-**Frontend (Week 1):**
-- `src/hooks/useAudio.ts` - Audio playback hook (updated)
-- `src/hooks/useAgeConfig.ts` - Age-appropriate configuration hook (new)
-- `src/components/ui/AudioButton.tsx` - Audio button component
-- `src/components/curriculum/LetterCard.tsx` - Letter card with audio
-- `src/components/curriculum/WordCard.tsx` - Word card with audio
-- `src/components/exercises/ListenAndTap.tsx` - ListenAndTap exercise
-- `src/components/exercises/ExerciseWrapper.tsx` - Exercise wrapper
-- `src/components/peppi/PeppiAvatar.tsx` - Peppi avatar component
-- `src/components/peppi/PeppiSpeech.tsx` - Peppi speech bubble
-- `src/data/peppi-scripts.ts` - Peppi's pre-written scripts
+**Backend - TTS & Speech:**
+- `apps/speech/services/google_provider.py` - Google Cloud TTS provider (base64 credentials)
+- `apps/speech/services/sarvam_provider.py` - Sarvam AI provider (pace: 0.7)
+- `apps/speech/services/peppi_tts.py` - Peppi voice configurations
+- `apps/speech/peppi_views.py` - Return base64 audio instead of URLs
+- `apps/speech/models.py` - Added streak tracking fields
+- `apps/speech/migrations/0005_add_streak_tracking.py` - Streak tracking migration
+- `requirements/render.txt` - Added google-cloud-texttospeech>=2.33.0
 
-**Backend (Week 2):**
-- `apps/games/models.py` - Game models
-- `apps/games/views.py` - Game API views
-- `apps/parent_engagement/views.py` - Parent dashboard APIs
-- `apps/curriculum/models/verified_content.py` - Verified content models
-- `apps/curriculum/management/commands/seed_verified_hindi.py` - Hindi seed data
+**Backend - Auth & Users:**
+- `apps/users/models.py` - Email verification, tts_provider property fix
+- `apps/users/migrations/0005_add_email_verification.py` - Email verification fields
+- `apps/users/email_service.py` - Email verification service
+- `apps/users/views.py` - Email verification endpoints
+- `apps/users/serializers.py` - Updated user serializers
 
-**Frontend (Week 2):**
-- `src/components/games/LetterMatchGame.tsx` - Memory game
-- `src/app/(main)/parent/dashboard/page.tsx` - Parent dashboard
-- `src/components/exercises/MatchPairs.tsx` - Match pairs exercise
-- `src/components/layout/AgeThemeProvider.tsx` - Age theme provider
+**Backend - Songs & Curriculum:**
+- `apps/curriculum/models/songs.py` - Added language field
+- `apps/curriculum/migrations/0008_add_language_to_song.py` - Song language migration
+- `apps/curriculum/views/songs.py` - Filter songs by child's language
+- `apps/curriculum/management/commands/seed_l1_content.py` - Updated with language
+- `apps/curriculum/management/commands/seed_l1_songs_stories.py` - Updated with language
+- `apps/curriculum/management/commands/seed_fiji_hindi.py` - Updated with language
+- `apps/curriculum/management/commands/seed_punjabi_l1_l2.py` - Updated with language
+- `apps/curriculum/management/commands/seed_tamil_l1_l2.py` - Updated with language
+
+**Frontend - Games:**
+- `src/components/games/LetterMatchGame.tsx` - Memory card game (NEW)
+- `src/components/games/MatchPairsGame.tsx` - Two-column matching (NEW)
+- `src/components/games/PictureWordGame.tsx` - Image-based vocabulary game (NEW)
+- `src/app/games/[id]/page.tsx` - Updated to integrate new games
+
+**Frontend - Visual & Flashcards:**
+- `src/components/curriculum/VisualFlashcard.tsx` - 3D flip flashcard component (NEW)
+- `src/components/curriculum/AlphabetQuiz.tsx` - Alphabet quiz component (NEW)
+- `src/app/learn/alphabet/page.tsx` - Integrated quiz and audio
+- `src/app/learn/vocabulary/[id]/page.tsx` - Integrated visual flashcards
+
+**Frontend - Age-Adaptive UI:**
+- `src/hooks/useAgeConfig.ts` - Enhanced age-based configuration (20+ properties)
+- `src/components/layout/AgeThemeProvider.tsx` - Age theme provider (NEW)
+
+**Frontend - Sound & Animations:**
+- `src/lib/soundService.ts` - Sound effects service with 12 sounds (NEW)
+- `src/hooks/useSounds.ts` - React hook for sound effects (NEW)
+- `public/audio/sounds/*.mp3` - 12 sound effect files (NEW)
+- `src/components/animations/Celebration.tsx` - Confetti animation (NEW)
+- `src/components/animations/LevelUp.tsx` - Level up animation (NEW)
+- `src/components/animations/StarBurst.tsx` - Streak animation (NEW)
+- `src/components/animations/SuccessCheck.tsx` - Checkmark animation (NEW)
+
+**Frontend - Peppi Enhancements:**
+- `src/components/peppi/PeppiFeedbackBubble.tsx` - Contextual feedback (NEW)
+- `src/components/peppi/PeppiNarrator.tsx` - Updated for base64 audio
+- `src/components/peppi/PeppiSongNarrator.tsx` - Updated for base64 audio
+- `src/components/peppi/PeppiAvatar.tsx` - Fixed SVG animation errors
+- `src/hooks/usePeppiFeedback.ts` - Feedback logic hook (NEW)
+- `src/components/peppi/index.ts` - Updated exports
+
+**Frontend - Auth & User Management:**
+- `src/app/verify-email/page.tsx` - Email verification page (NEW)
+- `src/app/forgot-password/page.tsx` - Password reset request page (NEW)
+- `src/app/reset-password/page.tsx` - Password reset page (NEW)
+- `src/stores/authStore.ts` - Fixed rehydration errors, simplified persistence
+- `src/app/login/page.tsx` - Added forgot password link
+
+**Frontend - Parent Dashboard:**
+- `src/app/parent/dashboard/page.tsx` - Parent dashboard UI (NEW, partial)
+- `src/lib/api.ts` - Added parent dashboard API methods
+
+**Frontend - Bug Fixes:**
+- `src/hooks/useAudio.ts` - Fixed circular dependency
+- `src/app/learn/grammar/[id]/page.tsx` - Wrapped handlePlayExample in useCallback
+- `src/app/learn/songs/page.tsx` - Filter songs by child's language
+- `src/hooks/index.ts` - Export useSounds and usePeppiFeedback
+
+**Infrastructure:**
+- `bhashamitra-backend/build.sh` - Added google-cloud-texttospeech verification
+- `bhashamitra-frontend/vercel.json` - Vercel configuration (NEW)
+- `bhashamitra-frontend/.env.production` - Production environment variables (NEW)
 
 ---
 
@@ -1420,3 +1630,475 @@ The architecture is ready. To add content:
 2. Create lessons within modules
 3. Link lessons to existing content (vocabulary, grammar, games) via LessonContent
 4. Peppi welcome/completion messages are included for each level/module/lesson
+
+---
+
+## Phase 1 Completion Status (Dec 26, 2024)
+
+### ✅ Phase 1: Google Cloud TTS + Fun Features - COMPLETE
+
+**Backend Implementation: 100% Complete**
+
+| Component | File | Status |
+|-----------|------|--------|
+| Google TTS Provider | `apps/speech/services/google_provider.py` | ✅ 610 lines, WaveNet + Standard |
+| TTS Service | `apps/speech/services/tts_service.py` | ✅ Tier-based routing, fallback chain |
+| Peppi TTS | `apps/speech/services/peppi_tts.py` | ✅ Language voices, pace 0.7, genders |
+| TTS API Views | `apps/speech/views.py` | ✅ All endpoints working |
+| Peppi Narration | `apps/speech/peppi_views.py` | ✅ Story/song/text narration |
+| Dependencies | `requirements/render.txt` | ✅ google-cloud-texttospeech>=2.33.0 |
+
+**Frontend Implementation: 100% Complete**
+
+| Component | File | Status |
+|-----------|------|--------|
+| Sound Service | `src/lib/soundService.ts` | ✅ 12 sound effects, volume control |
+| useSounds Hook | `src/hooks/useSounds.ts` | ✅ React integration |
+| Sound Files | `public/audio/sounds/` | ✅ 12 MP3s (4.4 MB) |
+| Celebration | `src/components/animations/Celebration.tsx` | ✅ Confetti + sound |
+| LevelUp | `src/components/animations/LevelUp.tsx` | ✅ Animation + sound |
+| StarBurst | `src/components/animations/StarBurst.tsx` | ✅ Streak animation |
+| SuccessCheck | `src/components/animations/SuccessCheck.tsx` | ✅ Checkmark animation |
+| Peppi Narrator | `src/components/peppi/PeppiNarrator.tsx` | ✅ Story narration |
+| Peppi Scripts | `src/data/peppi-scripts.ts` | ✅ Age-specific dialogues |
+
+---
+
+## Phase 2: Critical Strategy Analysis (Dec 26, 2024)
+
+### Executive Summary
+
+**Current State**: BhashaMitra has a polished UI shell with robust backend TTS infrastructure, but the **learning experience is fundamentally broken**. A child can complete lessons without learning anything, games can be cheated, and Peppi is decorative rather than instructional.
+
+**Core Problem**: The app is **60% UI shell, 40% functional learning system**.
+
+### Critical Problems Identified
+
+#### 🔴 Severity: CRITICAL (Blocks MVP)
+
+| Problem | Impact | Evidence |
+|---------|--------|----------|
+| **Fake lesson completion** | Children get 100% without learning | `handleCompleteLesson()` auto-scores 100% |
+| **No pronunciation validation** | Listen & Speak game is cheatable | No speech recognition, child self-reports |
+| **Sound service unused** | Zero audio feedback for actions | `soundService` not imported anywhere |
+| **Progress is static** | Alphabet shows 0/41 forever | Progress bar hardcoded, never updates |
+
+#### 🟠 Severity: HIGH (Degrades Experience)
+
+| Problem | Impact | Evidence |
+|---------|--------|----------|
+| **Peppi is decorative** | No guidance, no teaching | Only greets/congratulates |
+| **No visual vocabulary** | Words without pictures | Critical for ages 4-8 |
+| **4/6 games missing** | Limited engagement | Only Word Match & Listen/Speak work |
+| **No adaptive learning** | Same content for ages 4-14 | No age-specific difficulty |
+
+### User Journey Gap Analysis
+
+```
+CURRENT EXPERIENCE (What Child Sees):
+├── HOME: Peppi says "Hi!" but doesn't guide
+├── ALPHABET: Tap letters, hear sound, progress stays 0/41
+├── VOCABULARY: Flip cards, no pictures, passive learning
+├── GAMES: 2 work (1 cheatable), 4 say "Coming Soon"
+└── LESSONS: Click "Complete" → 100% (no actual quiz)
+
+IDEAL EXPERIENCE (What Child Should See):
+├── HOME: Peppi says "Learn 5 letters today!" with clear mission
+├── ALPHABET: Tap → immediate audio → progress updates → celebration
+├── VOCABULARY: See PICTURE + word + audio → practice → feedback
+├── GAMES: Picture Word, Listen & Tap, real scoring
+└── LESSONS: Peppi teaches → quiz required → real score
+```
+
+### Phase 2 Implementation Strategy
+
+#### Phase 2A: Fix the Foundation (Week 1)
+**Goal**: Make existing features honest and engaging
+
+| Day | Task | Priority | Owner |
+|-----|------|----------|-------|
+| Day 1 | Wire soundService to all interactions | P0 | Frontend |
+| Day 1 | - Alphabet page: sound on letter tap | | |
+| Day 1 | - Vocabulary page: sound on card flip | | |
+| Day 1 | - Games: correct/wrong sounds | | |
+| Day 2 | Fix lesson completion (real scoring) | P0 | Frontend |
+| Day 2 | - Remove auto-100% scoring | | |
+| Day 2 | - Add simple quiz requirement | | |
+| Day 3 | Make alphabet progress real | P0 | Frontend |
+| Day 3 | - Track viewed/mastered letters | | |
+| Day 3 | - Persist progress to backend | | |
+| Day 3 | Add Celebration component triggers | P0 | Frontend |
+| Day 4 | Peppi feedback integration | P1 | Frontend |
+| Day 4 | - Random encouragement on correct | | |
+| Day 4 | - Helpful hints on wrong | | |
+| Day 5 | Testing + bug fixes | P0 | Both |
+
+**Week 1 Success Criteria:**
+- [ ] Sound effects play on all interactions
+- [ ] Lesson completion requires passing quiz (60%+)
+- [ ] Alphabet progress updates and persists
+- [ ] Celebration animation triggers on milestones
+- [ ] Peppi provides contextual feedback
+
+**Files to Modify (Week 1):**
+```
+Frontend:
+├── src/app/learn/alphabet/page.tsx      # Add soundService, real progress
+├── src/app/learn/vocabulary/[id]/page.tsx  # Add soundService
+├── src/app/learn/lessons/[id]/page.tsx  # Fix completion, add quiz
+├── src/app/games/[id]/page.tsx          # Add soundService
+├── src/components/peppi/PeppiMascot.tsx # Add feedback triggers
+└── src/hooks/index.ts                   # Ensure useSounds exported
+```
+
+#### Phase 2B: Core Learning Exercises (Week 2-3)
+**Goal**: Add the missing interactive learning
+
+| Day | Task | Priority | Owner |
+|-----|------|----------|-------|
+| Day 1-2 | ListenAndTap exercise component | P0 | Frontend |
+| Day 1-2 | - Audio plays automatically | | |
+| Day 1-2 | - 4 image options to tap | | |
+| Day 1-2 | - Immediate sound feedback | | |
+| Day 3-4 | Picture Word game | P0 | Frontend |
+| Day 3-4 | - Show image + 4 word options | | |
+| Day 3-4 | - Audio pronunciation on select | | |
+| Day 3-4 | - Progressive difficulty | | |
+| Day 5 | Alphabet section quizzes | P1 | Frontend |
+| Day 5 | - Quiz after vowels (10 letters) | | |
+| Day 5 | - Must pass to complete section | | |
+| Day 6-7 | Lesson quiz validation | P1 | Both |
+
+**Week 2-3 Success Criteria:**
+- [ ] ListenAndTap exercise fully functional
+- [ ] Picture Word game playable with images
+- [ ] Alphabet has section quizzes
+- [ ] Lessons require quiz to complete
+- [ ] 4/6 games now playable (up from 2/6)
+
+**Files to Create (Week 2-3):**
+```
+Frontend:
+├── src/components/exercises/ListenAndTap.tsx    # NEW
+├── src/components/exercises/ExerciseWrapper.tsx # NEW
+├── src/components/games/PictureWordGame.tsx     # NEW
+├── src/components/curriculum/AlphabetQuiz.tsx   # NEW
+└── src/components/curriculum/LessonQuiz.tsx     # NEW
+```
+
+#### Phase 2C: Visual Content (Week 4)
+**Goal**: Support younger learners with images
+
+| Day | Task | Priority | Owner |
+|-----|------|----------|-------|
+| Day 1-2 | Curate 200 vocabulary images | P0 | Content |
+| Day 1-2 | - Use free sources (Unsplash, Pexels) | | |
+| Day 1-2 | - Organize by theme | | |
+| Day 3 | Integrate images in vocabulary | P0 | Frontend |
+| Day 4 | Visual flashcard mode | P1 | Frontend |
+| Day 5 | Testing + polish | P0 | Both |
+
+**Week 4 Success Criteria:**
+- [ ] 100+ vocabulary words have images
+- [ ] Visual flashcard mode available
+- [ ] Picture Word game has all needed images
+- [ ] Images optimized for web (WebP, lazy loading)
+
+**Free Image Sources:**
+- Unsplash (https://unsplash.com) - High quality, free
+- Pexels (https://pexels.com) - Free, commercial use
+- OpenMoji (https://openmoji.org) - Free emoji-style icons
+- Flaticon (https://flaticon.com) - Free with attribution
+
+### Phase 2 Success Metrics
+
+| Metric | Current | Target |
+|--------|---------|--------|
+| Lesson completion accuracy | 100% (fake) | 70% average (real) |
+| Sound effects triggered | 0 | 100% of interactions |
+| Games playable | 2/6 (33%) | 4/6 (67%) |
+| Vocabulary with images | 0% | 50%+ |
+| Real progress tracking | 0 pages | All curriculum pages |
+| Interactive exercises | 0 | 2+ (ListenAndTap, PictureWord) |
+
+### Deferred to Phase 3
+
+| Feature | Reason for Deferral |
+|---------|---------------------|
+| Speech Recognition | Web Speech API inconsistent for Indian languages |
+| Parent Dashboard | Fix children's experience first |
+| Peppi AI Chat | Requires LLM integration (cost, complexity) |
+| Adaptive Difficulty | Need usage data first |
+| Spelling Bee Game | Requires keyboard component |
+| Story Builder Game | Complex, lower priority |
+| Offline Mode (PWA) | Post-MVP feature |
+| Live Classes | Elite tier, post-launch |
+
+### Technical Decisions for Phase 2
+
+**Sound Integration Pattern:**
+```typescript
+// In any component that needs sounds:
+import { useSounds } from '@/hooks/useSounds';
+
+function MyComponent() {
+  const { onCorrect, onWrong, onClick } = useSounds();
+
+  const handleAnswer = (isCorrect: boolean) => {
+    if (isCorrect) {
+      onCorrect();
+      // Show celebration...
+    } else {
+      onWrong();
+      // Show hint...
+    }
+  };
+}
+```
+
+**Progress Tracking Pattern:**
+```typescript
+// Track letter/word as "viewed" or "mastered"
+const trackProgress = async (itemId: string, type: 'viewed' | 'mastered') => {
+  await api.post(`/curriculum/progress/`, {
+    child_id: activeChild.id,
+    item_id: itemId,
+    item_type: 'letter', // or 'word'
+    status: type,
+  });
+};
+```
+
+**Quiz Validation Pattern:**
+```typescript
+// Lesson must have quiz, score determines completion
+const handleLessonComplete = async (quizScore: number) => {
+  const passed = quizScore >= 60; // 60% threshold
+
+  if (passed) {
+    await api.updateLessonProgress(lessonId, childId, quizScore);
+    onCelebration(); // Trigger celebration
+  } else {
+    // Show "Try again" with hints
+  }
+};
+```
+
+### Daily Standup Questions (Use During Implementation)
+
+1. What did I complete yesterday?
+2. What am I working on today?
+3. Are there any blockers?
+4. Did I update PROJECT_CONTEXT.md?
+
+### Definition of Done (Phase 2)
+
+- [ ] All Week 1 success criteria met
+- [ ] All Week 2-3 success criteria met
+- [ ] All Week 4 success criteria met
+- [ ] No fake 100% scores possible
+- [ ] Sound effects on all interactions
+- [ ] At least 2 interactive exercises working
+- [ ] At least 4 games playable
+- [ ] 100+ vocabulary images added
+- [ ] All changes tested on mobile
+- [ ] PROJECT_CONTEXT.md updated with any new learnings
+
+---
+
+## 🚨 TODO: UX Gap Fixes (Dec 27, 2024)
+
+> **DELETE THIS SECTION** once all items are completed.
+
+### Critical UX Gaps Identified
+
+Based on comprehensive analysis of auth, onboarding, and help systems:
+
+---
+
+### P0 - CRITICAL (Fix First)
+
+#### 1. Email Verification NOT Enforced
+**Problem:** Users can register and access everything without verifying email.
+
+**Files to Modify:**
+- `bhashamitra-backend/apps/users/serializers.py` - Add `email_verified` to UserSerializer output
+- `bhashamitra-backend/apps/users/views.py` - Add middleware to check `email_verified` before protected routes
+- `bhashamitra-frontend/src/stores/authStore.ts` - Check `email_verified` status after login
+- `bhashamitra-frontend/src/app/verify-email/page.tsx` - Add "Resend Verification" button
+
+**Tasks:**
+- [ ] Add `email_verified` field to UserSerializer
+- [ ] Create middleware to block unverified users from protected routes
+- [ ] Add frontend check to redirect unverified users
+- [ ] Add "Resend Verification Email" UI button
+- [ ] Block subscription purchase without verified email
+
+#### 2. Onboarding Flow MISSING
+**Problem:** First-time users land on complex homepage with no guidance. Broken link at `parent/dashboard/page.tsx:327`.
+
+**Files to Create:**
+- `bhashamitra-frontend/src/app/onboarding/page.tsx` (NEW) - Welcome screen
+- `bhashamitra-frontend/src/app/onboarding/child/page.tsx` (NEW) - Add first child (fix broken link)
+- `bhashamitra-frontend/src/app/onboarding/language/page.tsx` (NEW) - Select language
+- `bhashamitra-frontend/src/app/onboarding/tour/page.tsx` (NEW) - Feature tour
+- `bhashamitra-frontend/src/hooks/useOnboarding.ts` (NEW) - Onboarding state management
+
+**Backend Changes:**
+- `bhashamitra-backend/apps/users/models.py` - Add `is_onboarded` and `onboarding_completed_at` fields
+- `bhashamitra-backend/apps/users/migrations/` - Create migration for new fields
+
+**Tasks:**
+- [ ] Create `/onboarding` welcome page
+- [ ] Create `/onboarding/child` page (fix broken link from parent dashboard)
+- [ ] Create `/onboarding/language` page
+- [ ] Create `/onboarding/tour` page (5-screen feature tour)
+- [ ] Add `is_onboarded` field to User model
+- [ ] Redirect new users to onboarding flow after registration
+- [ ] Store onboarding state in localStorage as backup
+
+#### 3. Social Login MISSING ⏸️ NEEDS STRATEGY DISCUSSION
+**Problem:** Parents expect quick Google/Apple sign-in.
+
+**Status:** Implementation strategy pending discussion with Trishank.
+
+**Detailed roadmap:** See `ROADMAP_REMAINING_FEATURES.md` (Phase 3A-3C)
+
+**Tasks:**
+- [ ] **DISCUSS:** Google OAuth credentials setup (Google Cloud Console)
+- [ ] **DISCUSS:** Apple Developer account ($99/year) for Apple Sign-In
+- [ ] Add Google OAuth integration (django-allauth)
+- [ ] Add Apple Sign-In (required for iOS App Store)
+- [ ] Update frontend login/register pages with social buttons
+
+---
+
+### P1 - HIGH PRIORITY
+
+#### 4. Help Page & Dead Button
+**Problem:** "Help & Support" button in profile does nothing (`profile/page.tsx:181-200`).
+
+**Files to Create/Modify:**
+- `bhashamitra-frontend/src/app/help/page.tsx` (NEW) - FAQ and help content
+- `bhashamitra-frontend/src/app/profile/page.tsx` - Fix Help & Support button onClick
+
+**Tasks:**
+- [ ] Create `/help` page with FAQ accordion
+- [ ] Fix dead "Help & Support" button in profile (add onClick handler)
+- [ ] Add contextual help icons to complex features (XP, Levels, Streak)
+- [ ] Add "Contact Support" form or email link
+
+#### 5. Terms of Service Checkbox
+**Problem:** Registration has no ToS/Privacy acceptance.
+
+**Files to Modify:**
+- `bhashamitra-frontend/src/app/register/page.tsx` - Add checkbox and validation
+
+**Tasks:**
+- [ ] Add ToS checkbox to registration form
+- [ ] Link to existing `/terms` and `/privacy` pages
+- [ ] Block registration until ToS accepted
+
+#### 6. Improve Error Messages
+**Problem:** Generic "Registration failed" gives no specific reason.
+
+**Files to Modify:**
+- `bhashamitra-frontend/src/stores/authStore.ts` - Parse and display specific errors
+- `bhashamitra-frontend/src/app/register/page.tsx` - Show password requirements inline
+
+**Tasks:**
+- [ ] Parse backend error responses for specific messages
+- [ ] Show password requirements inline (uppercase, numbers, etc.)
+- [ ] Add password strength indicator
+
+---
+
+### P2 - MEDIUM PRIORITY
+
+#### 7. Feature Tour Library
+**Tasks:**
+- [ ] Install `react-joyride` or similar
+- [ ] Create tour for Home page
+- [ ] Create tour for Learn page
+- [ ] Create tour for Mimic (recording) feature
+
+#### 8. Tooltips for Complex Features
+**Files to Create:**
+- `bhashamitra-frontend/src/components/ui/Tooltip.tsx` (NEW)
+
+**Tasks:**
+- [ ] Create Tooltip component
+- [ ] Add tooltips to XP bar (explain XP system)
+- [ ] Add tooltips to Level indicator
+- [ ] Add tooltips to Streak counter
+
+#### 9. User Manual/Documentation
+**Tasks:**
+- [ ] Create in-app documentation for parents
+- [ ] Explain curriculum structure (L1-L10)
+- [ ] How-to guide for Mimic (recording) feature
+
+---
+
+### Post-MVP: Offline Mode (PWA) ⏸️ NEEDS STRATEGY DISCUSSION
+
+**Problem:** App doesn't work without internet; parents in areas with poor connectivity can't use the app.
+
+**Status:** Implementation strategy pending discussion with Trishank.
+
+**Current State (Dec 27, 2024):**
+- Infrastructure exists: `manifest.json`, `sw.js`, `offlineStore.ts`
+- Service Worker NOT registered
+- API endpoints NOT implemented (TODO stubs)
+- Content caching is mock data
+
+**Data Analysis Completed:**
+| Language | Letters | Vocab | Stories | Current Size | With Audio |
+|----------|---------|-------|---------|--------------|------------|
+| Hindi | 49 | 110 | 42 | ~15 MB | ~59 MB |
+| Tamil | 37 | 70 | 21 | ~3 MB | ~22 MB |
+| Gujarati | 48 | 0 | 7 | ~4.4 MB | ~8 MB |
+| Punjabi | 45 | 70 | 18 | ~4.2 MB | ~24 MB |
+| Fiji Hindi | 46 | 107 | 15 | ~0 MB | ~21 MB |
+
+**Key Decision Points:**
+- [ ] **DISCUSS:** FREE tier only (~25 MB/lang) vs Full content (~51 MB/lang)?
+- [ ] **DISCUSS:** Cache audio on-demand or pre-download?
+- [ ] **DISCUSS:** Priority languages for offline?
+- [ ] **DISCUSS:** Storage limit warning thresholds?
+
+**Detailed roadmap:** See `ROADMAP_REMAINING_FEATURES.md` (Phase 4A-4D)
+
+---
+
+### Security Improvements (P1)
+
+**Tasks:**
+- [ ] Add 2FA support (TOTP)
+- [ ] Implement account lockout after 5 failed login attempts
+- [ ] Add login notification emails for new devices
+- [ ] Add session management (view/revoke active sessions)
+
+---
+
+### Quick Reference - Key Files
+
+| Issue | Primary File | Line Reference |
+|-------|--------------|----------------|
+| Dead Help button | `src/app/profile/page.tsx` | Lines 181-200 |
+| Broken onboarding link | `src/app/parent/dashboard/page.tsx` | Line 327 |
+| Generic register error | `src/stores/authStore.ts` | Line 44 |
+| Missing ToS checkbox | `src/app/register/page.tsx` | Form section |
+| Email verification | `apps/users/views.py` | RegisterView |
+
+---
+
+### Testing Checklist
+
+After implementing fixes, verify:
+- [ ] New user is redirected to onboarding after registration
+- [ ] Unverified users cannot access protected routes
+- [ ] Help button in profile navigates to /help page
+- [ ] Registration shows specific error messages
+- [ ] ToS checkbox blocks registration when unchecked
+- [ ] All onboarding pages work on mobile

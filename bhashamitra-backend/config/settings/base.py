@@ -8,7 +8,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'change-me-in-production')
+# Security - SECRET_KEY must be set in production
+_secret_key = os.getenv('SECRET_KEY')
+if not _secret_key and os.getenv('DJANGO_SETTINGS_MODULE', '').endswith('prod'):
+    raise ValueError("SECRET_KEY environment variable must be set in production!")
+SECRET_KEY = _secret_key or 'dev-only-insecure-key-do-not-use-in-production'
 
 # Application definition
 DJANGO_APPS = [
@@ -26,7 +30,12 @@ THIRD_PARTY_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'django_filters',
+    # OAuth
+    'django.contrib.sites',
 ]
+
+# Required for django-allauth
+SITE_ID = 1
 
 LOCAL_APPS = [
     'apps.core',
@@ -39,6 +48,8 @@ LOCAL_APPS = [
     'apps.curriculum',
     'apps.festivals',
     'apps.peppi_chat',
+    'apps.payments',  # Stripe payment integration
+    'apps.challenges',  # Viral quiz/challenge sharing
     # Strategy v3.0 Gap Features
     'apps.offline',
     'apps.parent_engagement',
@@ -259,3 +270,27 @@ SUPPORTED_LANGUAGES = {
     'TELUGU': {'code': 'te', 'name': 'Telugu', 'native': 'తెలుగు', 'script': 'Telugu'},
     'MALAYALAM': {'code': 'ml', 'name': 'Malayalam', 'native': 'മലയാളം', 'script': 'Malayalam'},
 }
+
+# ===========================================
+# STRIPE PAYMENT CONFIGURATION
+# ===========================================
+
+# Stripe API Keys
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')
+
+# Stripe Price IDs (create these in Stripe Dashboard)
+STRIPE_PRICE_STANDARD_MONTHLY = os.getenv('STRIPE_PRICE_STANDARD_MONTHLY', '')
+STRIPE_PRICE_STANDARD_YEARLY = os.getenv('STRIPE_PRICE_STANDARD_YEARLY', '')
+STRIPE_PRICE_PREMIUM_MONTHLY = os.getenv('STRIPE_PRICE_PREMIUM_MONTHLY', '')
+STRIPE_PRICE_PREMIUM_YEARLY = os.getenv('STRIPE_PRICE_PREMIUM_YEARLY', '')
+
+# Enable/disable Premium tier for production
+# Premium requires live classes to be ready
+# In development mode (DJANGO_ENV=dev), Premium is always available for testing
+_is_dev = os.getenv('DJANGO_ENV', 'dev') == 'dev'
+ENABLE_PREMIUM_TIER = _is_dev or os.getenv('ENABLE_PREMIUM_TIER', 'false').lower() == 'true'
+
+# Frontend URL (for Stripe callbacks and email links)
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')

@@ -137,24 +137,40 @@ export function ParentDashboard({ className }: ParentDashboardProps) {
       const allReports: WeeklyReport[] = [];
 
       for (const summary of summaries) {
-        totalTime += summary.weekly_summary.time_spent_minutes;
-        totalLessons += summary.weekly_summary.lessons_completed;
-        totalPoints += summary.weekly_summary.points_earned;
+        // Null safety checks for summary data
+        const weeklySummary = summary?.weekly_summary;
+        const childData = summary?.child;
 
-        if (summary.weekly_summary.time_spent_minutes > maxTime) {
-          maxTime = summary.weekly_summary.time_spent_minutes;
-          mostActive = summary.child.name;
+        if (weeklySummary) {
+          totalTime += weeklySummary.time_spent_minutes || 0;
+          totalLessons += weeklySummary.lessons_completed || 0;
+          totalPoints += weeklySummary.points_earned || 0;
+
+          if ((weeklySummary.time_spent_minutes || 0) > maxTime && childData?.name) {
+            maxTime = weeklySummary.time_spent_minutes;
+            mostActive = childData.name;
+          }
         }
 
-        // Transform and collect goals
-        summary.active_goals.forEach(goal => {
-          allGoals.push(transformGoal(goal, summary.child.id));
-        });
+        // Transform and collect goals with null check
+        if (summary?.active_goals && childData?.id) {
+          summary.active_goals.forEach(goal => {
+            allGoals.push(transformGoal(goal, childData.id));
+          });
+        }
 
-        // Fetch weekly report
-        const report = await parentApi.getWeeklyReport(summary.child.id);
-        allReports.push(transformReport(report, summary.child.id));
-        totalImprovement += report.comparison.time_change_percent;
+        // Fetch weekly report with null check
+        if (childData?.id) {
+          try {
+            const report = await parentApi.getWeeklyReport(childData.id);
+            if (report) {
+              allReports.push(transformReport(report, childData.id));
+              totalImprovement += report.comparison?.time_change_percent || 0;
+            }
+          } catch {
+            // Skip this child's report if fetch fails
+          }
+        }
       }
 
       setGoals(allGoals);

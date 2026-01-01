@@ -163,8 +163,8 @@ export const useOfflineStore = create<OfflineState>()(
           const queue = get().syncQueue;
 
           for (const item of queue) {
-            // TODO: Implement actual API sync
-            console.log('Syncing item:', item);
+            // TODO: Implement actual API sync when backend endpoint is ready
+            void item;
           }
 
           set({
@@ -225,8 +225,8 @@ export const useOfflineStore = create<OfflineState>()(
               storageQuotaMb: quotaMb,
               storageUsedMb: usedMb,
             });
-          } catch (error) {
-            console.error('Failed to check storage quota:', error);
+          } catch {
+            // Storage quota check failed - continue with default values
           }
         }
       },

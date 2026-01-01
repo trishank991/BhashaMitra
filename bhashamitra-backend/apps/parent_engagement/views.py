@@ -19,6 +19,9 @@ from apps.parent_engagement.models import LearningGoal
 
 from .serializers import (
     ChildBasicSerializer,
+    ChildSummarySerializer,
+    ChildProgressSerializer,
+    ChildStatsSerializer,
     ActivityLogSerializer,
     DailyProgressSerializer,
     LearningGoalSerializer,
@@ -26,6 +29,29 @@ from .serializers import (
     ProgressUpdateSerializer,
     GoalCreateSerializer,
 )
+
+
+class ParentDashboardView(APIView):
+    """
+    GET /api/v1/parent/dashboard/
+
+    Returns summary for all children of the logged-in parent.
+    Data per child: name, avatar, level, streak, XP this week, recent activity count.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        children = Child.objects.filter(
+            user=request.user,
+            deleted_at__isnull=True
+        ).order_by('-created_at')
+
+        serializer = ChildSummarySerializer(children, many=True)
+
+        return Response({
+            'children': serializer.data,
+            'total_children': children.count(),
+        })
 
 
 class ParentChildrenListView(generics.ListAPIView):
@@ -809,3 +835,145 @@ class ChildMonthlyStatsView(APIView):
         )
 
         return Response(comparison)
+
+
+class ChildDetailedProgressView(APIView):
+    """
+    GET /api/v1/parent/children/{child_id}/progress/
+
+    Detailed progress for a specific child.
+    Data: curriculum progress (levels completed), vocabulary stats, time spent.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, child_id):
+        child = get_object_or_404(
+            Child,
+            id=child_id,
+            user=request.user,
+            deleted_at__isnull=True
+        )
+
+        # Get curriculum progress
+        from apps.curriculum.models.progress import LevelProgress, ModuleProgress, LessonProgress
+        from apps.curriculum.models.vocabulary import WordProgress
+
+        level_progress = LevelProgress.objects.filter(child=child)
+        completed_levels = level_progress.filter(is_complete=True).count()
+        total_modules = ModuleProgress.objects.filter(child=child).count()
+        completed_modules = ModuleProgress.objects.filter(child=child, is_complete=True).count()
+        completed_lessons = LessonProgress.objects.filter(child=child, is_complete=True).count()
+
+        # Vocabulary stats
+        word_progress = WordProgress.objects.filter(child=child)
+        words_learned = word_progress.filter(mastered=True).count()
+        words_in_progress = word_progress.filter(mastered=False).count()
+        total_reviews = word_progress.aggregate(Sum('times_reviewed'))['times_reviewed__sum'] or 0
+
+        # Time spent
+        total_time = DailyProgress.objects.filter(child=child).aggregate(
+            total=Sum('time_spent_minutes')
+        )['total'] or 0
+
+        # Badges
+        from apps.gamification.models import ChildBadge
+        badges_earned = ChildBadge.objects.filter(child=child).count()
+
+        progress_data = {
+            'curriculum_progress': {
+                'current_level': child.level,
+                'levels_completed': completed_levels,
+                'modules_completed': completed_modules,
+                'lessons_completed': completed_lessons,
+                'total_modules': total_modules,
+            },
+            'vocabulary_stats': {
+                'words_mastered': words_learned,
+                'words_in_progress': words_in_progress,
+                'total_reviews': total_reviews,
+            },
+            'time_spent': {
+                'total_minutes': total_time,
+                'total_hours': round(total_time / 60, 1),
+            },
+            'badges_earned': badges_earned,
+            'current_level': child.level,
+        }
+
+        serializer = ChildProgressSerializer(progress_data)
+        return Response(serializer.data)
+
+
+class ChildStatsView(APIView):
+    """
+    GET /api/v1/parent/children/{child_id}/stats/
+
+    Weekly/monthly stats for a child.
+    Data: days active, lessons completed, words learned, games played.
+
+    Query Parameters:
+    - period: 'week' or 'month' (default: 'week')
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, child_id):
+        child = get_object_or_404(
+            Child,
+            id=child_id,
+            user=request.user,
+            deleted_at__isnull=True
+        )
+
+        period = request.query_params.get('period', 'week')
+        today = timezone.now().date()
+
+        if period == 'month':
+            # Last 30 days
+            start_date = today - timedelta(days=30)
+            period_label = 'Last 30 days'
+        else:
+            # This week (Monday to today)
+            start_date = today - timedelta(days=today.weekday())
+            period_label = 'This week'
+
+        # Get daily progress for the period
+        daily_stats = DailyProgress.objects.filter(
+            child=child,
+            date__gte=start_date,
+            date__lte=today
+        )
+
+        # Aggregate stats
+        stats = daily_stats.aggregate(
+            total_lessons=Sum('lessons_completed'),
+            total_games=Sum('games_played'),
+            total_time=Sum('time_spent_minutes'),
+            total_points=Sum('points_earned'),
+        )
+
+        # Days active
+        days_active = daily_stats.filter(time_spent_minutes__gt=0).count()
+
+        # Words learned (mastered in this period)
+        from apps.curriculum.models.vocabulary import WordProgress
+        start_datetime = timezone.make_aware(
+            timezone.datetime.combine(start_date, timezone.datetime.min.time())
+        )
+        words_learned = WordProgress.objects.filter(
+            child=child,
+            mastered=True,
+            mastered_at__gte=start_datetime
+        ).count()
+
+        stats_data = {
+            'period': period_label,
+            'days_active': days_active,
+            'lessons_completed': stats['total_lessons'] or 0,
+            'words_learned': words_learned,
+            'games_played': stats['total_games'] or 0,
+            'total_time_minutes': stats['total_time'] or 0,
+            'total_points': stats['total_points'] or 0,
+        }
+
+        serializer = ChildStatsSerializer(stats_data)
+        return Response(serializer.data)

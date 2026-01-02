@@ -217,17 +217,21 @@ class ChallengeService:
             "max_score": max_score,
             "percentage": round((score / max_score * 100), 1) if max_score > 0 else 0,
             "detailed_results": results
-        }
+}
     @staticmethod
     def strip_answers(questions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Removes the correct_index from questions before sending to the frontend.
         """
+        if not questions:
+            return []
+        
         stripped = []
         for q in questions:
-            # Create a copy so we don't modify the original data
+            # Create a copy so we don't modify the original database object/dict
             q_copy = q.copy()
             if 'correct_index' in q_copy:
                 del q_copy['correct_index']
             stripped.append(q_copy)
         return stripped
+        

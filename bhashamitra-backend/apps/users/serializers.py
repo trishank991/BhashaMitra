@@ -134,3 +134,32 @@ class GoogleAuthSerializer(serializers.Serializer):
         if not value:
             raise serializers.ValidationError("Token is required")
         return value
+class ChallengeSubmitSerializer(serializers.Serializer):
+    """
+    Serializer for submitting challenge answers.
+    Handles both snake_case (Backend) and camelCase (Frontend) to prevent 400 errors.
+    """
+    attempt_id = serializers.UUIDField(required=False)
+    attemptId = serializers.UUIDField(required=False) 
+    
+    answers = serializers.ListField(
+        child=serializers.IntegerField(min_value=0, max_value=3),
+        min_length=1
+    )
+    
+    time_taken_seconds = serializers.IntegerField(required=False)
+    timeTaken = serializers.IntegerField(required=False)
+
+    def validate(self, data):
+        # Map camelCase from frontend to snake_case for backend logic
+        if 'attemptId' in data:
+            data['attempt_id'] = data.pop('attemptId')
+        
+        if 'timeTaken' in data:
+            data['time_taken_seconds'] = data.pop('timeTaken')
+
+        # Final check to ensure we have the ID needed for the database
+        if not data.get('attempt_id'):
+            raise serializers.ValidationError("An attempt_id or attemptId is required.")
+            
+        return data

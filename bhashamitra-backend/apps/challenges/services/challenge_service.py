@@ -2,8 +2,15 @@ import random
 import logging
 from typing import List, Dict, Any
 from django.db.models import Sum
-from apps.challenges.models import Challenge, ChallengeAttempt, ChallengeCategory
-from apps.content.models import Script, Letter, VocabularyTheme, GrammarRule
+
+# We try the standard import, and fallback to local relative imports for tests
+try:
+    from apps.challenges.models import Challenge, ChallengeAttempt, ChallengeCategory
+    from apps.curriculum.models import Script, Letter, VocabularyTheme, GrammarRule
+except ImportError:
+    # This works when running from within the apps directory or during certain test runners
+    from ..models import Challenge, ChallengeAttempt, ChallengeCategory
+    from ...content.models import Script, Letter, VocabularyTheme, GrammarRule
 
 logger = logging.getLogger(__name__)
 
@@ -47,13 +54,20 @@ class ChallengeService:
         return available
 
     @classmethod
+    def get_random_questions(cls, questions: List[Dict[str, Any]], count: int) -> List[Dict[str, Any]]:
+        if not questions:
+            return []
+        shuffled_pool = list(questions)
+        random.shuffle(shuffled_pool)
+        return shuffled_pool[:count]
+
+    @classmethod
     def calculate_score(cls, questions: List[Dict[str, Any]], answers: List[int]) -> Dict[str, Any]:
         score = 0
         results = []
         
         for q, user_ans in zip(questions, answers):
             correct_idx = q.get('correct_index')
-            
             try:
                 # Type casting ensures string "1" matches integer 1
                 is_correct = (int(user_ans) == int(correct_idx))
@@ -84,14 +98,7 @@ class ChallengeService:
     def strip_answers(questions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if not questions:
             return []
-        
-        stripped = []
-        for q in questions:
-            q_copy = q.copy()
-            if 'correct_index' in q_copy:
-                del q_copy['correct_index']
-            stripped.append(q_copy)
-        return stripped
+        return [{k: v for k, v in q.items() if k != 'correct_index'} for q in questions]
     @classmethod
     def get_random_questions(cls, questions: List[Dict[str, Any]], count: int) -> List[Dict[str, Any]]:
         """

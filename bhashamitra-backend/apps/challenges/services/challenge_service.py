@@ -206,18 +206,33 @@ class ChallengeService:
     def calculate_score(cls, questions: List[Dict[str, Any]], answers: List[int]) -> Dict[str, Any]:
         score = 0
         results = []
+        
+        # zip() combines questions and answers one by one
         for q, user_ans in zip(questions, answers):
-            is_correct = (user_ans == q['correct_index'])
-            if is_correct: score += 1
-            results.append({"question_id": q['id'], "correct": is_correct})
+            # Check if answer is correct
+            correct_idx = q.get('correct_index')
+            is_correct = (user_ans == correct_idx)
+            
+            if is_correct: 
+                score += 1
+                
+            # We add BOTH 'correct' and 'is_correct' to be 100% safe for the frontend
+            results.append({
+                "question_id": q.get('id'), 
+                "user_answer": user_ans,
+                "correct_answer": correct_idx,
+                "is_correct": is_correct,
+                "correct": is_correct
+            })
 
         max_score = len(questions)
         return {
             "score": score,
+            "total_questions": max_score, # Added this field
             "max_score": max_score,
             "percentage": round((score / max_score * 100), 1) if max_score > 0 else 0,
             "detailed_results": results
-}
+        }
     @staticmethod
     def strip_answers(questions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """

@@ -30,6 +30,7 @@ export function CreateChallengeForm({ onSuccess, onCancel, defaultLanguage = 'HI
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<ChallengeCategoryOption[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -44,16 +45,29 @@ export function CreateChallengeForm({ onSuccess, onCancel, defaultLanguage = 'HI
   // Fetch categories when language changes
   useEffect(() => {
     const fetchCategories = async () => {
-      const response = await api.getChallengeCategories(formData.language);
-      if (response.success && response.data) {
-        setCategories(response.data.data || []);
-        // Auto-select first category
-        if (response.data.data.length > 0 && !formData.category) {
-          setFormData((prev) => ({ ...prev, category: response.data!.data[0].value }));
+      setCategoriesLoading(true);
+      setFormData(prev => ({ ...prev, category: '' })); 
+
+      try {
+        const response = await api.getChallengeCategories(formData.language);
+        if (response.success && response.data) {
+          const fetchedCategories = response.data.data || [];
+          setCategories(fetchedCategories);
+          if (fetchedCategories.length > 0) {
+            setFormData(prev => ({ ...prev, category: fetchedCategories[0].value }));
+          }
         }
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+        setCategories([]);
+      } finally {
+        setCategoriesLoading(false);
       }
     };
-    fetchCategories();
+
+    if (formData.language) {
+      fetchCategories();
+    }
   }, [formData.language]);
 
   const handleSubmit = async () => {
@@ -157,22 +171,26 @@ export function CreateChallengeForm({ onSuccess, onCancel, defaultLanguage = 'HI
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Topic
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.value}
-                  onClick={() => setFormData({ ...formData, category: cat.value })}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    formData.category === cat.value
-                      ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="font-medium text-gray-900">{cat.label}</div>
-                  <div className="text-sm text-gray-500">{cat.item_count} items</div>
-                </button>
-              ))}
-            </div>
+            {categoriesLoading ? (
+              <div className="text-center p-4">Loading topics...</div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.value}
+                    onClick={() => setFormData({ ...formData, category: cat.value })}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${
+                      formData.category === cat.value
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="font-medium text-gray-900">{cat.label}</div>
+                    <div className="text-sm text-gray-500">{cat.item_count} items</div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Difficulty */}
@@ -208,7 +226,7 @@ export function CreateChallengeForm({ onSuccess, onCancel, defaultLanguage = 'HI
             </button>
             <button
               onClick={() => setStep(3)}
-              disabled={!formData.category}
+              disabled={!formData.category || categoriesLoading}
               className="flex-1 py-3 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 text-white rounded-xl font-semibold transition-colors"
             >
               Next

@@ -1777,7 +1777,8 @@ class ApiClient {
    * @param language Language code
    */
   async getChallengeCategories(language: string = 'HINDI'): Promise<ApiResponse<{ data: ChallengeCategoryOption[] }>> {
-    return this.request<{ data: ChallengeCategoryOption[] }>(`/challenges/categories/?language=${language}`);
+    const upperLanguage = language.toUpperCase();
+    return this.request<{ data: ChallengeCategoryOption[] }>(`/challenges/categories/?language=${upperLanguage}`);
   }
 }
 
@@ -2152,7 +2153,7 @@ export interface GameWord {
 // Challenge Types (Viral Quiz Sharing)
 export interface ChallengeQuestion {
   id: number;
-  type: 'alphabet_recognition' | 'vocabulary_to_english' | 'english_to_vocabulary';
+  type: 'alphabet_recognition' | 'vocabulary_to_english' | 'english_to_vocabulary' | 'mimic';
   question: string;
   prompt: string;
   prompt_native?: string;

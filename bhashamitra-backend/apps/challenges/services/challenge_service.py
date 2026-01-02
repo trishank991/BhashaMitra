@@ -218,22 +218,3 @@ class ChallengeService:
             "percentage": round((score / max_score * 100), 1) if max_score > 0 else 0,
             "detailed_results": results
         }
-
-   @classmethod
-    def generate_questions(cls, language: str, category: str, difficulty: str, count: int) -> List[Dict[str, Any]]:
-        # Always normalize language to uppercase here to prevent "No Data" errors
-        lang_upper = language.upper()
-        
-        if category == ChallengeCategory.ALPHABET:
-            # Added lang_upper and difficulty to match the function signatures
-            return cls._generate_alphabet_questions(lang_upper, difficulty, count)
-        elif category == ChallengeCategory.VOCABULARY:
-            return cls._generate_vocabulary_questions(lang_upper, difficulty, count)
-        elif category == ChallengeCategory.MIMIC:
-            return cls._generate_mimic_questions(lang_upper, difficulty, count)
-        
-        # Fallback for theme-based vocabulary (Family, Food, etc.)
-        return cls._generate_vocabulary_questions(lang_upper, difficulty, count, theme_name=category)
-
-      # Default case if no category is specified or matched
-        return cls._generate_vocabulary_questions(lang_upper, difficulty, count)

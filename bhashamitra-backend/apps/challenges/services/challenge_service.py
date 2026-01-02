@@ -12,7 +12,7 @@ import random
 from typing import List, Dict, Any, Optional
 from django.db.models import Q
 
-from apps.curriculum.models import Letter, VocabularyWord, VocabularyTheme, AlphabetCategory, Script, Grammar
+from apps.curriculum.models import Letter, VocabularyWord, VocabularyTheme, AlphabetCategory, Script, GrammarTopic
 from apps.challenges.models import ChallengeCategory, ChallengeDifficulty
 
 

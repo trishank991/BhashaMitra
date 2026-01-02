@@ -137,17 +137,28 @@ class ChallengeAttemptCreateSerializer(serializers.Serializer):
     participant_name = serializers.CharField(max_length=50)
     participant_location = serializers.CharField(max_length=50, required=False, allow_blank=True)
 
+# Change this:
+# child=serializers.IntegerField(min_value=0, max_value=3)
 
+# To THIS (removing min_value=0):
 class ChallengeSubmitSerializer(serializers.Serializer):
-    """Serializer for submitting challenge answers."""
-
-    attempt_id = serializers.UUIDField()
+    attempt_id = serializers.UUIDField(required=False)
+    attemptId = serializers.UUIDField(required=False) 
+    
     answers = serializers.ListField(
-        child=serializers.IntegerField(min_value=0, max_value=3),
-        min_length=1,
-        max_length=10
+        child=serializers.IntegerField(), # Removed the strict 0-3 limit
+        min_length=1
     )
-    time_taken_seconds = serializers.IntegerField(min_value=0)
+    
+    time_taken_seconds = serializers.IntegerField(required=False)
+    timeTaken = serializers.IntegerField(required=False)
+
+    def validate(self, data):
+        if 'attemptId' in data:
+            data['attempt_id'] = data.pop('attemptId')
+        if 'timeTaken' in data:
+            data['time_taken_seconds'] = data.pop('timeTaken')
+        return data
 
 
 class ChallengeAttemptSerializer(serializers.ModelSerializer):

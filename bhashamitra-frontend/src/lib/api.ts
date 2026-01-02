@@ -916,14 +916,22 @@ class ApiClient {
     });
   }
 
-  // ========================================
-  // PEPPI MIMIC ENDPOINTS
+  
+ // ========================================
+  // PEPPI CHALLENGE & MIMIC ENDPOINTS
   // ========================================
 
   /**
+   * Fetches available categories (Alphabet, Vocab, Mimic) for a specific language.
+   * This is what unlocks the "Next" button!
+   */
+  async getAvailableCategories(language: string): Promise<ApiResponse<any[]>> {
+    // Note: ensure this URL matches your backend urls.py path
+    return this.request<any[]>(`/challenges/categories/?language=${language}`);
+  }
+
+  /**
    * Get list of mimic challenges with child's progress.
-   * @param childId Child UUID
-   * @param filters Optional filters for category, difficulty, mastered status
    */
   async getMimicChallenges(
     childId: string,
@@ -932,37 +940,26 @@ class ApiClient {
     const params = new URLSearchParams();
     if (filters?.category) params.append('category', filters.category);
     if (filters?.difficulty) params.append('difficulty', filters.difficulty.toString());
-    if (filters?.mastered !== undefined) params.append('mastered', filters.mastered.toString());
-
+    
     const queryString = params.toString();
-    const response = await this.request<{ challenges: PeppiMimicChallengeWithProgress[]; categories: Record<string, string>; total: number }>(
+    // We update this to handle both formats (wrapped in 'challenges' or a direct list)
+    const response = await this.request<any>(
       `/children/${childId}/mimic/challenges/${queryString ? `?${queryString}` : ''}`
     );
+
     if (response.success && response.data) {
-      // Extract challenges array from response object
-      const challenges = response.data.challenges || [];
-      return { success: true, data: Array.isArray(challenges) ? challenges : [] };
+      // Logic to handle if backend returns { challenges: [...] } or just [...]
+      const data = response.data.challenges || response.data.results || response.data;
+      return {
+        success: true,
+        data: Array.isArray(data) ? data : [],
+      };
     }
     return { success: false, error: response.error, data: [] };
-  }
+  }//
 
   /**
-   * Get a single challenge with full details and Peppi scripts.
-   * @param childId Child UUID
-   * @param challengeId Challenge UUID
-   */
-  async getMimicChallenge(
-    childId: string,
-    challengeId: string
-  ): Promise<ApiResponse<PeppiMimicChallenge & { progress: { best_score: number; best_stars: number; total_attempts: number; mastered: boolean; mastered_at: string | null } }>> {
-    return this.request(`/children/${childId}/mimic/challenges/${challengeId}/`);
-  }
-
-  /**
-   * Submit a pronunciation attempt for scoring.
-   * @param childId Child UUID
-   * @param challengeId Challenge UUID
-   * @param data Audio URL and duration
+   * Submit an attempt for a Mimic challenge
    */
   async submitMimicAttempt(
     childId: string,
@@ -970,13 +967,13 @@ class ApiClient {
     data: MimicAttemptSubmitRequest
   ): Promise<ApiResponse<PeppiMimicAttemptResult>> {
     return this.request<PeppiMimicAttemptResult>(
-      `/children/${childId}/mimic/challenges/${challengeId}/attempt/`,
+      `/children/${childId}/mimic/challenges/${challengeId}/attempts/`,
       {
         method: 'POST',
         body: JSON.stringify(data),
       }
     );
-  }
+  }//
 
   /**
    * Get overall mimic progress summary for a child.

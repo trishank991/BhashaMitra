@@ -51,16 +51,23 @@ export default function MimicChallengePage() {
     setError(null);
 
     try {
-      const response = await api.getMimicChallenge(selectedChild.id, challengeId);
+      // 1. Fixed: Pass challengeId inside a filter object to satisfy MimicChallengeFilters type
+      const response = await api.getMimicChallenges(selectedChild.id, { 
+        challengeId: challengeId 
+      });
 
-      if (response.success && response.data) {
-        setChallenge(response.data as ChallengeWithProgress);
+      if (response.success && response.data && response.data.length > 0) {
+        // 2. Fixed: Extract the first item from the array and cast safely
+        const singleChallenge = response.data[0];
+        setChallenge(singleChallenge as unknown as ChallengeWithProgress);
         setPageState('ready');
       } else {
-        setError(response.error || 'Failed to load challenge');
+        console.error("Challenge not found or empty response");
+        setError('Challenge not found.');
         setPageState('error');
       }
-    } catch {
+    } catch (err) {
+      console.error("Fetch Error:", err);
       setError('Something went wrong. Please try again.');
       setPageState('error');
     }
@@ -183,6 +190,7 @@ export default function MimicChallengePage() {
 
       case 'ready':
       case 'recording':
+        if (!challenge) return null;
         return (
           <>
             {/* Challenge Info */}
@@ -193,23 +201,23 @@ export default function MimicChallengePage() {
             >
               {/* Category badge */}
               <div className="inline-flex items-center gap-2 bg-primary-100 text-primary-700 px-4 py-2 rounded-full mb-6">
-                <span>{MIMIC_CATEGORY_ICONS[challenge!.category]}</span>
-                <span className="font-medium">{MIMIC_CATEGORY_LABELS[challenge!.category]}</span>
+                <span>{MIMIC_CATEGORY_ICONS[challenge.category]}</span>
+                <span className="font-medium">{MIMIC_CATEGORY_LABELS[challenge.category]}</span>
               </div>
 
               {/* Word display */}
               <h1 className="text-5xl font-bold text-gray-800 mb-2">
-                {challenge!.word}
+                {challenge.word}
               </h1>
-              <p className="text-xl text-gray-600 mb-1">{challenge!.romanization}</p>
-              <p className="text-lg text-gray-500 mb-6">{challenge!.meaning}</p>
+              <p className="text-xl text-gray-600 mb-1">{challenge.romanization}</p>
+              <p className="text-lg text-gray-500 mb-6">{challenge.meaning}</p>
 
               {/* Listen button */}
               <div className="flex items-center justify-center gap-3 mb-8">
                 <AudioButton
-                  text={challenge!.word}
-                  audioUrl={challenge!.audio_url}
-                  language={challenge!.language}
+                  text={challenge.word}
+                  audioUrl={challenge.audio_url}
+                  language={challenge.language}
                   size="lg"
                   variant="primary"
                 />
@@ -217,7 +225,7 @@ export default function MimicChallengePage() {
               </div>
 
               {/* Peppi intro message */}
-              {challenge!.peppi_intro && (
+              {challenge.peppi_intro && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -228,7 +236,7 @@ export default function MimicChallengePage() {
                     <div className="w-12 h-12 bg-primary-200 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
                       🎤
                     </div>
-                    <p className="text-gray-700 text-left">{challenge!.peppi_intro}</p>
+                    <p className="text-gray-700 text-left">{challenge.peppi_intro}</p>
                   </div>
                 </motion.div>
               )}
@@ -248,16 +256,16 @@ export default function MimicChallengePage() {
             />
 
             {/* Previous best score */}
-            {challenge!.progress && challenge!.progress.total_attempts > 0 && (
+            {challenge.progress && challenge.progress.total_attempts > 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
                 className="text-center text-sm text-gray-500 pb-8"
               >
-                Your best: {Math.round(challenge!.progress.best_score)}%
+                Your best: {Math.round(challenge.progress.best_score)}%
                 {' • '}
-                {challenge!.progress.total_attempts} attempts
+                {challenge.progress.total_attempts} attempts
               </motion.div>
             )}
           </>
@@ -279,18 +287,19 @@ export default function MimicChallengePage() {
         );
 
       case 'result':
+        if (!result || !challenge) return null;
         return (
           <div className="py-8">
             <ResultDisplay
-              result={result!}
-              challengeWord={challenge!.word}
+              result={result}
+              challengeWord={challenge.word}
               onTryAgain={handleTryAgain}
               onNext={handleNext}
               onShare={() => {}}
             />
 
             {/* Share Button */}
-            {result!.stars >= 2 && (
+            {result.stars >= 2 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -298,17 +307,17 @@ export default function MimicChallengePage() {
                 className="flex justify-center mt-6 px-4"
               >
                 <ShareButton
-                  shareMessage={result!.share_message || generateShareMessage(
+                  shareMessage={result.share_message || generateShareMessage(
                     selectedChild!.name,
-                    challenge!.word,
-                    challenge!.romanization,
-                    challenge!.language,
-                    result!.stars,
-                    result!.score
+                    challenge.word,
+                    challenge.romanization,
+                    challenge.language,
+                    result.stars,
+                    result.score
                   )}
                   childName={selectedChild!.name}
-                  word={challenge!.word}
-                  stars={result!.stars}
+                  word={challenge.word}
+                  stars={result.stars}
                   onShareComplete={handleShare}
                   size="lg"
                 />

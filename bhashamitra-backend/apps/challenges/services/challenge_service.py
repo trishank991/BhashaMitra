@@ -57,12 +57,25 @@ class ChallengeService:
             except (ValueError, TypeError):
                 is_correct = False
             if is_correct: score += 1
-            results.append({"question_id": q.get('id'), "user_answer": user_ans, "correct_answer": correct_idx, "is_correct": is_correct})
+            results.append({
+                "question_id": q.get('id'), 
+                "user_answer": user_ans, 
+                "correct_answer": correct_idx, 
+                "is_correct": is_correct,
+                "correct": is_correct
+            })
         max_score = len(questions)
-        return {"score": score, "total_questions": max_score, "percentage": round((score / max_score * 100), 1) if max_score > 0 else 0, "detailed_results": results}
+        return {
+            "score": score, 
+            "total_questions": max_score, 
+            "max_score": max_score,
+            "percentage": round((score / max_score * 100), 1) if max_score > 0 else 0, 
+            "detailed_results": results
+        }
 
     @staticmethod
     def strip_answers(questions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if not questions: return []
         return [{k: v for k, v in q.items() if k != 'correct_index'} for q in questions]
-# Last Fixed: Sat Jan  3 12:33:11 NZDT 2026
+
+# Last Fixed: Sat Jan  3 12:31:00 PM NZDT 2026

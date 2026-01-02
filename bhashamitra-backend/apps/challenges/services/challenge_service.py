@@ -1,16 +1,11 @@
 import random
 import logging
 from typing import List, Dict, Any
-from django.db.models import Sum
+from django.db.models import Sum, Count
 
-# We try the standard import, and fallback to local relative imports for tests
-try:
-    from apps.challenges.models import Challenge, ChallengeAttempt, ChallengeCategory
-    from apps.curriculum.models import Script, Letter, VocabularyTheme, GrammarRule
-except ImportError:
-    # This works when running from within the apps directory or during certain test runners
-    from ..models import Challenge, ChallengeAttempt, ChallengeCategory
-    from ...content.models import Script, Letter, VocabularyTheme, GrammarRule
+# Correct imports pointing to the curriculum app
+from apps.challenges.models import Challenge, ChallengeAttempt, ChallengeCategory
+from apps.curriculum.models import Script, Letter, VocabularyTheme, GrammarRule
 
 logger = logging.getLogger(__name__)
 
@@ -22,27 +17,42 @@ class ChallengeService:
         available = []
         lang_upper = language.upper()
 
-        # 1. Alphabet
+        # 1. Alphabet - Checking letters in the script
         script = Script.objects.filter(language=lang_upper).first()
         if script:
-            letter_count = Letter.objects.filter(category__script=script, is_active=True).count()
+            # We count letters directly related to the active script
+            letter_count = Letter.objects.filter(
+                category__script=script, 
+                is_active=True
+            ).count()
+            
             if letter_count >= cls.CHOICES_COUNT:
-                available.append({"value": ChallengeCategory.ALPHABET, "label": "Alphabet", "item_count": letter_count})
+                available.append({
+                    "value": ChallengeCategory.ALPHABET, 
+                    "label": "Alphabet", 
+                    "item_count": letter_count
+                })
 
-        # 2. Vocabulary
+        # 2. Vocabulary - Counting themes or items
+        # Replaced the crashing Sum('word_count') with a count of active themes
         vocab_data = VocabularyTheme.objects.filter(
-            language=lang_upper, is_active=True
-        ).aggregate(total=Sum('word_count'))
+            language=lang_upper, 
+            is_active=True
+        ).aggregate(total=Count('id'))
         
         total_vocab = vocab_data['total'] or 0
         if total_vocab >= cls.CHOICES_COUNT:
-            available.append({"value": ChallengeCategory.VOCABULARY, "label": "Vocabulary", "item_count": total_vocab})
+            available.append({
+                "value": ChallengeCategory.VOCABULARY, 
+                "label": "Vocabulary", 
+                "item_count": total_vocab
+            })
 
-        # 3. Mimic
+        # 3. Mimic - Checking for grammar rules with examples
         grammar_count = GrammarRule.objects.filter(
             topic__language=lang_upper, 
             topic__is_active=True
-        ).exclude(examples__isnull=True).exclude(examples=[]).count()
+        ).exclude(examples__isnull=True).count()
 
         if grammar_count > 0:
             available.append({
@@ -55,14 +65,22 @@ class ChallengeService:
 
     @classmethod
     def get_random_questions(cls, questions: List[Dict[str, Any]], count: int) -> List[Dict[str, Any]]:
+        """
+        Shuffles the question pool and returns a specific number of questions.
+        """
         if not questions:
             return []
+        
+        # Create a copy to protect original data, shuffle and slice
         shuffled_pool = list(questions)
         random.shuffle(shuffled_pool)
         return shuffled_pool[:count]
 
     @classmethod
     def calculate_score(cls, questions: List[Dict[str, Any]], answers: List[int]) -> Dict[str, Any]:
+        """
+        Calculates the user's score based on submitted answers.
+        """
         score = 0
         results = []
         
@@ -82,7 +100,7 @@ class ChallengeService:
                 "user_answer": user_ans,
                 "correct_answer": correct_idx,
                 "is_correct": is_correct,
-                "correct": is_correct
+                "correct": is_correct # Duplicate key for frontend compatibility
             })
 
         max_score = len(questions)
@@ -96,6 +114,9 @@ class ChallengeService:
 
     @staticmethod
     def strip_answers(questions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Removes the correct answer index before sending questions to the client.
+        """
         if not questions:
             return []
         return [{k: v for k, v in q.items() if k != 'correct_index'} for q in questions]

@@ -67,6 +67,40 @@ class ChallengeSerializer(serializers.ModelSerializer):
         return obj.creator.email.split('@')[0]
 
 
+class ChallengeListSerializer(serializers.ModelSerializer):
+    """
+    Challenge serializer for the creator's list view.
+    Includes comprehensive stats but strips answers from questions for security.
+    """
+
+    share_url = serializers.ReadOnlyField()
+    language_name = serializers.ReadOnlyField()
+    is_expired = serializers.ReadOnlyField()
+    participant_count = serializers.ReadOnlyField()
+    creator_name = serializers.SerializerMethodField()
+    questions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Challenge
+        fields = [
+            'id', 'code', 'title', 'title_native', 'language', 'language_name',
+            'category', 'difficulty', 'question_count', 'time_limit_seconds',
+            'questions', 'is_active', 'total_attempts', 'total_completions',
+            'average_score', 'participant_count', 'expires_at', 'is_expired',
+            'share_url', 'creator_name', 'created_at',
+        ]
+
+    def get_creator_name(self, obj):
+        if obj.creator_child:
+            return obj.creator_child.display_name
+        return obj.creator.email.split('@')[0]
+
+    def get_questions(self, obj):
+        """Strip correct_index from questions to prevent cheating."""
+        from .services import ChallengeService
+        return ChallengeService.strip_answers(obj.questions)
+
+
 class PublicChallengeSerializer(serializers.ModelSerializer):
     """
     Public challenge serializer - NO CORRECT ANSWERS!

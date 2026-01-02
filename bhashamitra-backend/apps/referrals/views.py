@@ -1,4 +1,4 @@
-deve"""Referral API views."""
+"""Referral API views."""
 import logging
 from rest_framework import status
 from rest_framework.views import APIView
@@ -153,7 +153,7 @@ class AmbassadorStatusView(APIView):
                 'commission_rate': float(ambassador.commission_rate),
                 'total_earnings': float(ambassador.total_earnings),
                 'pending_payout': float(ambassador.pending_payout),
-                'lifetime_referifetime_referralsrals': ambassador.l,
+                'lifetime_referrals': ambassador.l,
                 'benefits': ambassador.tier_benefits
             })
         except AmbassadorProgram.DoesNotExist:

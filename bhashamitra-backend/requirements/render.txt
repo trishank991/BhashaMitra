@@ -25,6 +25,10 @@ djangorestframework-simplejwt==5.3.1
 flower==2.0.1
 gradio-client==1.2.0
 gunicorn==22.0.0
+google-api-core==2.28.1
+google-auth==2.45.0
+google-cloud-texttospeech==2.33.0
+google-cloud-speech==2.35.0
 idna==3.7
 importlib-metadata==8.2.0
 Kombu==5.4.0

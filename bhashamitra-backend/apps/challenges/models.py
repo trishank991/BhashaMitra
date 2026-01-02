@@ -36,6 +36,7 @@ class ChallengeCategory(models.TextChoices):
     FAMILY = 'family', 'Family Members'
     FOOD = 'food', 'Food & Fruits'
     GREETINGS = 'greetings', 'Greetings & Phrases'
+    MIMIC = 'mimic', 'Mimic the Sentence'
 
 
 class ChallengeDifficulty(models.TextChoices):

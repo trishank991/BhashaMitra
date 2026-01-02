@@ -2,23 +2,16 @@
 # exit on error
 set -o errexit
 
-echo "Installing dependencies..."
-pip install --upgrade pip
-pip install -r requirements/render.txt
+# Poetry configuration
+echo "Configuring poetry..."
+poetry config virtualenvs.in-project true
 
-# Verify google-cloud-texttospeech is installed
-echo "Checking Google Cloud packages..."
-pip show google-cloud-texttospeech || echo "WARNING: google-cloud-texttospeech not installed!"
-pip show google-cloud-speech || echo "WARNING: google-cloud-speech not installed!"
+# Install dependencies
+echo "Installing dependencies from poetry.lock..."
+poetry install --no-root --no-dev
 
-# Verify stripe is installed
-echo "Checking Stripe package..."
-pip show stripe || echo "WARNING: stripe not installed!"
-
+# Collect static files
 echo "Collecting static files..."
-python manage.py collectstatic --no-input
+poetry run python manage.py collectstatic --no-input
 
-echo "Running database migrations..."
-python manage.py migrate --no-input
-
-echo "Build completed successfully!"
+echo "Build finished successfully!"

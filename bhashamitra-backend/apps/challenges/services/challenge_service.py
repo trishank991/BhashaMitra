@@ -12,7 +12,7 @@ import random
 from typing import List, Dict, Any, Optional
 from django.db.models import Q
 
-from apps.curriculum.models import Letter, VocabularyWord, VocabularyTheme, AlphabetCategory, Script
+from apps.curriculum.models import Letter, VocabularyWord, VocabularyTheme, AlphabetCategory, Script, Grammar
 from apps.challenges.models import ChallengeCategory, ChallengeDifficulty
 
 
@@ -61,6 +61,8 @@ class ChallengeService:
             return cls._generate_vocabulary_questions(language, difficulty, count, theme_name='Food')
         elif category == ChallengeCategory.GREETINGS:
             return cls._generate_vocabulary_questions(language, difficulty, count, theme_name='Greetings')
+        elif category == ChallengeCategory.MIMIC:
+            return cls._generate_mimic_questions(language, difficulty, count)
         else:
             return cls._generate_vocabulary_questions(language, difficulty, count)
 
@@ -269,6 +271,15 @@ class ChallengeService:
                             "item_count": theme.word_count,
                         })
 
+        # Check grammar for mimic challenges
+        grammar_count = Grammar.objects.filter(language=language).count()
+        if grammar_count > 0:
+            available.append({
+                "value": ChallengeCategory.MIMIC,
+                "label": "Mimic the Sentence",
+                "item_count": grammar_count,
+            })
+
         return available
 
     @classmethod
@@ -333,3 +344,49 @@ class ChallengeService:
             {k: v for k, v in q.items() if k != 'correct_index'}
             for q in questions
         ]
+
+    @classmethod
+    def _generate_mimic_questions(
+        cls,
+        language: str,
+        difficulty: str,
+        count: int
+    ) -> List[Dict[str, Any]]:
+        """Generate mimic the sentence questions."""
+        questions = []
+        
+        # Get grammar sentences for this language
+        query = Q(language=language)
+        
+        # Adjust difficulty
+        if difficulty == ChallengeDifficulty.EASY:
+            query &= Q(level__lte=2)
+        elif difficulty == ChallengeDifficulty.MEDIUM:
+            query &= Q(level__lte=4)
+        
+        # Hard includes all levels
+        
+        sentences = list(Grammar.objects.filter(query))
+        
+        if not sentences:
+            return []
+        
+        # Shuffle and select sentences for questions
+        random.shuffle(sentences)
+        selected_sentences = sentences[:count]
+        
+        for idx, sentence in enumerate(selected_sentences):
+            question = {
+                "id": idx + 1,
+                "type": "mimic",
+                "question": "Repeat the following sentence:",
+                "prompt": sentence.sentence,
+                "prompt_native": sentence.sentence,
+                "translation": sentence.translation,
+                "audio_url": sentence.audio_url,
+                "correct_index": 0,  # For mimic, we might not have choices
+                "choices": [],
+            }
+            questions.append(question)
+            
+        return questions

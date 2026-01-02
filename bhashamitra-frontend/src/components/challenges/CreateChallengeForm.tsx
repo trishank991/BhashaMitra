@@ -44,7 +44,7 @@ export function CreateChallengeForm({ onSuccess, onCancel, defaultLanguage = 'HI
   // Fetch categories when language changes
   useEffect(() => {
     const fetchCategories = async () => {
-      const response = await api.getChallengeCateies(formData.language);
+      const response = await api.getChallengeCategories(formData.language);
       if (response.success && response.data) {
         setCategories(response.data.data || []);
         // Auto-select first category

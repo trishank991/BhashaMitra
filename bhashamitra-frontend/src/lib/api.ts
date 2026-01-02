@@ -1776,7 +1776,7 @@ class ApiClient {
    * Get available challenge categories for a language (AUTH REQUIRED)
    * @param language Language code
    */
-  async getChallengeCateies(language: string = 'HINDI'): Promise<ApiResponse<{ data: ChallengeCategoryOption[] }>> {
+  async getChallengeCategories(language: string = 'HINDI'): Promise<ApiResponse<{ data: ChallengeCategoryOption[] }>> {
     return this.request<{ data: ChallengeCategoryOption[] }>(`/challenges/categories/?language=${language}`);
   }
 }

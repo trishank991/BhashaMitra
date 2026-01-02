@@ -213,6 +213,13 @@ GEMINI_MODEL_ID = os.getenv('GEMINI_MODEL_ID', 'gemini-2.0-flash')
 # Peppi Chat Settings
 PEPPI_CHAT_MAX_TOKENS = int(os.getenv('PEPPI_CHAT_MAX_TOKENS', 1024))
 PEPPI_CHAT_TEMPERATURE = float(os.getenv('PEPPI_CHAT_TEMPERATURE', 0.7))
+
+# TTS Provider Settings
+TTS_CONFIG = {
+    "DEFAULT_PROVIDER": os.getenv("TTS_PROVIDER", "google"),
+    "FALLBACK_PROVIDER": "sarvam",
+}
+
 PEPPI_CHAT_MODERATION_STRICT = os.getenv('PEPPI_CHAT_MODERATION_STRICT', 'true').lower() == 'true'
 
 # ===========================================

@@ -23,6 +23,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction
 from datetime import timedelta
+import logging # Added for better debugging
 
 from .models import Challenge, ChallengeAttempt, UserChallengeQuota
 from .serializers import (
@@ -33,6 +34,7 @@ from .serializers import (
 )
 from .services import ChallengeService
 
+logger = logging.getLogger(__name__) # Setup logging
 
 # =============================================================================
 # PUBLIC ENDPOINTS - No authentication required
@@ -90,33 +92,34 @@ def play_challenge(request, code):
                 "challenge": PublicChallengeSerializer(challenge).data
             }
         }, status=status.HTTP_201_CREATED)
-
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def submit_challenge(request):
-    """Submit answers and get results."""
+    """Submit answers and get results with improved error handling."""
+    # 1. Validate incoming data (Supports both snake_case and camelCase)
     serializer = ChallengeSubmitSerializer(data=request.data)
     if not serializer.is_valid():
+        logger.warning(f"Submission validation failed: {serializer.errors}")
         return Response(
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    attempt_id = serializer.validated_data['attempt_id']
-    answers = serializer.validated_data['answers']
-    time_taken = serializer.validated_data['time_taken_seconds']
+    # Use .get() to pull data from our flexible serializer
+    attempt_id = serializer.validated_data.get('attempt_id')
+    answers = serializer.validated_data.get('answers')
+    time_taken = serializer.validated_data.get('time_taken_seconds', 0)
 
-    # Get attempt
+    # 2. Fetch the attempt
     try:
         attempt = ChallengeAttempt.objects.select_related('challenge').get(id=attempt_id)
-    except ChallengeAttempt.DoesNotExist:
+    except (ChallengeAttempt.DoesNotExist, ValueError):
         return Response(
-            {"success": False, "error": "Attempt not found"},
+            {"success": False, "error": "Attempt not found. Please refresh and try again."},
             status=status.HTTP_404_NOT_FOUND
         )
 
-    # Check if already completed
+    # 3. Security: Prevent double submission
     if attempt.is_completed:
         return Response(
             {"success": False, "error": "This attempt was already submitted"},
@@ -125,50 +128,61 @@ def submit_challenge(request):
 
     challenge = attempt.challenge
 
-    # Calculate score
+    # 4. Calculate Score using Service
     try:
         result = ChallengeService.calculate_score(challenge.questions, answers)
-    except ValueError as e:
+    except Exception as e:
+        logger.error(f"Score calculation error: {str(e)}")
         return Response(
-            {"success": False, "error": str(e)},
+            {"success": False, "error": "Error calculating results"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Update attempt
-    with transaction.atomic():
-        attempt.score = result['score']
-        attempt.percentage = result['percentage']
-        attempt.time_taken_seconds = time_taken
-        attempt.answers = result['detailed_results']
-        attempt.is_completed = True
-        attempt.completed_at = timezone.now()
-        attempt.save()
+    # 5. Atomic Update to Database
+    try:
+        with transaction.atomic():
+            attempt.score = result['score']
+            attempt.max_score = result.get('max_score', challenge.question_count)
+            attempt.percentage = result['percentage']
+            attempt.time_taken_seconds = time_taken
+            attempt.answers = result['detailed_results']
+            attempt.is_completed = True
+            attempt.completed_at = timezone.now()
+            attempt.save()
 
-        # Update challenge stats
-        challenge.total_completions += 1
-        
-        # Recalculate average score
-        completed_attempts = ChallengeAttempt.objects.filter(
-            challenge=challenge,
-            is_completed=True
+            # Update challenge stats
+            challenge.total_completions += 1
+            
+            # Recalculate average score safely
+            completed_attempts = ChallengeAttempt.objects.filter(
+                challenge=challenge,
+                is_completed=True
+            )
+            total_percentage = sum(a.percentage for a in completed_attempts)
+            
+            if challenge.total_completions > 0:
+                challenge.average_score = total_percentage / challenge.total_completions
+            
+            challenge.save(update_fields=['total_completions', 'average_score'])
+
+    except Exception as e:
+        logger.error(f"Database update failed: {str(e)}")
+        return Response(
+            {"success": False, "error": "Internal server error saving results"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-        total_percentage = sum(a.percentage for a in completed_attempts)
-        challenge.average_score = total_percentage / challenge.total_completions
-        challenge.save(update_fields=['total_completions', 'average_score'])
 
-    # Get rank
-    rank = attempt.rank
-
+    # 6. Return Clean Results
     return Response({
         "success": True,
         "data": {
-            "score": result['score'],
-            "max_score": result['max_score'],
-            "percentage": result['percentage'],
-            "time_taken_seconds": time_taken,
-            "rank": rank,
+            "score": attempt.score,
+            "max_score": attempt.max_score,
+            "percentage": attempt.percentage,
+            "time_taken_seconds": attempt.time_taken_seconds,
+            "rank": attempt.rank,
             "total_participants": challenge.total_completions,
-            "detailed_results": result['detailed_results'],
+            "detailed_results": attempt.answers,
             "challenge_title": challenge.title,
             "share_url": challenge.share_url,
         }

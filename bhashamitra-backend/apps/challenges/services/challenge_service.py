@@ -20,7 +20,6 @@ class ChallengeService:
         # 1. Alphabet - Checking letters in the script
         script = Script.objects.filter(language=lang_upper).first()
         if script:
-            # We count letters directly related to the active script
             letter_count = Letter.objects.filter(
                 category__script=script, 
                 is_active=True
@@ -34,7 +33,7 @@ class ChallengeService:
                 })
 
         # 2. Vocabulary - Counting themes or items
-        # Replaced the crashing Sum('word_count') with a count of active themes
+        # Replaced Sum('word_count') with Count('id') to avoid FieldError
         vocab_data = VocabularyTheme.objects.filter(
             language=lang_upper, 
             is_active=True
@@ -71,7 +70,6 @@ class ChallengeService:
         if not questions:
             return []
         
-        # Create a copy to protect original data, shuffle and slice
         shuffled_pool = list(questions)
         random.shuffle(shuffled_pool)
         return shuffled_pool[:count]
@@ -87,7 +85,6 @@ class ChallengeService:
         for q, user_ans in zip(questions, answers):
             correct_idx = q.get('correct_index')
             try:
-                # Type casting ensures string "1" matches integer 1
                 is_correct = (int(user_ans) == int(correct_idx))
             except (ValueError, TypeError):
                 is_correct = False
@@ -100,7 +97,7 @@ class ChallengeService:
                 "user_answer": user_ans,
                 "correct_answer": correct_idx,
                 "is_correct": is_correct,
-                "correct": is_correct # Duplicate key for frontend compatibility
+                "correct": is_correct
             })
 
         max_score = len(questions)
@@ -120,17 +117,4 @@ class ChallengeService:
         if not questions:
             return []
         return [{k: v for k, v in q.items() if k != 'correct_index'} for q in questions]
-    @classmethod
-    def get_random_questions(cls, questions: List[Dict[str, Any]], count: int) -> List[Dict[str, Any]]:
-        """
-        Shuffles the question pool and returns a specific number of questions.
-        """
-        if not questions:
-            return []
-            
-        # Create a copy so we don't shuffle the original data in the DB/Cache
-        shuffled_pool = list(questions)
-        random.shuffle(shuffled_pool)
-        
-        # Return only the amount requested (e.g., 5)
-        return shuffled_pool[:count]
+    

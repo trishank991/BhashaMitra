@@ -146,6 +146,7 @@ def submit_challenge(request):
 
         # Update challenge stats
         challenge.total_completions += 1
+        
         # Recalculate average score
         completed_attempts = ChallengeAttempt.objects.filter(
             challenge=challenge,
@@ -229,9 +230,12 @@ def challenges_list_create(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Check quota
+        # Normalize Language to Uppercase to match DB
+        language = serializer.validated_data['language'].upper()
+
+        # Check quota - use get_or_create to ensure no crashes for new users/family
         quota, _ = UserChallengeQuota.objects.get_or_create(user=user)
-        is_paid = user.is_premium_tier or user.is_standard_tier
+        is_paid = getattr(user, 'is_premium_tier', False) or getattr(user, 'is_standard_tier', False) or user.is_staff
         can_create, message = quota.can_create_challenge(is_paid)
 
         if not can_create:
@@ -240,9 +244,9 @@ def challenges_list_create(request):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Generate questions from curriculum
+        # Generate questions from curriculum (Service handles GrammarTopic)
         questions = ChallengeService.generate_questions(
-            language=serializer.validated_data['language'],
+            language=language,
             category=serializer.validated_data['category'],
             difficulty=serializer.validated_data['difficulty'],
             count=serializer.validated_data['question_count']
@@ -250,7 +254,7 @@ def challenges_list_create(request):
 
         if not questions:
             return Response(
-                {"success": False, "error": "Not enough content available for this category"},
+                {"success": False, "error": f"Not enough content available for {language} in this category"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -267,7 +271,8 @@ def challenges_list_create(request):
             if child_id:
                 from apps.children.models import Child
                 try:
-                    creator_child = Child.objects.get(id=child_id, parent=user)
+                    # Logic updated to filter by 'user' as per typical BhashaMitra structure
+                    creator_child = Child.objects.get(id=child_id, user=user)
                 except Child.DoesNotExist:
                     pass
 
@@ -276,7 +281,7 @@ def challenges_list_create(request):
                 creator_child=creator_child,
                 title=serializer.validated_data['title'],
                 title_native=serializer.validated_data.get('title_native', ''),
-                language=serializer.validated_data['language'],
+                language=language,
                 category=serializer.validated_data['category'],
                 difficulty=serializer.validated_data['difficulty'],
                 question_count=serializer.validated_data['question_count'],
@@ -330,7 +335,8 @@ def user_quota(request):
 @permission_classes([IsAuthenticated])
 def available_categories(request):
     """Get available challenge categories for a language."""
-    language = request.query_params.get('language', 'HINDI')
+    # Force query param to uppercase
+    language = request.query_params.get('language', 'HINDI').upper()
     categories = ChallengeService.get_available_categories(language)
     serializer = CategorySerializer(categories, many=True)
     return Response({

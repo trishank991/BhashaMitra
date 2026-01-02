@@ -73,7 +73,6 @@ class ScriptLettersView(APIView):
         except Script.DoesNotExist:
             return Response({'detail': 'Script not found'}, status=status.HTTP_404_NOT_FOUND)
 
-
 class LetterListView(APIView):
     """List letters with optional filtering."""
     permission_classes = [IsAuthenticated]
@@ -84,10 +83,13 @@ class LetterListView(APIView):
         except Child.DoesNotExist:
             return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        language = request.query_params.get('language', child.language)
+        # FIX: Normalize language to UPPERCASE to match DB entries (HINDI, GUJARATI)
+        raw_language = request.query_params.get('language', child.language)
+        language = raw_language.upper() if raw_language else ""
+        
         category_type = request.query_params.get('category_type')
 
-        # Query Letter model (Gujarati, Tamil, Punjabi, etc.)
+        # Query Letter model
         letters = Letter.objects.filter(
             category__script__language=language,
             is_active=True
@@ -98,34 +100,33 @@ class LetterListView(APIView):
 
         letters = letters.order_by('category__order', 'order')
         
-        # Query VerifiedLetter model (Hindi) and merge results
+        # Query VerifiedLetter model (specifically for Hindi)
         verified_letters = VerifiedLetter.objects.filter(
             language=language,
             status='VERIFIED'
         ).order_by('character')
         
-        # Serialize Letter model results
+        # Serialize standard results
         letter_data = LetterSerializer(letters, many=True).data
         
-        # Convert VerifiedLetter to Letter format
+        # Convert VerifiedLetter to the same format as Letter
         verified_letter_data = []
         for vl in verified_letters:
             verified_letter_data.append({
                 'id': str(vl.id),
                 'character': vl.character,
                 'romanization': vl.romanization,
-                'ipa': '',  # Not available in VerifiedLetter
+                'ipa': '',
                 'pronunciation_guide': vl.pronunciation_guide,
-                'audio_url': vl.audio_url or '',
-                'example_image': vl.example_image or '',
-                'order': 0  # VerifiedLetter doesn't have order field
+                'audio_url': vl.audio_url.url if vl.audio_url else '',
+                'example_image': vl.example_image.url if vl.example_image else '',
+                'order': 0
             })
         
         # Merge both datasets
         all_letters = list(letter_data) + verified_letter_data
 
         return Response({'data': all_letters})
-
 
 class LetterDetailView(APIView):
     """Get letter details."""
@@ -220,7 +221,7 @@ class AlphabetProgressView(APIView):
         except Child.DoesNotExist:
             return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        language = request.query_params.get('language', child.language)
+        language = request.query_params.get('language', child.language).upper()
         progress = AlphabetService.get_child_alphabet_progress(str(child.id), language)
 
         # Get next letters to learn

@@ -32,39 +32,30 @@ class ChallengeService:
     ) -> List[Dict[str, Any]]:
         """
         Generate questions for a challenge based on category and difficulty.
-
-        Returns list of question dicts:
-        {
-            "id": 1,
-            "type": "alphabet_recognition",
-            "question": "What sound does this letter make?",
-            "prompt": "अ",
-            "choices": ["a", "i", "u", "e"],
-            "correct_index": 0,
-            "image_url": null,
-            "audio_url": null
-        }
         """
+        # Normalize language to uppercase to match DB entries (HINDI, GUJARATI)
+        lang_upper = language.upper()
+
         if category == ChallengeCategory.ALPHABET:
-            return cls._generate_alphabet_questions(language, difficulty, count)
+            return cls._generate_alphabet_questions(lang_upper, difficulty, count)
         elif category == ChallengeCategory.VOCABULARY:
-            return cls._generate_vocabulary_questions(language, difficulty, count)
+            return cls._generate_vocabulary_questions(lang_upper, difficulty, count)
         elif category == ChallengeCategory.NUMBERS:
-            return cls._generate_vocabulary_questions(language, difficulty, count, theme_name='Numbers')
+            return cls._generate_vocabulary_questions(lang_upper, difficulty, count, theme_name='Numbers')
         elif category == ChallengeCategory.COLORS:
-            return cls._generate_vocabulary_questions(language, difficulty, count, theme_name='Colors')
+            return cls._generate_vocabulary_questions(lang_upper, difficulty, count, theme_name='Colors')
         elif category == ChallengeCategory.ANIMALS:
-            return cls._generate_vocabulary_questions(language, difficulty, count, theme_name='Animals')
+            return cls._generate_vocabulary_questions(lang_upper, difficulty, count, theme_name='Animals')
         elif category == ChallengeCategory.FAMILY:
-            return cls._generate_vocabulary_questions(language, difficulty, count, theme_name='Family')
+            return cls._generate_vocabulary_questions(lang_upper, difficulty, count, theme_name='Family')
         elif category == ChallengeCategory.FOOD:
-            return cls._generate_vocabulary_questions(language, difficulty, count, theme_name='Food')
+            return cls._generate_vocabulary_questions(lang_upper, difficulty, count, theme_name='Food')
         elif category == ChallengeCategory.GREETINGS:
-            return cls._generate_vocabulary_questions(language, difficulty, count, theme_name='Greetings')
+            return cls._generate_vocabulary_questions(lang_upper, difficulty, count, theme_name='Greetings')
         elif category == ChallengeCategory.MIMIC:
-            return cls._generate_mimic_questions(language, difficulty, count)
+            return cls._generate_mimic_questions(lang_upper, difficulty, count)
         else:
-            return cls._generate_vocabulary_questions(language, difficulty, count)
+            return cls._generate_vocabulary_questions(lang_upper, difficulty, count)
 
     @classmethod
     def _generate_alphabet_questions(
@@ -76,29 +67,27 @@ class ChallengeService:
         """Generate alphabet recognition questions."""
         questions = []
 
-        # Get letters for this language
-        try:
-            script = Script.objects.get(language=language)
-            letters = list(Letter.objects.filter(
-                category__script=script,
-                is_active=True
-            ).exclude(romanization=''))
-        except Script.DoesNotExist:
+        # Use filter().first() to handle cases with duplicate Script entries safely
+        script = Script.objects.filter(language=language).first()
+        
+        if not script:
             return []
+
+        letters = list(Letter.objects.filter(
+            category__script=script,
+            is_active=True
+        ).exclude(romanization=''))
 
         if len(letters) < cls.CHOICES_COUNT:
             return []
 
-        # Shuffle and select letters for questions
         random.shuffle(letters)
         selected_letters = letters[:count]
 
         for idx, letter in enumerate(selected_letters):
-            # Get wrong choices from other letters
             other_letters = [l for l in letters if l.id != letter.id]
             wrong_choices = random.sample(other_letters, min(cls.CHOICES_COUNT - 1, len(other_letters)))
 
-            # Build choices
             choices = [letter.romanization] + [l.romanization for l in wrong_choices]
             random.shuffle(choices)
             correct_index = choices.index(letter.romanization)
@@ -111,8 +100,8 @@ class ChallengeService:
                 "prompt_native": letter.character,
                 "choices": choices,
                 "correct_index": correct_index,
-                "image_url": letter.example_image,
-                "audio_url": letter.audio_url,
+                "image_url": letter.example_image.url if letter.example_image else None,
+                "audio_url": letter.audio_url.url if letter.audio_url else None,
                 "hint": letter.pronunciation_guide or None,
             }
             questions.append(question)
@@ -129,24 +118,19 @@ class ChallengeService:
     ) -> List[Dict[str, Any]]:
         """Generate vocabulary questions."""
         questions = []
-
-        # Build query for vocabulary words
         query = Q(theme__language=language, theme__is_active=True)
 
         if theme_name:
             query &= Q(theme__name__icontains=theme_name)
 
-        # Adjust difficulty - higher level themes for harder difficulty
         if difficulty == ChallengeDifficulty.EASY:
             query &= Q(theme__level__lte=2)
         elif difficulty == ChallengeDifficulty.MEDIUM:
             query &= Q(theme__level__lte=3)
-        # Hard includes all levels
 
         words = list(VocabularyWord.objects.filter(query).select_related('theme'))
 
         if len(words) < cls.CHOICES_COUNT:
-            # Fallback: get any words for this language
             words = list(VocabularyWord.objects.filter(
                 theme__language=language,
                 theme__is_active=True
@@ -155,19 +139,15 @@ class ChallengeService:
         if len(words) < cls.CHOICES_COUNT:
             return []
 
-        # Shuffle and select words for questions
         random.shuffle(words)
         selected_words = words[:count]
 
         for idx, word in enumerate(selected_words):
-            # Alternate between question types for variety
             question_type = idx % 2
+            other_words = [w for w in words if w.id != word.id]
+            wrong_choices = random.sample(other_words, min(cls.CHOICES_COUNT - 1, len(other_words)))
 
             if question_type == 0:
-                # Type 1: Show native word, pick English translation
-                other_words = [w for w in words if w.id != word.id]
-                wrong_choices = random.sample(other_words, min(cls.CHOICES_COUNT - 1, len(other_words)))
-
                 choices = [word.translation] + [w.translation for w in wrong_choices]
                 random.shuffle(choices)
                 correct_index = choices.index(word.translation)
@@ -181,15 +161,11 @@ class ChallengeService:
                     "romanization": word.romanization,
                     "choices": choices,
                     "correct_index": correct_index,
-                    "image_url": word.image_url,
-                    "audio_url": word.pronunciation_audio_url,
+                    "image_url": word.image_url.url if word.image_url else None,
+                    "audio_url": word.pronunciation_audio_url.url if word.pronunciation_audio_url else None,
                     "hint": None,
                 }
             else:
-                # Type 2: Show English, pick native word
-                other_words = [w for w in words if w.id != word.id]
-                wrong_choices = random.sample(other_words, min(cls.CHOICES_COUNT - 1, len(other_words)))
-
                 choices = [word.word] + [w.word for w in wrong_choices]
                 random.shuffle(choices)
                 correct_index = choices.index(word.word)
@@ -203,23 +179,64 @@ class ChallengeService:
                     "romanization": None,
                     "choices": choices,
                     "correct_index": correct_index,
-                    "image_url": word.image_url,
+                    "image_url": word.image_url.url if word.image_url else None,
                     "audio_url": None,
                     "hint": word.romanization,
                 }
-
             questions.append(question)
 
+        return questions
+
+    @classmethod
+    def _generate_mimic_questions(
+        cls,
+        language: str,
+        difficulty: str,
+        count: int
+    ) -> List[Dict[str, Any]]:
+        """Generate mimic the sentence questions using GrammarTopic."""
+        questions = []
+        query = Q(language=language)
+        
+        if difficulty == ChallengeDifficulty.EASY:
+            query &= Q(level__lte=2)
+        elif difficulty == ChallengeDifficulty.MEDIUM:
+            query &= Q(level__lte=4)
+        
+        # Corrected model name from Grammar to GrammarTopic
+        sentences = list(GrammarTopic.objects.filter(query))
+        
+        if not sentences:
+            return []
+        
+        random.shuffle(sentences)
+        selected_sentences = sentences[:count]
+        
+        for idx, sentence in enumerate(selected_sentences):
+            question = {
+                "id": idx + 1,
+                "type": "mimic",
+                "question": "Repeat the following sentence:",
+                "prompt": sentence.sentence,
+                "prompt_native": sentence.sentence,
+                "translation": sentence.translation,
+                "audio_url": sentence.audio_url.url if sentence.audio_url else None,
+                "correct_index": 0,
+                "choices": [],
+            }
+            questions.append(question)
+            
         return questions
 
     @classmethod
     def get_available_categories(cls, language: str) -> List[Dict[str, Any]]:
         """Get categories that have enough content for quizzes."""
         available = []
+        lang_upper = language.upper()
 
         # Check alphabet
-        try:
-            script = Script.objects.get(language=language)
+        script = Script.objects.filter(language=lang_upper).first()
+        if script:
             letter_count = Letter.objects.filter(
                 category__script=script,
                 is_active=True
@@ -230,16 +247,13 @@ class ChallengeService:
                     "label": "Alphabet Recognition",
                     "item_count": letter_count,
                 })
-        except Script.DoesNotExist:
-            pass
 
         # Check vocabulary themes
         themes = VocabularyTheme.objects.filter(
-            language=language,
+            language=lang_upper,
             is_active=True
-        ).prefetch_related('words')
+        )
 
-        # General vocabulary
         total_words = sum(theme.word_count for theme in themes)
         if total_words >= cls.CHOICES_COUNT:
             available.append({
@@ -248,7 +262,6 @@ class ChallengeService:
                 "item_count": total_words,
             })
 
-        # Theme-specific categories
         theme_mapping = {
             'number': ChallengeCategory.NUMBERS,
             'color': ChallengeCategory.COLORS,
@@ -263,7 +276,6 @@ class ChallengeService:
             theme_name_lower = theme.name.lower()
             for keyword, category in theme_mapping.items():
                 if keyword in theme_name_lower and theme.word_count >= cls.CHOICES_COUNT:
-                    # Check if category already added
                     if not any(c['value'] == category for c in available):
                         available.append({
                             "value": category,
@@ -271,8 +283,8 @@ class ChallengeService:
                             "item_count": theme.word_count,
                         })
 
-        # Check grammar for mimic challenges
-        grammar_count = Grammar.objects.filter(language=language).count()
+        # Corrected model name from Grammar to GrammarTopic
+        grammar_count = GrammarTopic.objects.filter(language=lang_upper).count()
         if grammar_count > 0:
             available.append({
                 "value": ChallengeCategory.MIMIC,
@@ -288,24 +300,7 @@ class ChallengeService:
         questions: List[Dict[str, Any]],
         answers: List[int]
     ) -> Dict[str, Any]:
-        """
-        Calculate score from submitted answers.
-
-        Args:
-            questions: List of question dicts (with correct_index)
-            answers: List of user's selected indices
-
-        Returns:
-            {
-                "score": 4,
-                "max_score": 5,
-                "percentage": 80.0,
-                "detailed_results": [
-                    {"question_id": 1, "correct": True, "user_answer": 0, "correct_answer": 0},
-                    ...
-                ]
-            }
-        """
+        """Calculate score from submitted answers."""
         if len(answers) != len(questions):
             raise ValueError("Number of answers must match number of questions")
 
@@ -336,57 +331,9 @@ class ChallengeService:
 
     @classmethod
     def strip_answers(cls, questions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """
-        Remove correct_index from questions for public API response.
-        This prevents cheating by inspecting the API response.
-        """
+        """Remove correct_index from questions for public API response."""
         return [
             {k: v for k, v in q.items() if k != 'correct_index'}
             for q in questions
         ]
-
-    @classmethod
-    def _generate_mimic_questions(
-        cls,
-        language: str,
-        difficulty: str,
-        count: int
-    ) -> List[Dict[str, Any]]:
-        """Generate mimic the sentence questions."""
-        questions = []
-        
-        # Get grammar sentences for this language
-        query = Q(language=language)
-        
-        # Adjust difficulty
-        if difficulty == ChallengeDifficulty.EASY:
-            query &= Q(level__lte=2)
-        elif difficulty == ChallengeDifficulty.MEDIUM:
-            query &= Q(level__lte=4)
-        
-        # Hard includes all levels
-        
-        sentences = list(Grammar.objects.filter(query))
-        
-        if not sentences:
-            return []
-        
-        # Shuffle and select sentences for questions
-        random.shuffle(sentences)
-        selected_sentences = sentences[:count]
-        
-        for idx, sentence in enumerate(selected_sentences):
-            question = {
-                "id": idx + 1,
-                "type": "mimic",
-                "question": "Repeat the following sentence:",
-                "prompt": sentence.sentence,
-                "prompt_native": sentence.sentence,
-                "translation": sentence.translation,
-                "audio_url": sentence.audio_url,
-                "correct_index": 0,  # For mimic, we might not have choices
-                "choices": [],
-            }
-            questions.append(question)
-            
-        return questions
+    

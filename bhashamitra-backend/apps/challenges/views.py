@@ -218,14 +218,9 @@ def challenge_leaderboard(request, code):
 # =============================================================================
 # AUTHENTICATED ENDPOINTS - Creator only
 # =============================================================================
-
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def challenges_list_create(request):
-    """
-    GET: List user's created challenges
-    POST: Create a new challenge
-    """
     user = request.user
 
     if request.method == 'GET':
@@ -237,17 +232,22 @@ def challenges_list_create(request):
         })
 
     elif request.method == 'POST':
+        # --- DIAGNOSTIC LOGGING ---
+        logger.info(f"Challenge POST attempt by user {user.email}")
+        logger.info(f"Payload received: {request.data}")
+
         serializer = ChallengeCreateSerializer(data=request.data)
         if not serializer.is_valid():
+            logger.warning(f"Validation Errors: {serializer.errors}")
             return Response(
-                {"success": False, "errors": serializer.errors},
+                {"success": False, "message": "Invalid data provided", "errors": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Normalize Language to Uppercase to match DB
         language = serializer.validated_data['language'].upper()
-
-        # Check quota - use get_or_create to ensure no crashes for new users/family
+        category = serializer.validated_data['category']
+        
+        # Check quota
         quota, _ = UserChallengeQuota.objects.get_or_create(user=user)
         is_paid = getattr(user, 'is_premium_tier', False) or getattr(user, 'is_standard_tier', False) or user.is_staff
         can_create, message = quota.can_create_challenge(is_paid)
@@ -258,37 +258,32 @@ def challenges_list_create(request):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Generate questions from curriculum (Service handles GrammarTopic)
+        # Generate questions
         questions = ChallengeService.generate_questions(
             language=language,
-            category=serializer.validated_data['category'],
-            difficulty=serializer.validated_data['difficulty'],
-            count=serializer.validated_data['question_count']
+            category=category,
+            difficulty=serializer.validated_data.get('difficulty', 'MEDIUM'),
+            count=serializer.validated_data.get('question_count', 5)
         )
 
         if not questions:
+            logger.error(f"Generation failed: No content for {language} - {category}")
             return Response(
-                {"success": False, "error": f"Not enough content available for {language} in this category"},
+                {"success": False, "error": f"Not enough content available for {language} in {category}. Need at least 4 items."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Create challenge
         with transaction.atomic():
-            # Set expiry for free users (30 days)
             expires_at = None
             if not is_paid:
                 expires_at = timezone.now() + timedelta(days=30)
 
-            # Get child if specified
-            creator_child = None
+            # Fix child_id lookup
             child_id = serializer.validated_data.get('child_id')
+            creator_child = None
             if child_id:
                 from apps.children.models import Child
-                try:
-                    # Logic updated to filter by 'user' as per typical BhashaMitra structure
-                    creator_child = Child.objects.get(id=child_id, user=user)
-                except Child.DoesNotExist:
-                    pass
+                creator_child = Child.objects.filter(id=child_id, user=user).first()
 
             challenge = Challenge.objects.create(
                 creator=user,
@@ -296,64 +291,18 @@ def challenges_list_create(request):
                 title=serializer.validated_data['title'],
                 title_native=serializer.validated_data.get('title_native', ''),
                 language=language,
-                category=serializer.validated_data['category'],
-                difficulty=serializer.validated_data['difficulty'],
-                question_count=serializer.validated_data['question_count'],
-                time_limit_seconds=serializer.validated_data['time_limit_seconds'],
+                category=category,
+                difficulty=serializer.validated_data.get('difficulty', 'MEDIUM'),
+                question_count=len(questions),
+                time_limit_seconds=serializer.validated_data.get('time_limit_seconds', 60),
                 questions=questions,
                 expires_at=expires_at,
             )
-
-            # Record quota usage
             quota.record_challenge_created()
 
-        response_serializer = ChallengeSerializer(challenge)
         return Response({
             "success": True,
-            "data": response_serializer.data,
+            "data": ChallengeSerializer(challenge).data,
             "message": message
         }, status=status.HTTP_201_CREATED)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def challenge_detail(request, code):
-    """Get details of a specific challenge (creator only)."""
-    challenge = get_object_or_404(
-        Challenge,
-        code=code.upper(),
-        creator=request.user
-    )
-    serializer = ChallengeSerializer(challenge)
-    return Response({
-        "success": True,
-        "data": serializer.data
-    })
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def user_quota(request):
-    """Get user's challenge creation quota."""
-    quota, _ = UserChallengeQuota.objects.get_or_create(user=request.user)
-    quota.reset_if_new_day()
-
-    serializer = QuotaSerializer(quota, context={'user': request.user})
-    return Response({
-        "success": True,
-        "data": serializer.data
-    })
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def available_categories(request):
-    """Get available challenge categories for a language."""
-    # Force query param to uppercase
-    language = request.query_params.get('language', 'HINDI').upper()
-    categories = ChallengeService.get_available_categories(language)
-    serializer = CategorySerializer(categories, many=True)
-    return Response({
-        "success": True,
-        "data": serializer.data
-    })
+    

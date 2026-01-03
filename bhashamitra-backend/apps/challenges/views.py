@@ -218,9 +218,14 @@ def challenge_leaderboard(request, code):
 # =============================================================================
 # AUTHENTICATED ENDPOINTS - Creator only
 # =============================================================================
+
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def challenges_list_create(request):
+    """
+    GET: List user's created challenges
+    POST: Create a new challenge
+    """
     user = request.user
 
     if request.method == 'GET':
@@ -269,10 +274,11 @@ def challenges_list_create(request):
         if not questions:
             logger.error(f"Generation failed: No content for {language} - {category}")
             return Response(
-                {"success": False, "error": f"Not enough content available for {language} in {category}. Need at least 4 items."},
+                {"success": False, "error": f"Not enough content available for {language} in {category}."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Corrected Indentation for Atomic Transaction
         with transaction.atomic():
             expires_at = None
             if not is_paid:
@@ -305,4 +311,43 @@ def challenges_list_create(request):
             "data": ChallengeSerializer(challenge).data,
             "message": message
         }, status=status.HTTP_201_CREATED)
-    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def challenge_detail(request, code):
+    """Get details of a specific challenge (creator only)."""
+    challenge = get_object_or_404(
+        Challenge,
+        code=code.upper(),
+        creator=request.user
+    )
+    serializer = ChallengeSerializer(challenge)
+    return Response({
+        "success": True,
+        "data": serializer.data
+    })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_quota(request):
+    """Get user's challenge creation quota."""
+    quota, _ = UserChallengeQuota.objects.get_or_create(user=request.user)
+    quota.reset_if_new_day()
+
+    serializer = QuotaSerializer(quota, context={'user': request.user})
+    return Response({
+        "success": True,
+        "data": serializer.data
+    })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def available_categories(request):
+    """Get available challenge categories for a language."""
+    language = request.query_params.get('language', 'HINDI').upper()
+    categories = ChallengeService.get_available_categories(language)
+    serializer = CategorySerializer(categories, many=True)
+    return Response({
+        "success": True,
+        "data": serializer.data
+    })

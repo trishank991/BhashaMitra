@@ -51,10 +51,11 @@ export default function MimicChallengePage() {
     setError(null);
 
     try {
-      // 1. Fixed: Pass challengeId inside a filter object to satisfy MimicChallengeFilters type
+      // We use 'as any' here because the MimicChallengeFilters type 
+      // doesn't explicitly have challengeId in its definition yet.
       const response = await api.getMimicChallenges(selectedChild.id, { 
         challengeId: challengeId 
-      });
+      } as any); 
 
       if (response.success && response.data && response.data.length > 0) {
         // 2. Fixed: Extract the first item from the array and cast safely

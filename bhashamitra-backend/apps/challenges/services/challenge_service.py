@@ -27,9 +27,13 @@ class ChallengeService:
                     "item_count": letter_count
                 })
 
-        # 2. Vocabulary Category
-        vocab_count = VocabularyTheme.objects.filter(language=lang_upper, is_active=True).count()
-        if vocab_count >= cls.CHOICES_COUNT:
+        # 2. Vocabulary Category - Logic fixed to avoid word_count FieldError
+        vocab_themes = VocabularyTheme.objects.filter(language=lang_upper, is_active=True) \
+            .annotate(num_words=Count('words')) \
+            .filter(num_words__gte=cls.CHOICES_COUNT)
+        
+        vocab_count = vocab_themes.count()
+        if vocab_count > 0:
             available.append({
                 "value": "VOCABULARY", 
                 "label": "Vocabulary", 
@@ -95,5 +99,6 @@ class ChallengeService:
         if not questions:
             return []
         return [{k: v for k, v in q.items() if k != 'correct_index'} for q in questions]
+    
     
     

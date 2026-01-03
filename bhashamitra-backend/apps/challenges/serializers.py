@@ -12,7 +12,7 @@ from .models import Challenge, ChallengeAttempt, UserChallengeQuota, ChallengeCa
 
 
 class ChallengeCreateSerializer(serializers.Serializer):
-    """Serializer for creating a new challenge."""
+    """Serializer for creating a new challenge with automatic case normalization."""
 
     title = serializers.CharField(max_length=100)
     title_native = serializers.CharField(max_length=100, required=False, allow_blank=True)
@@ -25,17 +25,28 @@ class ChallengeCreateSerializer(serializers.Serializer):
         ('MALAYALAM', 'Malayalam'),
         ('FIJI_HINDI', 'Fiji Hindi'),
     ])
-    category = serializers.ChoiceField(
-        choices=ChallengeCategory.choices,
-        default=ChallengeCategory.VOCABULARY
-    )
-    difficulty = serializers.ChoiceField(
-        choices=ChallengeDifficulty.choices,
-        default=ChallengeDifficulty.EASY
-    )
+    category = serializers.CharField()  # Changed to CharField to allow normalization
+    difficulty = serializers.CharField() # Changed to CharField to allow normalization
     question_count = serializers.IntegerField(min_value=3, max_value=10, default=5)
     time_limit_seconds = serializers.IntegerField(min_value=10, max_value=120, default=30)
     child_id = serializers.UUIDField(required=False, allow_null=True)
+
+    def validate_category(self, value):
+        """Force VOCABULARY/ALPHABET to lowercase 'vocabulary'/'alphabet'."""
+        normalized = value.lower()
+        # Validate against allowed model choices
+        valid_choices = [choice[0] for choice in ChallengeCategory.choices]
+        if normalized not in valid_choices:
+            raise serializers.ValidationError(f"'{value}' is not a valid category. Choices are: {valid_choices}")
+        return normalized
+
+    def validate_difficulty(self, value):
+        """Force easy/EASY to lowercase 'easy'."""
+        normalized = value.lower()
+        valid_choices = [choice[0] for choice in ChallengeDifficulty.choices]
+        if normalized not in valid_choices:
+            raise serializers.ValidationError(f"'{value}' is not a valid difficulty. Choices are: {valid_choices}")
+        return normalized
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
@@ -68,10 +79,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
 
 class ChallengeListSerializer(serializers.ModelSerializer):
-    """
-    Challenge serializer for the creator's list view.
-    Includes comprehensive stats but strips answers from questions for security.
-    """
+    """Serializer for the creator's list view (strips answers)."""
 
     share_url = serializers.ReadOnlyField()
     language_name = serializers.ReadOnlyField()
@@ -96,16 +104,12 @@ class ChallengeListSerializer(serializers.ModelSerializer):
         return obj.creator.email.split('@')[0]
 
     def get_questions(self, obj):
-        """Strip correct_index from questions to prevent cheating."""
         from .services import ChallengeService
         return ChallengeService.strip_answers(obj.questions)
 
 
 class PublicChallengeSerializer(serializers.ModelSerializer):
-    """
-    Public challenge serializer - NO CORRECT ANSWERS!
-    Used when participants access a challenge to play.
-    """
+    """Public challenge serializer - NO CORRECT ANSWERS."""
 
     language_name = serializers.ReadOnlyField()
     is_expired = serializers.ReadOnlyField()
@@ -126,27 +130,21 @@ class PublicChallengeSerializer(serializers.ModelSerializer):
         return obj.creator.email.split('@')[0]
 
     def get_questions(self, obj):
-        """Strip correct_index from questions to prevent cheating."""
         from .services import ChallengeService
         return ChallengeService.strip_answers(obj.questions)
 
 
 class ChallengeAttemptCreateSerializer(serializers.Serializer):
-    """Serializer for starting a challenge attempt."""
-
     participant_name = serializers.CharField(max_length=50)
     participant_location = serializers.CharField(max_length=50, required=False, allow_blank=True)
 
-# Change this:
-# child=serializers.IntegerField(min_value=0, max_value=3)
 
-# To THIS (removing min_value=0):
 class ChallengeSubmitSerializer(serializers.Serializer):
     attempt_id = serializers.UUIDField(required=False)
     attemptId = serializers.UUIDField(required=False) 
     
     answers = serializers.ListField(
-        child=serializers.IntegerField(), # Removed the strict 0-3 limit
+        child=serializers.IntegerField(),
         min_length=1
     )
     
@@ -154,6 +152,7 @@ class ChallengeSubmitSerializer(serializers.Serializer):
     timeTaken = serializers.IntegerField(required=False)
 
     def validate(self, data):
+        # Handle camelCase from frontend
         if 'attemptId' in data:
             data['attempt_id'] = data.pop('attemptId')
         if 'timeTaken' in data:
@@ -162,8 +161,6 @@ class ChallengeSubmitSerializer(serializers.Serializer):
 
 
 class ChallengeAttemptSerializer(serializers.ModelSerializer):
-    """Full attempt serializer with detailed results."""
-
     rank = serializers.ReadOnlyField()
     challenge_title = serializers.SerializerMethodField()
 
@@ -185,8 +182,6 @@ class ChallengeAttemptSerializer(serializers.ModelSerializer):
 
 
 class LeaderboardEntrySerializer(serializers.ModelSerializer):
-    """Serializer for leaderboard entries."""
-
     rank = serializers.ReadOnlyField()
 
     class Meta:
@@ -198,8 +193,6 @@ class LeaderboardEntrySerializer(serializers.ModelSerializer):
 
 
 class QuotaSerializer(serializers.ModelSerializer):
-    """Serializer for user's challenge quota."""
-
     can_create = serializers.SerializerMethodField()
     message = serializers.SerializerMethodField()
 
@@ -212,20 +205,24 @@ class QuotaSerializer(serializers.ModelSerializer):
 
     def get_can_create(self, obj):
         user = self.context.get('user')
-        is_paid = user.is_premium_tier or user.is_standard_tier if user else False
+        # Safer attribute access for Custom User models
+        is_paid = False
+        if user:
+            is_paid = getattr(user, 'is_premium_tier', False) or getattr(user, 'is_standard_tier', False)
         can_create, _ = obj.can_create_challenge(is_paid)
         return can_create
 
     def get_message(self, obj):
         user = self.context.get('user')
-        is_paid = user.is_premium_tier or user.is_standard_tier if user else False
+        is_paid = False
+        if user:
+            is_paid = getattr(user, 'is_premium_tier', False) or getattr(user, 'is_standard_tier', False)
         _, message = obj.can_create_challenge(is_paid)
         return message
 
 
 class CategorySerializer(serializers.Serializer):
-    """Serializer for available challenge categories."""
-
     value = serializers.CharField()
     label = serializers.CharField()
     item_count = serializers.IntegerField()
+    

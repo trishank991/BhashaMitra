@@ -1,29 +1,29 @@
 """
 Challenge API Views.
 
-Public endpoints (AllowAny - for viral sharing):
+Public endpoints (AllowAny):
 - GET  /api/v1/challenges/play/<code>/     - Get challenge to play
-- POST /api/v1/challenges/play/<code>/     - Start attempt (get attempt_id)
-- POST /api/v1/challenges/submit/          - Submit answers
+- POST /api/v1/challenges/play/<code>/     - Start attempt
+- POST /api/v1/challenges/submit/           - Submit answers
 - GET  /api/v1/challenges/leaderboard/<code>/ - Get leaderboard
 
-Authenticated endpoints:
+Authenticated endpoints (Creator only):
 - GET  /api/v1/challenges/                 - List my challenges
 - POST /api/v1/challenges/                 - Create challenge
-- GET  /api/v1/challenges/<code>/          - Get my challenge details
-- GET  /api/v1/challenges/quota/           - Get my quota
-- GET  /api/v1/challenges/categories/      - Get available categories
+- GET  /api/v1/challenges/<code>/          - Get detail
+- GET  /api/v1/challenges/quota/           - Get quota
+- GET  /api/v1/challenges/categories/      - Get categories
 """
 
+import logging
+from datetime import timedelta
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
-from django.db import transaction
-from datetime import timedelta
-import logging # Added for better debugging
 
 from .models import Challenge, ChallengeAttempt, UserChallengeQuota
 from .serializers import (
@@ -34,7 +34,7 @@ from .serializers import (
 )
 from .services import ChallengeService
 
-logger = logging.getLogger(__name__) # Setup logging
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # PUBLIC ENDPOINTS - No authentication required
@@ -43,13 +43,9 @@ logger = logging.getLogger(__name__) # Setup logging
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def play_challenge(request, code):
-    """
-    GET: Get challenge info for playing (questions without answers)
-    POST: Start a new attempt (returns attempt_id)
-    """
+    """GET info or POST to start a new attempt."""
     challenge = get_object_or_404(Challenge, code=code.upper(), is_active=True)
 
-    # Check if expired
     if challenge.is_expired:
         return Response(
             {"error": "This challenge has expired", "expired": True},
@@ -58,30 +54,21 @@ def play_challenge(request, code):
 
     if request.method == 'GET':
         serializer = PublicChallengeSerializer(challenge)
-        return Response({
-            "success": True,
-            "data": serializer.data
-        })
+        return Response({"success": True, "data": serializer.data})
 
     elif request.method == 'POST':
         serializer = ChallengeAttemptCreateSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response(
-                {"success": False, "errors": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"success": False, "errors": serializer.errors}, status=400)
 
-        # Create attempt
         attempt = ChallengeAttempt.objects.create(
             challenge=challenge,
             participant_name=serializer.validated_data['participant_name'],
             participant_location=serializer.validated_data.get('participant_location', ''),
             max_score=challenge.question_count,
-            # Link to authenticated user if logged in
             participant_user=request.user if request.user.is_authenticated else None,
         )
 
-        # Increment attempt count
         challenge.total_attempts += 1
         challenge.save(update_fields=['total_attempts'])
 
@@ -92,128 +79,73 @@ def play_challenge(request, code):
                 "challenge": PublicChallengeSerializer(challenge).data
             }
         }, status=status.HTTP_201_CREATED)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def submit_challenge(request):
-    """Submit answers and get results with improved error handling."""
-    # 1. Validate incoming data (Supports both snake_case and camelCase)
+    """Submit answers and calculate results."""
     serializer = ChallengeSubmitSerializer(data=request.data)
     if not serializer.is_valid():
-        logger.warning(f"Submission validation failed: {serializer.errors}")
-        return Response(
-            {"success": False, "errors": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"success": False, "errors": serializer.errors}, status=400)
 
-    # Use .get() to pull data from our flexible serializer
     attempt_id = serializer.validated_data.get('attempt_id')
     answers = serializer.validated_data.get('answers')
     time_taken = serializer.validated_data.get('time_taken_seconds', 0)
 
-    # 2. Fetch the attempt
     try:
         attempt = ChallengeAttempt.objects.select_related('challenge').get(id=attempt_id)
     except (ChallengeAttempt.DoesNotExist, ValueError):
-        return Response(
-            {"success": False, "error": "Attempt not found. Please refresh and try again."},
-            status=status.HTTP_404_NOT_FOUND
-        )
+        return Response({"success": False, "error": "Attempt not found."}, status=404)
 
-    # 3. Security: Prevent double submission
     if attempt.is_completed:
-        return Response(
-            {"success": False, "error": "This attempt was already submitted"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"success": False, "error": "Already submitted"}, status=400)
 
     challenge = attempt.challenge
+    result = ChallengeService.calculate_score(challenge.questions, answers)
 
-    # 4. Calculate Score using Service
-    try:
-        result = ChallengeService.calculate_score(challenge.questions, answers)
-    except Exception as e:
-        logger.error(f"Score calculation error: {str(e)}")
-        return Response(
-            {"success": False, "error": "Error calculating results"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    with transaction.atomic():
+        attempt.score = result['score']
+        attempt.max_score = result.get('max_score', challenge.question_count)
+        attempt.percentage = result['percentage']
+        attempt.time_taken_seconds = time_taken
+        attempt.answers = result['detailed_results']
+        attempt.is_completed = True
+        attempt.completed_at = timezone.now()
+        attempt.save()
 
-    # 5. Atomic Update to Database
-    try:
-        with transaction.atomic():
-            attempt.score = result['score']
-            attempt.max_score = result.get('max_score', challenge.question_count)
-            attempt.percentage = result['percentage']
-            attempt.time_taken_seconds = time_taken
-            attempt.answers = result['detailed_results']
-            attempt.is_completed = True
-            attempt.completed_at = timezone.now()
-            attempt.save()
+        challenge.total_completions += 1
+        completed_attempts = ChallengeAttempt.objects.filter(challenge=challenge, is_completed=True)
+        total_percentage = sum(a.percentage for a in completed_attempts)
+        challenge.average_score = total_percentage / challenge.total_completions
+        challenge.save(update_fields=['total_completions', 'average_score'])
 
-            # Update challenge stats
-            challenge.total_completions += 1
-            
-            # Recalculate average score safely
-            completed_attempts = ChallengeAttempt.objects.filter(
-                challenge=challenge,
-                is_completed=True
-            )
-            total_percentage = sum(a.percentage for a in completed_attempts)
-            
-            if challenge.total_completions > 0:
-                challenge.average_score = total_percentage / challenge.total_completions
-            
-            challenge.save(update_fields=['total_completions', 'average_score'])
-
-    except Exception as e:
-        logger.error(f"Database update failed: {str(e)}")
-        return Response(
-            {"success": False, "error": "Internal server error saving results"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-    # 6. Return Clean Results
     return Response({
         "success": True,
         "data": {
             "score": attempt.score,
             "max_score": attempt.max_score,
             "percentage": attempt.percentage,
-            "time_taken_seconds": attempt.time_taken_seconds,
             "rank": attempt.rank,
-            "total_participants": challenge.total_completions,
             "detailed_results": attempt.answers,
-            "challenge_title": challenge.title,
-            "share_url": challenge.share_url,
+            "share_url": challenge.share_url
         }
     })
-
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def challenge_leaderboard(request, code):
-    """Get leaderboard for a challenge."""
     challenge = get_object_or_404(Challenge, code=code.upper())
-
-    # Get top 20 completed attempts
     attempts = ChallengeAttempt.objects.filter(
-        challenge=challenge,
-        is_completed=True
+        challenge=challenge, is_completed=True
     ).order_by('-percentage', 'time_taken_seconds')[:20]
-
-    serializer = LeaderboardEntrySerializer(attempts, many=True)
-
+    
     return Response({
         "success": True,
         "data": {
             "challenge_title": challenge.title,
-            "challenge_code": challenge.code,
-            "total_participants": challenge.total_completions,
-            "average_score": round(challenge.average_score, 1),
-            "leaderboard": serializer.data,
+            "leaderboard": LeaderboardEntrySerializer(attempts, many=True).data
         }
     })
-
 
 # =============================================================================
 # AUTHENTICATED ENDPOINTS - Creator only
@@ -222,69 +154,42 @@ def challenge_leaderboard(request, code):
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def challenges_list_create(request):
-    """
-    GET: List user's created challenges
-    POST: Create a new challenge
-    """
     user = request.user
 
     if request.method == 'GET':
         challenges = Challenge.objects.filter(creator=user).order_by('-created_at')
-        serializer = ChallengeSerializer(challenges, many=True)
-        return Response({
-            "success": True,
-            "data": serializer.data
-        })
+        return Response({"success": True, "data": ChallengeSerializer(challenges, many=True).data})
 
     elif request.method == 'POST':
-        # --- DIAGNOSTIC LOGGING ---
-        logger.info(f"Challenge POST attempt by user {user.email}")
         logger.info(f"Payload received: {request.data}")
-
         serializer = ChallengeCreateSerializer(data=request.data)
         if not serializer.is_valid():
-            logger.warning(f"Validation Errors: {serializer.errors}")
-            return Response(
-                {"success": False, "message": "Invalid data provided", "errors": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"success": False, "errors": serializer.errors}, status=400)
 
         language = serializer.validated_data['language'].upper()
         category = serializer.validated_data['category']
         
-        # Check quota
         quota, _ = UserChallengeQuota.objects.get_or_create(user=user)
         is_paid = getattr(user, 'is_premium_tier', False) or getattr(user, 'is_standard_tier', False) or user.is_staff
         can_create, message = quota.can_create_challenge(is_paid)
 
         if not can_create:
-            return Response(
-                {"success": False, "error": message, "quota_exceeded": True},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            return Response({"success": False, "error": message}, status=403)
 
-        # Generate questions
-        questions = ChallengeService.generate_questions(
+        # FIXED METHOD NAME
+        questions = ChallengeService.get_random_questions(
             language=language,
             category=category,
-            difficulty=serializer.validated_data.get('difficulty', 'MEDIUM'),
+            difficulty=serializer.validated_data.get('difficulty', 'easy'),
             count=serializer.validated_data.get('question_count', 5)
         )
 
         if not questions:
-            logger.error(f"Generation failed: No content for {language} - {category}")
-            return Response(
-                {"success": False, "error": f"Not enough content available for {language} in {category}."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"success": False, "error": f"No content for {language} {category}."}, status=400)
 
-        # Corrected Indentation for Atomic Transaction
         with transaction.atomic():
-            expires_at = None
-            if not is_paid:
-                expires_at = timezone.now() + timedelta(days=30)
-
-            # Fix child_id lookup
+            expires_at = None if is_paid else timezone.now() + timedelta(days=30)
+            
             child_id = serializer.validated_data.get('child_id')
             creator_child = None
             if child_id:
@@ -298,56 +203,32 @@ def challenges_list_create(request):
                 title_native=serializer.validated_data.get('title_native', ''),
                 language=language,
                 category=category,
-                difficulty=serializer.validated_data.get('difficulty', 'MEDIUM'),
+                difficulty=serializer.validated_data.get('difficulty', 'easy'),
                 question_count=len(questions),
-                time_limit_seconds=serializer.validated_data.get('time_limit_seconds', 60),
+                time_limit_seconds=serializer.validated_data.get('time_limit_seconds', 30),
                 questions=questions,
                 expires_at=expires_at,
             )
             quota.record_challenge_created()
 
-        return Response({
-            "success": True,
-            "data": ChallengeSerializer(challenge).data,
-            "message": message
-        }, status=status.HTTP_201_CREATED)
+        return Response({"success": True, "data": ChallengeSerializer(challenge).data}, status=201)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def challenge_detail(request, code):
-    """Get details of a specific challenge (creator only)."""
-    challenge = get_object_or_404(
-        Challenge,
-        code=code.upper(),
-        creator=request.user
-    )
-    serializer = ChallengeSerializer(challenge)
-    return Response({
-        "success": True,
-        "data": serializer.data
-    })
+    challenge = get_object_or_404(Challenge, code=code.upper(), creator=request.user)
+    return Response({"success": True, "data": ChallengeSerializer(challenge).data})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_quota(request):
-    """Get user's challenge creation quota."""
     quota, _ = UserChallengeQuota.objects.get_or_create(user=request.user)
     quota.reset_if_new_day()
-
-    serializer = QuotaSerializer(quota, context={'user': request.user})
-    return Response({
-        "success": True,
-        "data": serializer.data
-    })
+    return Response({"success": True, "data": QuotaSerializer(quota, context={'user': request.user}).data})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def available_categories(request):
-    """Get available challenge categories for a language."""
     language = request.query_params.get('language', 'HINDI').upper()
     categories = ChallengeService.get_available_categories(language)
-    serializer = CategorySerializer(categories, many=True)
-    return Response({
-        "success": True,
-        "data": serializer.data
-    })
+    return Response({"success": True, "data": CategorySerializer(categories, many=True).data})

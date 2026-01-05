@@ -2,28 +2,46 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import api, { ChallengeQuotaResponse } from '@/lib/api';
+import api from '@/lib/api';
 import CreateChallengeForm from '@/components/challenges/CreateChallengeForm';
 
 export default function CreateChallengePage() {
   const router = useRouter();
-  const [quota, setQuota] = useState<ChallengeQuotaResponse | null>(null);
+  const [quota, setQuota] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchQuota() {
-      const res = await api.getChallengeQuota();
-      if (res.success && res.data) setQuota(res.data);
-    }
+    const fetchQuota = async () => {
+      try {
+        const res = await api.getChallengeQuota() as any;
+        if (res?.success && res?.data) {
+          // Drill into nested data if it exists
+          setQuota(res.data.data || res.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch quota", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchQuota();
   }, []);
 
   return (
     <div className="max-w-2xl mx-auto p-8">
       <h1 className="text-3xl font-bold mb-6">New Challenge</h1>
-      {quota && <p className="mb-4 text-sm text-blue-600">Created {quota.challenges_created_today} of {quota.daily_limit} today.</p>}
+      
+      {quota && (
+        <p className="mb-4 text-sm text-blue-600">
+          Created {quota.challenges_created_today ?? 0} of {quota.daily_limit ?? 2} today.
+        </p>
+      )}
+
       <CreateChallengeForm 
         onSuccess={(code: string) => router.push(`/challenges/manage/${code}`)} 
-        onCancel={() => router.back()} 
+        onCancel={() => router.back()}
+        canCreate={quota?.can_create !== false}
+        isQuotaLoading={isLoading}
       />
     </div>
   );

@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import api from '@/lib/api';
-import type { CreateChallengeRequest, ChallengeCategoryOption } from '@/lib/api';
-import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface Props {
   onSuccess: (code: string) => void;
@@ -13,126 +11,153 @@ interface Props {
 }
 
 export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, isQuotaLoading }: Props) {
+  const [categories, setCategories] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [categories, setCategories] = useState<ChallengeCategoryOption[]>([]);
-  const [form, setForm] = useState<CreateChallengeRequest>({
+  
+  // Using <any> here to allow 'description' which is missing in the base type
+  const [formData, setFormData] = useState<any>({
     title: '',
-    language: 'HINDI',
+    description: '',
     category: '',
-    difficulty: 'easy',
-    question_count: 5,
-    time_limit_seconds: 30,
+    difficulty: 'medium',
+    time_limit_seconds: 60
   });
 
   useEffect(() => {
-    async function loadCategories() {
-      if (!form.language) return;
+    const fetchCategories = async () => {
       try {
-        const res = await api.getChallengeCategories(form.language);
-        if (res.success && res.data?.data) {
-          setCategories(res.data.data);
-          // Set default category if not already set
-          if (!form.category && res.data.data.length > 0) {
-            setForm(f => ({ ...f, category: res.data.data[0].value }));
-          }
-        } else {
-          setCategories([]);
+        const res = await api.getChallengeCategories() as any;
+        if (res?.success && res?.data) {
+          // Normalizes data structure for safety
+          setCategories(res.data.data || res.data || []);
         }
-      } catch (error) {
-        console.error("Failed to load categories", error);
-        setCategories([]);
+      } catch (err) {
+        console.error("Failed to fetch categories", err);
       }
-    }
-    loadCategories();
-  }, [form.language]);
+    };
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canCreate || isQuotaLoading) return;
+    if (!canCreate || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      const res = await api.createChallenge(form);
-      if (res.success && res.data?.data?.code) {
-        onSuccess(res.data.data.code);
-      } else {
-        alert(res.error || "Failed to create the challenge. Please try again.");
+      const res = await api.createChallenge(formData) as any;
+      if (res?.success && res?.data?.code) {
+        onSuccess(res.data.code);
       }
-    } catch (error) {
-      alert("An unexpected error occurred. Please try again.");
+    } catch (err) {
+      console.error("Submission failed", err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const isSubmitDisabled = isSubmitting || isQuotaLoading || !canCreate;
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {!isQuotaLoading && !canCreate && (
-        <div className="p-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 flex items-center" role="alert">
-          <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0" />
-          <span className="font-medium">Daily limit reached.</span> You can create more challenges tomorrow or upgrade your plan for unlimited access.
-        </div>
-      )}
+    <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow">
+      {/* Title Field */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Challenge Title</label>
+        <input
+          type="text"
+          required
+          placeholder="e.g., Daily Hindi Vocabulary"
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          disabled={!canCreate || isSubmitting}
+        />
+      </div>
 
-      <fieldset disabled={isSubmitDisabled} className="space-y-4">
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Challenge Title
-          </label>
-          <input
-            id="title"
-            className="w-full p-2 border rounded-md mt-1 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="e.g., Fun Family Words Quiz"
-            value={form.title}
-            onChange={e => setForm({ ...form, title: e.target.value })}
-            required
-          />
-        </div>
+      {/* Description Field */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Description</label>
+        <textarea
+          rows={3}
+          placeholder="Describe what this challenge is about..."
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          disabled={!canCreate || isSubmitting}
+        />
+      </div>
 
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-            Category
-          </label>
-          <select
-            id="category"
-            className="w-full p-2 border rounded-md mt-1 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            value={form.category}
-            onChange={e => setForm({ ...form, category: e.target.value })}
-            required
-          >
-            <option value="" disabled>
-              Select a category
+      {/* Category Selection */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Category</label>
+        <select
+          required
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          value={formData.category}
+          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+          disabled={!canCreate || isSubmitting}
+        >
+          <option value="">Select a category</option>
+          {categories.map((cat: any) => (
+            <option key={cat.id || cat.slug || cat.value} value={cat.id || cat.slug || cat.value}>
+              {cat.name || cat.display_name || cat.label || 'Unnamed Category'}
             </option>
-            {categories.map(c => (
-              <option key={c.value} value={c.value}>
-                {c.label} ({c.item_count} questions available)
-              </option>
-            ))}
+          ))}
+        </select>
+      </div>
+
+      {/* Difficulty and Time Limit Row */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Difficulty</label>
+          <select
+            className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            value={formData.difficulty}
+            onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+            disabled={!canCreate || isSubmitting}
+          >
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
           </select>
         </div>
-      </fieldset>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Time Limit (Secs)</label>
+          <input
+            type="number"
+            min="10"
+            max="300"
+            className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            value={formData.time_limit_seconds}
+            onChange={(e) => setFormData({ ...formData, time_limit_seconds: parseInt(e.target.value) })}
+            disabled={!canCreate || isSubmitting}
+          />
+        </div>
+      </div>
 
-      <div className="flex justify-between items-center pt-4">
-        <button type="button" onClick={onCancel} className="text-sm font-medium text-gray-600 hover:text-gray-900 disabled:opacity-50" disabled={isSubmitting}>
-          Cancel
-        </button>
+      {/* Action Buttons */}
+      <div className="flex gap-4 pt-4 border-t">
         <button
           type="submit"
-          disabled={isSubmitDisabled}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+          disabled={!canCreate || isSubmitting || isQuotaLoading}
+          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 transition-colors"
         >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Creating...
-            </>
-          ) : (
-            'Create Challenge'
-          )}
+          {isSubmitting ? 'Creating...' : 'Create Challenge'}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-md font-medium hover:bg-gray-200 transition-colors"
+        >
+          Cancel
         </button>
       </div>
+
+      {/* Quota Restriction Message */}
+      {!canCreate && !isQuotaLoading && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600 text-sm text-center font-medium">
+            Daily creation limit reached. Please upgrade your plan or try again tomorrow.
+          </p>
+        </div>
+      )}
     </form>
   );
 }

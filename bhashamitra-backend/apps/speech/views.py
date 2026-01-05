@@ -446,18 +446,25 @@ from apps.children.models import Child
 
 class MimicChallengeListView(APIView):
     """
-    GET /api/v1/children/{child_id}/mimic/challenges/
+    GET /api/v1/speech/mimic/challenges/
 
     List pronunciation challenges for a child.
 
     Query Parameters:
+    - child_id: UUID of the child (required)
     - category: GREETING, FAMILY, NUMBERS, COLORS, FESTIVAL, etc.
     - difficulty: 1, 2, or 3
     - limit: max results (default 20)
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, child_id):
+    def get(self, request):
+        child_id = request.query_params.get('child_id')
+        if not child_id:
+            return Response(
+                {"detail": "child_id query parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         child = get_object_or_404(Child, id=child_id, user=request.user)
 
         # Build queryset
@@ -690,13 +697,22 @@ class MimicAttemptSubmitView(APIView):
 
 class MimicProgressView(APIView):
     """
-    GET /api/v1/children/{child_id}/mimic/progress/
+    GET /api/v1/speech/mimic/progress/
 
     Get child's overall mimic progress summary.
+
+    Query Parameters:
+    - child_id: UUID of the child (required)
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, child_id):
+    def get(self, request):
+        child_id = request.query_params.get('child_id')
+        if not child_id:
+            return Response(
+                {"detail": "child_id query parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         child = get_object_or_404(Child, id=child_id, user=request.user)
 
         # Get all progress records

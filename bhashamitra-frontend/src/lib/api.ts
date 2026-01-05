@@ -194,12 +194,23 @@ class ApiClient {
     }
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {},
-    skipAuthRefresh: boolean = false
-  ): Promise<ApiResponse<T>> {
-    const url = `${this.baseUrl}${endpoint}`;
+private async request<T>(
+  endpoint: string,
+  options: RequestInit = {},
+  skipAuthRefresh: boolean = false
+): Promise<ApiResponse<T>> {
+  
+  // 1. Remove leading slash if it exists
+  let cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  
+  // 2. ONLY add api/v1 if it isn't already there
+  if (!cleanEndpoint.startsWith('api/v1/')) {
+    cleanEndpoint = `api/v1/${cleanEndpoint}`;
+  }
+
+  const url = `${this.baseUrl.replace(/\/$/, '')}/${cleanEndpoint}`;
+
+  // ... rest of your code (headers, etc.)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -208,6 +219,8 @@ class ApiClient {
     if (this.accessToken) {
       headers['Authorization'] = `Bearer ${this.accessToken}`;
     }
+    
+    // ... rest of your code (headers, fetch, etc.)
 
     try {
       const response = await fetch(url, {
@@ -927,7 +940,7 @@ class ApiClient {
    */
   async getAvailableCategories(language: string): Promise<ApiResponse<any[]>> {
     // Note: ensure this URL matches your backend urls.py path
-    return this.request<any[]>(`/challenges/categories/?language=${language}`);
+    return this.request<any[]>(`/api/v1/challenges/categories/?language=${language}`);
   }
 
   /**
@@ -945,9 +958,9 @@ class ApiClient {
     if (childId) params.append('child_id', childId);
 
     const queryString = params.toString();
-    const response = await this.request<any>(
-      `/speech/mimic/challenges/${queryString ? `?${queryString}` : ''}`
-    );
+   const response = await this.request<any>(
+  `/api/v1/speech/mimic/challenges/${queryString ? `?${queryString}` : ''}`
+);
 
     if (response.success && response.data) {
       const data = response.data.results || response.data;
@@ -2228,7 +2241,6 @@ export interface ChallengeResultResponse {
   challenge_title: string;
   share_url: string;
 }
-
 export interface LeaderboardEntry {
   id: string;
   participant_name: string;
@@ -2263,6 +2275,7 @@ export interface ChallengeCategoryOption {
   item_count: number;
 }
 
+// Updated to match YOUR logic in the form components
 export interface CreateChallengeRequest {
   title: string;
   title_native?: string;
@@ -2272,7 +2285,10 @@ export interface CreateChallengeRequest {
   question_count: number;
   time_limit_seconds: number;
   child_id?: string;
+  description?: string; // Added to match your logic
+  daily_limit?: number; // Added to match your logic
 }
 
 export const api = new ApiClient(API_BASE_URL);
 export default api;
+

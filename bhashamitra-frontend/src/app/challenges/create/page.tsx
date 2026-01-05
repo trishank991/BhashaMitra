@@ -11,8 +11,10 @@ export default function CreateChallengePage() {
 
   useEffect(() => {
     async function fetchQuota() {
-      const res = await api.getChallengeQuota();
-      if (res.success && res.data) setQuota(res.data);
+      const res = await api.getChallengeQuota() as any; 
+if (res.success && res.data) {
+  // We force cast the data to the expected type
+  setQuota(res.data as ChallengeQuotaResponse);
     }
     fetchQuota();
   }, []);

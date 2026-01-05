@@ -1,5 +1,5 @@
 """Speech app URL configuration."""
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'speech'
@@ -31,4 +31,7 @@ urlpatterns = [
 
     # Audio upload for mimic recordings
     path('upload-audio/', views.AudioUploadView.as_view(), name='upload-audio'),
+
+    # Mimic Challenge Endpoints
+    path('mimic/', include('apps.speech.mimic_urls')),
 ]

@@ -917,7 +917,7 @@ class ApiClient {
   }
 
   
- // ========================================
+  // ========================================
   // PEPPI CHALLENGE & MIMIC ENDPOINTS
   // ========================================
 
@@ -932,6 +932,8 @@ class ApiClient {
 
   /**
    * Get list of mimic challenges with child's progress.
+   * NOTE: childId is passed for compatibility with calling components,
+   * but the backend now infers the child from the authenticated user.
    */
   async getMimicChallenges(
     childId: string,
@@ -940,40 +942,42 @@ class ApiClient {
     const params = new URLSearchParams();
     if (filters?.category) params.append('category', filters.category);
     if (filters?.difficulty) params.append('difficulty', filters.difficulty.toString());
-    
+    if (childId) params.append('child_id', childId);
+
     const queryString = params.toString();
-    // We update this to handle both formats (wrapped in 'challenges' or a direct list)
     const response = await this.request<any>(
-      `/children/${childId}/mimic/challenges/${queryString ? `?${queryString}` : ''}`
+      `/speech/mimic/challenges/${queryString ? `?${queryString}` : ''}`
     );
 
     if (response.success && response.data) {
-      // Logic to handle if backend returns { challenges: [...] } or just [...]
-      const data = response.data.challenges || response.data.results || response.data;
+      const data = response.data.results || response.data;
       return {
         success: true,
         data: Array.isArray(data) ? data : [],
       };
     }
     return { success: false, error: response.error, data: [] };
-  }//
+  }
 
   /**
-   * Submit an attempt for a Mimic challenge
+   * Submit an attempt for a Mimic challenge.
+   * NOTE: childId is passed for compatibility, but not used in the URL.
    */
   async submitMimicAttempt(
     childId: string,
     challengeId: string,
     data: MimicAttemptSubmitRequest
   ): Promise<ApiResponse<PeppiMimicAttemptResult>> {
+    // The childId is included in the body for the backend to associate the attempt
+    const body = { ...data, child_id: childId };
     return this.request<PeppiMimicAttemptResult>(
-      `/children/${childId}/mimic/challenges/${challengeId}/attempts/`,
+      `/speech/mimic/challenges/${challengeId}/attempt/`,
       {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
       }
     );
-  }//
+  }
 
   /**
    * Get overall mimic progress summary for a child.
@@ -982,7 +986,7 @@ class ApiClient {
   async getMimicProgress(
     childId: string
   ): Promise<ApiResponse<PeppiMimicProgressSummary>> {
-    return this.request<PeppiMimicProgressSummary>(`/children/${childId}/mimic/progress/`);
+    return this.request<PeppiMimicProgressSummary>(`/speech/mimic/progress/?child_id=${childId}`);
   }
 
   /**
@@ -994,9 +998,9 @@ class ApiClient {
     childId: string,
     attemptId: string
   ): Promise<ApiResponse<{ success: boolean; shared_at: string }>> {
-    return this.request(`/children/${childId}/mimic/attempts/${attemptId}/share/`, {
-      method: 'PATCH',
-      body: JSON.stringify({ shared_to_family: true }),
+    return this.request(`/speech/mimic/attempts/${attemptId}/share/`, {
+      method: 'POST',
+      body: JSON.stringify({ shared_to_family: true, child_id: childId }),
     });
   }
 

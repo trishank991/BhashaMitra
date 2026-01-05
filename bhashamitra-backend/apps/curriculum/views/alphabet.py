@@ -118,8 +118,8 @@ class LetterListView(APIView):
                 'romanization': vl.romanization,
                 'ipa': '',
                 'pronunciation_guide': vl.pronunciation_guide,
-                'audio_url': vl.audio_url.url if vl.audio_url else '',
-                'example_image': vl.example_image.url if vl.example_image else '',
+                'audio_url': vl.audio_url if vl.audio_url else '',
+                'example_image': vl.example_image if vl.example_image else '',
                 'order': 0
             })
         

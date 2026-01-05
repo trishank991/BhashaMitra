@@ -20,8 +20,8 @@ export function LanguageSelector({
 
   const currentLang = SUPPORTED_LANGUAGES[currentLanguage] || SUPPORTED_LANGUAGES.HINDI;
 
-  // Hindi, Tamil, Punjabi and Fiji Hindi have curriculum content
-  const availableLanguages: LanguageCode[] = ['HINDI', 'PUNJABI', 'TAMIL', 'FIJI_HINDI'];
+  // Hindi, Tamil, Punjabi, Fiji Hindi, and Gujarati have curriculum content
+  const availableLanguages: LanguageCode[] = ['HINDI', 'PUNJABI', 'TAMIL', 'FIJI_HINDI', 'GUJARATI'];
 
   return (
     <div className="relative">
@@ -125,7 +125,7 @@ export function LanguageSelector({
                   Coming Soon
                 </p>
                 <div className="flex flex-wrap gap-2 px-3 py-1">
-                  {(['GUJARATI', 'TELUGU', 'MALAYALAM', 'BENGALI'] as LanguageCode[]).map((langCode) => {
+                  {(['TELUGU', 'MALAYALAM', 'BENGALI'] as LanguageCode[]).map((langCode) => {
                     const lang = SUPPORTED_LANGUAGES[langCode];
                     return (
                       <span

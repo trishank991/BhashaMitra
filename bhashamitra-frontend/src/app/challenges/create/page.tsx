@@ -14,8 +14,9 @@ export default function CreateChallengePage() {
       const res = await api.getChallengeQuota() as any; 
 if (res.success && res.data) {
   // We force cast the data to the expected type
-  setQuota(res.data as ChallengeQuotaResponse);
+  setQuota(res.data as ChallengeQuotaResponse); //
     }
+  }  
     fetchQuota();
   }, []);
 

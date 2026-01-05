@@ -4,6 +4,6 @@
 export { ChallengeQuiz } from './ChallengeQuiz';
 export { ChallengeResult } from './ChallengeResult';
 export { ChallengeLeaderboard } from './ChallengeLeaderboard';
-export { CreateChallengeForm } from './CreateChallengeForm';
+export { default as CreateChallengeForm } from './CreateChallengeForm';
 export { ChallengeCard } from './ChallengeCard';
 export { ShareButton } from './ShareButton';

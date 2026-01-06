@@ -28,4 +28,7 @@ urlpatterns = [
     # Subscription
     path('subscription-tiers/', views.SubscriptionTiersView.as_view(), name='subscription-tiers'),
     path('subscription/', views.CurrentSubscriptionDetailView.as_view(), name='subscription-detail'),
+
+    # TEMPORARY: Seed test users (remove after production seeding)
+    path('seed-test-users/', views.SeedTestUsersView.as_view(), name='seed-test-users'),
 ]

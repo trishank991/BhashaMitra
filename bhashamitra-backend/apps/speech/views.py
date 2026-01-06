@@ -242,7 +242,7 @@ class PrewarmStoryAudioView(APIView):
 
     def post(self, request, story_id):
         # Check if user is admin
-        if not getattr(request.user, 'role', None) == 'ADMIN':
+        if getattr(request.user, 'role', None) != 'ADMIN':
             return Response(
                 {"detail": "Admin access required"},
                 status=status.HTTP_403_FORBIDDEN
@@ -288,7 +288,7 @@ class CurriculumAudioView(APIView):
 
         # Validate content type
         valid_content_types = ['alphabet', 'vocabulary', 'alphabet_letter', 'alphabet_example']
-        if content_type not in valid_content_types and not content_type.startswith('vocabulary_'):
+        if content_type not in valid_content_types and 'vocabulary_' not in content_type:
             return Response(
                 {"detail": f"Invalid content type. Must be one of: {valid_content_types}"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -602,9 +602,10 @@ class MimicAttemptSubmitView(APIView):
                 transcription=stt_result.transcription,
                 expected_word=challenge.word,
                 stt_confidence=stt_result.confidence,
+                language_name=challenge.language,  # <--- ADDED THIS
                 expected_romanization=challenge.romanization,
-                audio_url=audio_url,  # V2: Pass audio for acoustic analysis
-                expected_duration_ms=expected_duration_ms  # V2: Reference duration
+                audio_url=audio_url, 
+                expected_duration_ms=expected_duration_ms 
             )
 
             # Step 4: Get or create progress record
@@ -671,6 +672,7 @@ class MimicAttemptSubmitView(APIView):
                 'transcription': stt_result.transcription,
                 'score': score_result.final_score,
                 'stars': score_result.stars,
+                'coach_tip': score_result.ai_coach_tip,
                 'points_earned': points,
                 'is_personal_best': is_personal_best,
                 'mastered': progress.mastered,
@@ -856,10 +858,7 @@ class AudioUploadView(APIView):
             # Make URL absolute if needed
             if audio_url.startswith('/'):
                 from django.conf import settings
-                base_url = getattr(settings, 'SITE_URL', '')
-                if not base_url:
-                    # Build from request in development
-                    base_url = request.build_absolute_uri('/').rstrip('/')
+                base_url = getattr(settings, 'SITE_URL', '') or request.build_absolute_uri('/').rstrip('/')
                 audio_url = f"{base_url.rstrip('/')}{audio_url}"
 
             logger.info(f"Audio uploaded: {saved_path}, url: {audio_url}")

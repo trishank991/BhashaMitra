@@ -20,9 +20,15 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, Tuple
 import requests
+from openai import OpenAI  # Add this
 
 logger = logging.getLogger(__name__)
 
+# Initialize MiniMax Client globally
+minimax_client = OpenAI(
+    api_key=os.getenv("MINIMAX_API_KEY"),
+    base_url="https://api.minimax.io/v1"
+)
 
 @dataclass
 class AudioAnalysisResult:
@@ -39,16 +45,19 @@ class PronunciationResult:
     """Result of pronunciation scoring."""
     transcription: str
     expected_word: str
-    stt_confidence: float      # 0-1 from STT provider
-    text_match_score: float    # 0-100 from text comparison
-    energy_score: float        # 0-100 from audio energy analysis
-    duration_match_score: float  # 0-100 from duration comparison
-    final_score: float         # 0-100 combined score
-    stars: int                 # 0-3 star rating
-    feedback_key: str          # 'perfect', 'good', 'try_again'
-    scoring_version: int       # Algorithm version (2 = hybrid)
-    score_breakdown: dict      # Detailed breakdown for debugging
-
+    stt_confidence: float       # 0-1 from STT provider
+    text_match_score: float     # 0-100 from text comparison
+    energy_score: float         # 0-100 from audio energy analysis
+    duration_match_score: float # 0-100 from duration comparison
+    final_score: float          # 0-100 combined score
+    stars: int                  # 0-3 star rating
+    feedback_key: str           # 'perfect', 'good', 'try_again'
+    scoring_version: int        # Algorithm version (2 = hybrid)
+    score_breakdown: dict       # Detailed breakdown for debugging
+    
+    # Move fields with default values to the bottom
+    language_name: str = "Hindi"
+    ai_coach_tip: str = ""      # The new MiniMax feedback field
 
 class AudioAnalyzer:
     """
@@ -92,8 +101,7 @@ class AudioAnalyzer:
                 return cls._default_result()
 
             # Analyze using soundfile
-            result = cls._analyze_audio_data(audio_data, expected_duration_ms)
-            return result
+            return cls._analyze_audio_data(audio_data, expected_duration_ms)
 
         except Exception as e:
             logger.warning(f"Audio analysis failed: {e}")
@@ -309,6 +317,7 @@ class PronunciationScorer:
         transcription: str,
         expected_word: str,
         stt_confidence: float,
+        language_name: str = "Hindi",
         expected_romanization: Optional[str] = None,
         audio_url: Optional[str] = None,
         expected_duration_ms: Optional[int] = None
@@ -332,7 +341,7 @@ class PronunciationScorer:
         expected_clean = self._normalize_text(expected_word)
 
         # Validate and normalize STT confidence (should be 0-1, some providers return >1)
-        stt_confidence = max(0.0, min(1.0, float(stt_confidence)))
+        stt_confidence = max(0.0, min(1.0, stt_confidence))
         # Apply minimum floor for very low confidence to avoid unfair penalties
         if stt_confidence < 0.1 and transcription_clean:
             # If we got a transcription but confidence is very low, use floor of 0.3
@@ -382,7 +391,18 @@ class PronunciationScorer:
 
         # Determine stars and feedback
         stars, feedback_key = self._get_stars_and_feedback(final_score)
-
+# --- NEW: MiniMax 2.1 AI Coaching Integration ---
+        ai_feedback = ""
+        if stars < 3:
+            # We call the helper method we added to the bottom of this class
+            ai_feedback = self._get_minimax_feedback(
+                expected_word, 
+                transcription, 
+                language_name
+            )
+        else:
+            ai_feedback = "Perfect pronunciation! Well done."
+# --- NEW: MiniMax 2.1 AI Coaching Integration ---
         # Build score breakdown for transparency
         score_breakdown = {
             'stt_confidence': {
@@ -568,7 +588,7 @@ class PronunciationScorer:
         else:
             achievement = "is practicing hard"
 
-        message = (
+        return (
             f"🎉 {child_name} {achievement}!\n\n"
             f"Word: {word} ({romanization})\n"
             f"Score: {star_emojis} {score:.0f}%\n\n"
@@ -576,7 +596,28 @@ class PronunciationScorer:
             f"Send them an encouraging voice message! 💕"
         )
 
-        return message
+    @staticmethod
+    def _get_minimax_feedback(target, user_said, language_name):
+        """Calls MiniMax 2.1 to provide a language-specific phonetic tip."""
+        try:
+            response = minimax_client.chat.completions.create(
+                model="MiniMax-M2.1",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": f"You are an expert {language_name} pronunciation coach. "
+                                   "Provide a one-sentence tip in English on how to improve."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Target: '{target}'. Student said: '{user_said}'. Provide a quick tip."
+                    }
+                ]
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            logger.error(f"MiniMax Coaching Error: {e}")
+            return f"Keep practicing! Your {language_name} is getting better."
 
 
 # Singleton instance for easy access

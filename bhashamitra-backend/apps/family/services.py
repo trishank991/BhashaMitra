@@ -6,6 +6,7 @@ from .models import (
     Family, CurriculumChallenge, CurriculumChallengeParticipant,
     CurriculumChallengeAttempt
 )
+from .serializers import CurriculumChallengeParticipantSerializer
 
 
 class CurriculumChallengeService:
@@ -116,9 +117,7 @@ class CurriculumChallengeService:
         """Generate alphabet recognition questions from learned letters."""
         from apps.curriculum.models import VerifiedLetter
         
-        completed_letters = child_progress.get('completed_letters', [])
-        
-        if not completed_letters:
+        if not (completed_letters := child_progress.get('completed_letters', [])):
             # Fallback: get letters from child's level if no progress yet
             level = child_progress.get('level', 1)
             letters = VerifiedLetter.objects.filter(
@@ -129,9 +128,7 @@ class CurriculumChallengeService:
                 character__in=completed_letters
             ).order_by('?')[:challenge.target_count]
         
-        questions = []
-        for letter in letters:
-            questions.append({
+        questions = [{
                 'item_type': 'ALPHABET',
                 'item_id': str(letter.id),
                 'item_value': letter.character,
@@ -140,8 +137,7 @@ class CurriculumChallengeService:
                 'correct_answer': letter.character,
                 'romanization': letter.romanization,
                 'audio_url': letter.audio_url,
-            })
-        
+        } for letter in letters]
         return questions
 
     @staticmethod
@@ -152,9 +148,7 @@ class CurriculumChallengeService:
         """Generate vocabulary questions from learned words."""
         from apps.curriculum.models import VocabularyWord, VocabularyTheme
         
-        completed_words = child_progress.get('completed_words', [])
-        
-        if not completed_words:
+        if not (completed_words := child_progress.get('completed_words', [])):
             # Fallback: get words from themes child has started
             level = child_progress.get('level', 1)
             words = VocabularyWord.objects.filter(
@@ -165,9 +159,7 @@ class CurriculumChallengeService:
                 id__in=completed_words
             ).order_by('?')[:challenge.target_count]
         
-        questions = []
-        for word in words:
-            questions.append({
+        questions = [{
                 'item_type': 'VOCABULARY',
                 'item_id': str(word.id),
                 'item_value': word.word,
@@ -177,8 +169,7 @@ class CurriculumChallengeService:
                 'romanization': word.romanization,
                 'audio_url': word.pronunciation_audio_url,
                 'image_url': word.image_url,
-            })
-        
+        } for word in words]
         return questions
 
     @staticmethod
@@ -197,18 +188,14 @@ class CurriculumChallengeService:
             content_type='GRAMMAR_RULE'
         ).select_related('grammar_rule').order_by('?')[:challenge.target_count]
         
-        questions = []
-        for content in contents:
-            if content.grammar_rule:
-                questions.append({
+        questions = [{
                     'item_type': 'SENTENCE',
                     'item_id': str(content.grammar_rule.id),
                     'item_value': content.grammar_rule.title,
                     'question': content.grammar_rule.explanation,
                     'correct_answer': content.grammar_rule.formula,
                     'examples': content.grammar_rule.examples,
-                })
-        
+        } for content in contents if content.grammar_rule]
         return questions
 
     @staticmethod
@@ -224,9 +211,7 @@ class CurriculumChallengeService:
         
         if custom_words:
             # Parent specified words - create questions for each
-            questions = []
-            for word in custom_words[:challenge.target_count]:
-                questions.append({
+            questions = [{
                     'item_type': 'PRONUNCIATION',
                     'item_id': word,  # Use word as ID for custom words
                     'item_value': word,
@@ -234,7 +219,7 @@ class CurriculumChallengeService:
                     'question_native': f"इस शब्द को बोलो: {word}",
                     'correct_answer': word,
                     'is_custom': True,
-                })
+            } for word in custom_words[:challenge.target_count]]
         else:
             # Use Peppi Mimic challenges from child's learned words
             completed_words = child_progress.get('completed_words', [])
@@ -250,9 +235,7 @@ class CurriculumChallengeService:
                     difficulty__lte=level
                 ).order_by('?')[:challenge.target_count]
             
-            questions = []
-            for challenge_obj in challenges:
-                questions.append({
+            questions = [{
                     'item_type': 'PRONUNCIATION',
                     'item_id': str(challenge_obj.id),
                     'item_value': challenge_obj.word,
@@ -262,8 +245,7 @@ class CurriculumChallengeService:
                     'romanization': challenge_obj.romanization,
                     'audio_url': challenge_obj.audio_url,
                     'is_custom': False,
-                })
-        
+            } for challenge_obj in challenges]
         return questions
 
     @staticmethod
@@ -277,9 +259,7 @@ class CurriculumChallengeService:
         if not custom_words:
             # Fallback to learned words
             from apps.curriculum.models import VocabularyWord
-            completed_words = child_progress.get('completed_words', [])
-            
-            if completed_words:
+            if completed_words := child_progress.get('completed_words', []):
                 words = VocabularyWord.objects.filter(
                     id__in=completed_words
                 ).order_by('?')[:challenge.target_count]
@@ -291,9 +271,7 @@ class CurriculumChallengeService:
             
             custom_words = [w.word for w in words]
         
-        questions = []
-        for word in custom_words[:challenge.target_count]:
-            questions.append({
+        questions = [{
                 'item_type': 'DICTATION',
                 'item_id': word,  # Use word as ID
                 'item_value': word,
@@ -301,8 +279,7 @@ class CurriculumChallengeService:
                 'question_native': f"अभिभावक बोलेंगे: \"{word}\". माइक्रोफोन पर टैप करें और बोलें!",
                 'correct_answer': word,
                 'is_custom': True,
-            })
-        
+        } for word in custom_words[:challenge.target_count]]
         return questions
 
     @staticmethod
@@ -343,30 +320,25 @@ class CurriculumChallengeService:
             is_correct = user_answer.lower() == correct_answer.lower()
             accuracy_score = 100.0 if is_correct else 0.0
         
-        elif item_type in ['PRONUNCIATION', 'DICTATION']:
-            # Use transcription for evaluation
-            # For dictation: compare transcription to correct answer
-            # For pronunciation: use STT confidence or similarity
-            
-            if item_type == 'DICTATION':
-                # Compare what child said to expected word
-                # Use fuzzy matching for slight variations
+        elif item_type == 'DICTATION':
+            # Compare what child said to expected word
+            # Use fuzzy matching for slight variations
+            from difflib import SequenceMatcher
+            similarity = SequenceMatcher(None, transcription.lower(), correct_answer.lower()).ratio()
+            is_correct = similarity >= 0.7  # 70% threshold
+            accuracy_score = similarity * 100
+        elif item_type == 'PRONUNCIATION':
+            # For pronunciation, use accuracy if provided by STT
+            # or calculate similarity to expected word
+            if transcription:
                 from difflib import SequenceMatcher
                 similarity = SequenceMatcher(None, transcription.lower(), correct_answer.lower()).ratio()
-                is_correct = similarity >= 0.7  # 70% threshold
                 accuracy_score = similarity * 100
-            else:
-                # For pronunciation, use accuracy if provided by STT
-                # or calculate similarity to expected word
-                if transcription:
-                    from difflib import SequenceMatcher
-                    similarity = SequenceMatcher(None, transcription.lower(), correct_answer.lower()).ratio()
-                    accuracy_score = similarity * 100
-                    is_correct = similarity >= 0.7
-                elif audio_url:
-                    # Fallback: if we have audio but no transcription, assume in progress
-                    accuracy_score = 50.0
-                    is_correct = False
+                is_correct = similarity >= 0.7
+            elif audio_url:
+                # Fallback: if we have audio but no transcription, assume in progress
+                accuracy_score = 50.0
+                is_correct = False
         
         # Create attempt record
         attempt = CurriculumChallengeAttempt.objects.create(
@@ -389,17 +361,15 @@ class CurriculumChallengeService:
         
         # Generate feedback message
         if is_correct:
-            if accuracy_score >= 90:
-                message = "🎉 Perfect! Excellent work!"
-            elif accuracy_score >= 70:
-                message = "👍 Great job! Keep it up!"
-            else:
-                message = "✓ Correct! Good effort!"
+            message = (
+                "🎉 Perfect! Excellent work!" if accuracy_score >= 90
+                else "👍 Great job! Keep it up!" if accuracy_score >= 70
+                else "✓ Correct! Good effort!"
+            )
+        elif item_type == 'DICTATION':
+            message = f"Not quite. The word was \"{correct_answer}\". Try again!"
         else:
-            if item_type == 'DICTATION':
-                message = f"Not quite. The word was \"{correct_answer}\". Try again!"
-            else:
-                message = f"Not quite. The answer was \"{correct_answer}\". Try again!"
+            message = f"Not quite. The answer was \"{correct_answer}\". Try again!"
         
         return {
             'is_correct': is_correct,
@@ -493,13 +463,11 @@ class FamilyService:
         if hasattr(user, 'families_owned') and user.families_owned.exists():
             raise ValueError("User already has a family")
         
-        family = Family.objects.create(
+        return Family.objects.create(
             primary_parent=user,
             created_by=user,
             name=name or f"{user.name}'s Family"
         )
-        
-        return family
 
     @staticmethod
     def join_family_via_code(user, invite_code: str) -> Family:
@@ -549,9 +517,7 @@ class FamilyService:
     def get_family_for_user(user) -> Family:
         """Get the family for a user (if exists)."""
         families = user.families_owned.all()
-        if families.exists():
-            return families.first()
-        return None
+        return families.first() if families.exists() else None
 
     @staticmethod
     def refresh_family_code(family: Family) -> str:

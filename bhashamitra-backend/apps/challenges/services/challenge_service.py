@@ -132,7 +132,11 @@ class ChallengeService:
 
     @classmethod
     def calculate_score(cls, questions: List[Dict], answers: List[int]) -> Dict:
-        score = sum(1 for i, ans in enumerate(answers) if i < len(questions) and str(ans) == str(questions[i].get('correct_index')))
+        score = sum(
+            str(ans) == str(questions[i].get('correct_index'))
+            for i, ans in enumerate(answers)
+            if i < len(questions)
+        )
         max_score = len(questions)
         return {
             "score": score,

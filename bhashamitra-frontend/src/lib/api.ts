@@ -1631,7 +1631,7 @@ private async request<T>(
    * Get the current user's family
    */
   async getFamily(): Promise<ApiResponse<Family>> {
-    return this.request<Family>('/api/v1/family/');
+    return this.request<Family>('/family/');
   }
 
   /**
@@ -1639,7 +1639,7 @@ private async request<T>(
    * @param name Family name
    */
   async createFamily(name: string): Promise<ApiResponse<Family>> {
-    return this.request<Family>('/api/v1/family/create/', {
+    return this.request<Family>('/family/create/', {
       method: 'POST',
       body: JSON.stringify({ name }),
     });
@@ -1650,7 +1650,7 @@ private async request<T>(
    * @param code Family invite code
    */
   async joinFamilyViaCode(code: string): Promise<ApiResponse<Family>> {
-    return this.request<Family>(`/api/v1/family/join/${code}/`, {
+    return this.request<Family>(`/family/join/${code}/`, {
       method: 'POST',
     });
   }
@@ -1660,21 +1660,21 @@ private async request<T>(
    * @param code Family invite code
    */
   async validateFamilyCode(code: string): Promise<ApiResponse<{name: string, member_count: number}>> {
-    return this.request<{name: string, member_count: number}>(`/api/v1/family/invite/${code}/`);
+    return this.request<{name: string, member_count: number}>(`/family/invite/${code}/`);
   }
 
   /**
    * Get the current family's invite code
    */
   async getFamilyInviteCode(): Promise<ApiResponse<{invite_code: string, expires_at: string}>> {
-    return this.request<{invite_code: string, expires_at: string}>('/api/v1/family/invite-code/');
+    return this.request<{invite_code: string, expires_at: string}>('/family/invite-code/');
   }
 
   /**
    * Refresh the family invite code (generate a new one)
    */
   async refreshFamilyInviteCode(): Promise<ApiResponse<{invite_code: string, expires_at: string}>> {
-    return this.request<{invite_code: string, expires_at: string}>('/api/v1/family/invite-code/', {
+    return this.request<{invite_code: string, expires_at: string}>('/family/invite-code/', {
       method: 'POST',
     });
   }
@@ -1683,7 +1683,7 @@ private async request<T>(
    * Get all children in the current user's family
    */
   async getFamilyChildren(): Promise<ApiResponse<ChildProfile[]>> {
-    return this.request<ChildProfile[]>('/api/v1/family/children/');
+    return this.request<ChildProfile[]>('/family/children/');
   }
 
   /**
@@ -1691,7 +1691,7 @@ private async request<T>(
    * @param childId Child UUID
    */
   async addChildToFamily(childId: string): Promise<ApiResponse<void>> {
-    return this.request<void>('/api/v1/family/children/', {
+    return this.request<void>('/family/children/', {
       method: 'POST',
       body: JSON.stringify({ child_id: childId }),
     });
@@ -1702,7 +1702,7 @@ private async request<T>(
    * @param childId Child UUID
    */
   async removeChildFromFamily(childId: string): Promise<ApiResponse<void>> {
-    return this.request<void>(`/api/v1/family/children/${childId}/`, {
+    return this.request<void>(`/family/children/${childId}/`, {
       method: 'DELETE',
     });
   }

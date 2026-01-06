@@ -195,13 +195,26 @@ class LeaderboardEntrySerializer(serializers.ModelSerializer):
 class QuotaSerializer(serializers.ModelSerializer):
     can_create = serializers.SerializerMethodField()
     message = serializers.SerializerMethodField()
+    daily_limit = serializers.SerializerMethodField()
 
     class Meta:
         model = UserChallengeQuota
         fields = [
             'challenges_created_today', 'total_challenges_created',
-            'last_reset_date', 'can_create', 'message',
+            'last_reset_date', 'can_create', 'message', 'daily_limit',
         ]
+
+    def get_daily_limit(self, obj):
+        user = self.context.get('user')
+        is_paid = False
+        if user:
+            is_paid = getattr(user, 'is_premium_tier', False) or getattr(user, 'is_standard_tier', False)
+        
+        if is_paid:
+            return None # Represents unlimited
+        
+        # Corresponds to FREE_DAILY_LIMIT in the model
+        return 2
 
     def get_can_create(self, obj):
         user = self.context.get('user')

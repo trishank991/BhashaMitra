@@ -1047,11 +1047,11 @@ private async request<T>(
       const data = await response.json();
 
       if (!response.ok) {
-        return {
-          success: false,
-          error: data.detail || data.message || 'Failed to upload audio',
-        };
-      }
+  return {
+    success: false,
+    error: data.message || data.detail || 'An error occurred', 
+  };
+}
 
       return {
         success: true,

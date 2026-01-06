@@ -940,7 +940,7 @@ private async request<T>(
    */
   async getAvailableCategories(language: string): Promise<ApiResponse<any[]>> {
     // Note: ensure this URL matches your backend urls.py path
-    return this.request<any[]>(`/api/v1/challenges/categories/?language=${language}`);
+    return this.request<any[]>(`/challenges/categories/?language=${language}`);
   }
 
   /**
@@ -958,9 +958,9 @@ private async request<T>(
     if (childId) params.append('child_id', childId);
 
     const queryString = params.toString();
-   const response = await this.request<any>(
-  `/api/v1/speech/mimic/challenges/${queryString ? `?${queryString}` : ''}`
-);
+    const response = await this.request<any>(
+      `/speech/mimic/challenges/${queryString ? `?${queryString}` : ''}`
+    );
 
     if (response.success && response.data) {
       const data = response.data.results || response.data;

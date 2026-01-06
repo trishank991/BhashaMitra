@@ -2,16 +2,20 @@
 # exit on error
 set -o errexit
 
-# Poetry configuration
-echo "Configuring poetry..."
-poetry config virtualenvs.in-project true
+# Upgrade pip
+echo "Upgrading pip..."
+pip install --upgrade pip
 
-# Install dependencies
-echo "Installing dependencies from poetry.lock..."
-poetry install --no-root --no-dev
+# Install CPU-only torch first (to avoid CUDA dependencies)
+echo "Installing PyTorch CPU-only version..."
+pip install torch==2.2.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cpu
+
+# Install dependencies from requirements/prod.txt
+echo "Installing production dependencies..."
+pip install -r requirements/prod.txt
 
 # Collect static files
 echo "Collecting static files..."
-poetry run python manage.py collectstatic --no-input
+python manage.py collectstatic --no-input
 
 echo "Build finished successfully!"

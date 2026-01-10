@@ -104,6 +104,9 @@ urlpatterns = [
     path('vocabulary/flashcards/review/', FlashcardReviewView.as_view(), name='flashcard-review'),
     path('vocabulary/flashcards/session/', FlashcardSessionView.as_view(), name='flashcard-session'),
 
+    # ========== CHILDREN NESTED ROUTES ==========
+    path('children/<uuid:child_id>/curriculum/grammar/topics/', GrammarTopicListView.as_view(), name='child-grammar-topics'),
+
     # ========== GRAMMAR ==========
     path('grammar/topics/', GrammarTopicListView.as_view(), name='topic-list'),
     path('grammar/topics/<uuid:pk>/', GrammarTopicDetailView.as_view(), name='topic-detail'),

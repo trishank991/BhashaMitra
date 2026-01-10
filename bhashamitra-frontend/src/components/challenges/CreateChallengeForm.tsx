@@ -10,6 +10,16 @@ interface Props {
   isQuotaLoading: boolean;
 }
 
+const LANGUAGES = [
+  { value: 'HINDI', label: 'Hindi' },
+  { value: 'TAMIL', label: 'Tamil' },
+  { value: 'GUJARATI', label: 'Gujarati' },
+  { value: 'PUNJABI', label: 'Punjabi' },
+  { value: 'TELUGU', label: 'Telugu' },
+  { value: 'MALAYALAM', label: 'Malayalam' },
+  { value: 'FIJI_HINDI', label: 'Fiji Hindi' },
+];
+
 export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, isQuotaLoading }: Props) {
   const [categories, setCategories] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,6 +29,7 @@ export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, is
   const [formData, setFormData] = useState<any>({
     title: '',
     description: '',
+    language: 'HINDI',
     category: '',
     difficulty: 'medium',
     time_limit_seconds: 60
@@ -103,6 +114,24 @@ export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, is
           {categories.map((cat: any) => (
             <option key={cat.id || cat.slug || cat.value} value={cat.id || cat.slug || cat.value}>
               {cat.name || cat.display_name || cat.label || 'Unnamed Category'}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Language Selection */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Language</label>
+        <select
+          required
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          value={formData.language}
+          onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+          disabled={!canCreate || isSubmitting}
+        >
+          {LANGUAGES.map((lang) => (
+            <option key={lang.value} value={lang.value}>
+              {lang.label}
             </option>
           ))}
         </select>

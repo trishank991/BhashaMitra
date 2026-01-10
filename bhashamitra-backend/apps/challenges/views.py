@@ -54,7 +54,10 @@ def challenges_list_create(request):
             questions=questions
         )
         return Response({"success": True, "data": ChallengeSerializer(challenge).data}, status=201)
-    return Response(serializer.errors, status=400)
+    
+    # Format errors properly
+    error_message = "; ".join(f"{field}: {', '.join(errors)}" for field, errors in serializer.errors.items())
+    return Response({"success": False, "error": error_message or "Validation failed"}, status=400)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

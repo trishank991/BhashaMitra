@@ -50,7 +50,7 @@ class ChallengeService:
                 available.append({"value": "ALPHABET", "label": "Alphabet", "item_count": letter_count})
 
         # 2. Vocabulary (Fixed to use VocabularyWord)
-        vocab_count = VocabularyWord.objects.filter(theme__language=lang_upper, is_active=True).count()
+        vocab_count = VocabularyWord.objects.filter(theme__language=lang_upper).count()
         if vocab_count >= cls.CHOICES_COUNT:
             available.append({"value": "VOCABULARY", "label": "Vocabulary", "item_count": vocab_count})
 
@@ -99,7 +99,7 @@ class ChallengeService:
     @classmethod
     def _generate_vocabulary(cls, lang: str, count: int) -> List[Dict]:
         # FIXED: Changed Word to VocabularyWord
-        items = list(VocabularyWord.objects.filter(theme__language=lang, is_active=True))
+        items = list(VocabularyWord.objects.filter(theme__language=lang))
         if len(items) < cls.CHOICES_COUNT: return []
         selected = random.sample(items, min(len(items), count))
         return [cls._build_vocab_q(item, items) for item in selected]

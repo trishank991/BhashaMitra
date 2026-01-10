@@ -13,6 +13,7 @@ interface Props {
 export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, isQuotaLoading }: Props) {
   const [categories, setCategories] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Using <any> here to allow 'description' which is missing in the base type
   const [formData, setFormData] = useState<any>({
@@ -43,12 +44,16 @@ export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, is
     if (!canCreate || isSubmitting) return;
 
     setIsSubmitting(true);
+    setError(null);
     try {
       const res = await api.createChallenge(formData) as any;
       if (res?.success && res?.data?.code) {
         onSuccess(res.data.code);
+      } else if (res?.error) {
+        setError(res.error);
       }
     } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
       console.error("Submission failed", err);
     } finally {
       setIsSubmitting(false);
@@ -149,6 +154,15 @@ export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, is
           Cancel
         </button>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600 text-sm text-center font-medium">
+            {error}
+          </p>
+        </div>
+      )}
 
       {/* Quota Restriction Message */}
       {!canCreate && !isQuotaLoading && (

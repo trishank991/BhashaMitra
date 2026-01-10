@@ -86,14 +86,14 @@ class ChallengeService:
     @classmethod
     def _build_alphabet_q(cls, item: Letter, pool: List[Letter]) -> Dict:
         distractors = random.sample([l for l in pool if l.id != item.id], 3)
-        choices = [item.char] + [d.char for d in distractors]
+        choices = [item.character] + [d.character for d in distractors]
         random.shuffle(choices)
         return {
             "id": str(item.id),
             "question": f"Which character is '{item.name}'?",
             "options": choices,
-            "correct_index": choices.index(item.char),
-            "audio_url": item.audio.url if (hasattr(item, 'audio') and item.audio) else None
+            "correct_index": choices.index(item.character),
+            "audio_url": item.audio_url if item.audio_url else None
         }
 
     @classmethod
@@ -106,16 +106,15 @@ class ChallengeService:
 
     @classmethod
     def _build_vocab_q(cls, item: VocabularyWord, pool: List[VocabularyWord]) -> Dict:
-        # FIXED: Changed Word to VocabularyWord
         distractors = random.sample([w for w in pool if w.id != item.id], 3)
-        choices = [item.native_word] + [d.native_word for d in distractors]
+        choices = [item.word] + [d.word for d in distractors]
         random.shuffle(choices)
         return {
             "id": str(item.id),
-            "question": f"How do you say '{item.english_word}'?",
+            "question": f"How do you say '{item.translation}'?",
             "options": choices,
-            "correct_index": choices.index(item.native_word),
-            "image_url": item.image.url if (hasattr(item, 'image') and item.image) else None
+            "correct_index": choices.index(item.word),
+            "image_url": item.image_url if item.image_url else None
         }
 
     @classmethod
@@ -125,8 +124,8 @@ class ChallengeService:
         selected = random.sample(items, min(len(items), count))
         return [{
             "id": str(item.id),
-            "question": item.example_native,
-            "options": [item.explanation[:20], "Wrong A", "Wrong B", "Wrong C"],
+            "question": item.examples[0] if item.examples else "Repeat after Peppi",
+            "options": [item.explanation[:50], "Option B", "Option C", "Option D"],
             "correct_index": 0
         } for item in selected]
 

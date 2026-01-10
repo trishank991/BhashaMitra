@@ -17,8 +17,8 @@ from .serializers import (
 )
 
 # Vocabulary theme proxy views for nested children/curriculum routes
-from apps.curriculum.models.vocabulary import VocabularyTheme, ThemeWord
-from apps.curriculum.serializers.vocabulary import VocabularyThemeSerializer, ThemeWordSerializer
+from apps.curriculum.models.vocabulary import VocabularyTheme, VocabularyWord
+from apps.curriculum.serializers.vocabulary import VocabularyThemeSerializer, VocabularyWordSerializer
 
 
 class VocabularyThemeListView(APIView):
@@ -56,12 +56,12 @@ class VocabularyThemeWordsView(APIView):
             return Response({'detail': 'Theme not found'}, status=status.HTTP_404_NOT_FOUND)
 
         language = request.query_params.get('language', child.language)
-        words = ThemeWord.objects.filter(
+        words = VocabularyWord.objects.filter(
             theme=theme,
             language=language.upper()
         ).order_by('order', 'word')
         
-        serializer = ThemeWordSerializer(words, many=True)
+        serializer = VocabularyWordSerializer(words, many=True)
         return Response({'data': serializer.data})
 
 
@@ -81,7 +81,7 @@ class VocabularyThemeStatsView(APIView):
             return Response({'detail': 'Theme not found'}, status=status.HTTP_404_NOT_FOUND)
 
         from apps.progress.models import WordProgress
-        words = ThemeWord.objects.filter(theme=theme)
+        words = VocabularyWord.objects.filter(theme=theme)
         total_words = words.count()
         
         learned = WordProgress.objects.filter(

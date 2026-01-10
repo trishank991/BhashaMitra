@@ -16,6 +16,106 @@ from .serializers import (
     ChildStatsSerializer,
 )
 
+# Vocabulary theme proxy views for nested children/curriculum routes
+from apps.curriculum.models.vocabulary import VocabularyTheme, ThemeWord
+from apps.curriculum.serializers.vocabulary import VocabularyThemeSerializer, ThemeWordSerializer
+
+
+class VocabularyThemeListView(APIView):
+    """List vocabulary themes for a child (proxies to curriculum)."""
+    permission_classes = [IsAuthenticated, IsParentOfChild]
+
+    def get(self, request, child_id):
+        try:
+            child = Child.objects.get(pk=child_id, user=request.user)
+        except Child.DoesNotExist:
+            return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        language = request.query_params.get('language', child.language)
+        themes = VocabularyTheme.objects.filter(
+            language=language.upper()
+        ).order_by('order', 'name')
+        
+        serializer = VocabularyThemeSerializer(themes, many=True)
+        return Response({'data': serializer.data})
+
+
+class VocabularyThemeWordsView(APIView):
+    """Get words for a vocabulary theme."""
+    permission_classes = [IsAuthenticated, IsParentOfChild]
+
+    def get(self, request, child_id, theme_id):
+        try:
+            child = Child.objects.get(pk=child_id, user=request.user)
+        except Child.DoesNotExist:
+            return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            theme = VocabularyTheme.objects.get(pk=theme_id)
+        except VocabularyTheme.DoesNotExist:
+            return Response({'detail': 'Theme not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        language = request.query_params.get('language', child.language)
+        words = ThemeWord.objects.filter(
+            theme=theme,
+            language=language.upper()
+        ).order_by('order', 'word')
+        
+        serializer = ThemeWordSerializer(words, many=True)
+        return Response({'data': serializer.data})
+
+
+class VocabularyThemeStatsView(APIView):
+    """Get stats for a vocabulary theme."""
+    permission_classes = [IsAuthenticated, IsParentOfChild]
+
+    def get(self, request, child_id, theme_id):
+        try:
+            child = Child.objects.get(pk=child_id, user=request.user)
+        except Child.DoesNotExist:
+            return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            theme = VocabularyTheme.objects.get(pk=theme_id)
+        except VocabularyTheme.DoesNotExist:
+            return Response({'detail': 'Theme not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        from apps.progress.models import WordProgress
+        words = ThemeWord.objects.filter(theme=theme)
+        total_words = words.count()
+        
+        learned = WordProgress.objects.filter(
+            child=child,
+            word__in=words,
+            mastery_level__gte=3
+        ).count()
+        
+        in_progress = WordProgress.objects.filter(
+            child=child,
+            word__in=words,
+            mastery_level__lt=3,
+            mastery_level__gt=0
+        ).count()
+
+        return Response({
+            'data': {
+                'theme_id': str(theme.id),
+                'total_words': total_words,
+                'learned': learned,
+                'in_progress': in_progress,
+                'not_started': total_words - learned - in_progress,
+                'progress_percent': round((learned / total_words * 100) if total_words > 0 else 0, 2)
+            }
+        })
+
+
+class ChildCurriculumViewSet(APIView):
+    """Placeholder ViewSet for router - individual views defined in urlpatterns."""
+    permission_classes = [IsAuthenticated, IsParentOfChild]
+    
+    def get(self, request, child_id=None):
+        return Response({'detail': 'Use specific endpoints for curriculum data'})
+
 
 class ChildListCreateView(generics.ListCreateAPIView):
     """List and create children for the authenticated parent."""

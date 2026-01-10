@@ -59,10 +59,25 @@ def challenges_list_create(request):
     error_message = "; ".join(f"{field}: {', '.join(errors)}" for field, errors in serializer.errors.items())
     return Response({"success": False, "error": error_message or "Validation failed"}, status=400)
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def play_challenge(request, code):
     challenge = get_object_or_404(Challenge, code=code)
+    
+    if request.method == 'POST':
+        # POST: Start a challenge attempt or just return success for starting
+        return Response({
+            "success": True,
+            "data": {
+                "message": "Challenge ready to play",
+                "code": challenge.code,
+                "title": challenge.title,
+                "questions": ChallengeService.strip_answers(challenge.questions),
+                "started_at": timezone.now().isoformat()
+            }
+        })
+    
+    # GET: Return challenge info
     return Response({
         "success": True, 
         "data": {

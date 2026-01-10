@@ -20,15 +20,21 @@ class ScriptListView(APIView):
     """List available scripts/alphabets."""
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, child_id):
-        """Get scripts available for the child's language."""
-        try:
-            child = Child.objects.get(pk=child_id, user=request.user)
-        except Child.DoesNotExist:
-            return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        language = request.query_params.get('language', child.language)
-        scripts = Script.objects.filter(language=language)
+    def get(self, request, child_id=None):
+        """Get scripts available for the child's language (optional child_id)."""
+        language = None
+        
+        if child_id:
+            try:
+                child = Child.objects.get(pk=child_id, user=request.user)
+                language = request.query_params.get('language', child.language)
+            except Child.DoesNotExist:
+                return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            # No child_id provided, use query param or default to HINDI
+            language = request.query_params.get('language', 'HINDI')
+        
+        scripts = Script.objects.filter(language=language.upper() if language else None)
         serializer = ScriptSerializer(scripts, many=True)
 
         return Response({'data': serializer.data})

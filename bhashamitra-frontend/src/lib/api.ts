@@ -684,8 +684,8 @@ private async request<T>(
 
   // Alphabet/Script endpoints
   async getScripts(childId: string): Promise<ApiResponse<Script[]>> {
-    // API returns { data: [...] } format
-    const response = await this.request<{ data: Script[] }>(`/children/${childId}/curriculum/alphabet/scripts/`);
+    // API returns { data: [...] } format at /curriculum/alphabet/scripts/
+    const response = await this.request<{ data: Script[] }>('/curriculum/alphabet/scripts/');
     if (response.success && response.data) {
       return { success: true, data: response.data.data || [] };
     }
@@ -693,11 +693,11 @@ private async request<T>(
   }
 
   async getScriptLetters(childId: string, scriptId: string): Promise<ApiResponse<Letter[]>> {
-    return this.request<Letter[]>(`/children/${childId}/curriculum/alphabet/scripts/${scriptId}/letters/`);
+    return this.request<Letter[]>(`/curriculum/alphabet/scripts/${scriptId}/letters/`);
   }
 
   async getAlphabetProgress(childId: string): Promise<ApiResponse<AlphabetProgress>> {
-    return this.request<AlphabetProgress>(`/children/${childId}/curriculum/alphabet/progress/`);
+    return this.request<AlphabetProgress>(`/curriculum/alphabet/progress/`);
   }
 
   // Grammar endpoints
@@ -2291,4 +2291,3 @@ export interface CreateChallengeRequest {
 
 export const api = new ApiClient(API_BASE_URL);
 export default api;
-

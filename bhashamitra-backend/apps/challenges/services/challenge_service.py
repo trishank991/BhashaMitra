@@ -90,7 +90,7 @@ class ChallengeService:
         random.shuffle(choices)
         return {
             "id": str(item.id),
-            "question": f"Which character is '{item.name}'?",
+            "question": f"Which character is '{item.romanization}'?",
             "options": choices,
             "correct_index": choices.index(item.character),
             "audio_url": item.audio_url if item.audio_url else None

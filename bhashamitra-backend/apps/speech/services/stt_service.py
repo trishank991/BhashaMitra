@@ -456,16 +456,28 @@ class SarvamSTTClient:
 
 class MockSTTClient:
     """
-    Mock STT client for development/testing.
-
-    Returns simulated transcription results based on expected word.
-    Useful when STT API is not configured or for testing.
+    Mock STT client for development/testing ONLY.
+    
+    WARNING: This should NEVER be used in production!
+    It returns fake "perfect" results that give children false confidence.
+    
+    In production, this class will raise an error if accessed.
     """
 
     @classmethod
     def is_available(cls) -> bool:
-        """Mock is always available."""
-        return True
+        """
+        Mock is available only in development mode.
+        
+        In production (DJANGO_ENV=prod), this returns False to prevent
+        accidental use of fake transcription results.
+        """
+        import os
+        from django.conf import settings
+        
+        # Only available in development mode
+        django_env = getattr(settings, 'DJANGO_ENV', 'dev')
+        return django_env != 'prod'
 
     @classmethod
     def transcribe(
@@ -475,11 +487,18 @@ class MockSTTClient:
         expected_word: Optional[str] = None
     ) -> STTResult:
         """
-        Return mock transcription result.
-
-        For testing, returns the expected word with some random variation
-        to simulate real STT behavior.
+        Return mock transcription result for development/testing ONLY.
+        
+        Raises:
+            RuntimeError: If called in production mode
         """
+        if not cls.is_available():
+            raise RuntimeError(
+                "MOCK STT IS NOT AVAILABLE IN PRODUCTION!\n"
+                "This is a security/safety feature to prevent false scoring.\n"
+                "Please configure GOOGLE_TTS_API_KEY or SARVAM_API_KEY for STT."
+            )
+
         import random
 
         # Simulate processing time
@@ -499,9 +518,9 @@ class MockSTTClient:
             transcription = ""
             confidence = 0.5
 
-        logger.info(
-            f"Mock STT: {language}, transcription='{transcription}', "
-            f"confidence={confidence:.2f}"
+        logger.warning(
+            f"? MOCK STT ACTIVE - This is for TESTING only! "
+            f"transcription='{transcription}', confidence={confidence:.2f}"
         )
 
         return STTResult(

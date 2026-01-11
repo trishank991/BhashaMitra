@@ -28,7 +28,7 @@ class TextToSpeechView(APIView):
 
     Request Body:
     {
-        "text": "नमस्ते बच्चों, आज हम एक कहानी सुनेंगे",
+        "text": " ,     ",
         "language": "HINDI",
         "voice_style": "storyteller"  // optional
     }
@@ -231,7 +231,7 @@ class PrewarmStoryAudioView(APIView):
     Response:
     {
         "story_id": "xxx",
-        "story_title": "चिड़िया और बिल्ली",
+        "story_title": "  ",
         "pages_total": 10,
         "pages_cached": 0,
         "pages_generated": 10,
@@ -362,7 +362,7 @@ class CurriculumAudioListView(APIView):
         "language": "HINDI",
         "content": {
             "alphabet": [
-                {"id": "ka", "text": "क", "audio_url": "/api/v1/speech/curriculum/alphabet/ka/"},
+                {"id": "ka", "text": "", "audio_url": "/api/v1/speech/curriculum/alphabet/ka/"},
                 ...
             ],
             "vocabulary": {
@@ -554,7 +554,7 @@ class MimicAttemptSubmitView(APIView):
     Response:
     {
         "attempt_id": "uuid",
-        "transcription": "नमस्ते",
+        "transcription": "",
         "score": 85.5,
         "stars": 3,
         "points_earned": 35,

@@ -1,477 +1,262 @@
-"""Seed Peppi Mimic pronunciation challenges."""
-from django.core.management.base import BaseCommand
-from apps.speech.models import PeppiMimicChallenge
+"""
+Management command to seed Peppi Mimic challenges with sample words.
+
+This creates pronunciation challenges for each language and generates
+reference audio using TTS.
+"""
+
+import os
+import logging
+from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
+from django.db import transaction
+
+from apps.speech.models import PeppiMimicChallenge, AudioCache
+from apps.speech.services.tts_service import TTSService, TTSServiceError
+
+logger = logging.getLogger(__name__)
 
 
-# Hindi Mimic Challenges organized by category
-HINDI_CHALLENGES = [
-    # ========== GREETINGS (5 challenges) ==========
-    {
-        "word": "नमस्ते",
-        "romanization": "Namaste",
-        "meaning": "Hello / Greetings",
-        "category": "GREETING",
-        "difficulty": 1,
-        "display_order": 1,
-        "points_reward": 20,
-        "peppi_intro": "Meow! Let's say hello in Hindi! Listen carefully...",
-        "peppi_perfect": "MEOW! 🌟 That was PURRRFECT namaste! You sound like a native speaker! 🙏",
-        "peppi_good": "Meow meow! 👏 Almost purrrfect! Your namaste is getting better!",
-        "peppi_try_again": "Meow! Good try little cub! Let's practice namaste again - na-mas-te!",
-    },
-    {
-        "word": "धन्यवाद",
-        "romanization": "Dhanyavaad",
-        "meaning": "Thank you",
-        "category": "GREETING",
-        "difficulty": 2,
-        "display_order": 2,
-        "points_reward": 25,
-        "peppi_intro": "Time to say thank you! Listen...",
-        "peppi_perfect": "AMAZING! Perfect dhanyavaad! So polite! 🌟",
-        "peppi_good": "Nice work! Your thank you sounds great!",
-        "peppi_try_again": "Good effort! Try again - dhan-ya-vaad!",
-    },
-    {
-        "word": "शुभ प्रभात",
-        "romanization": "Shubh Prabhaat",
-        "meaning": "Good morning",
-        "category": "GREETING",
-        "difficulty": 2,
-        "display_order": 3,
-        "points_reward": 25,
-        "peppi_intro": "Let's wish good morning! Listen...",
-        "peppi_perfect": "WONDERFUL! Perfect good morning! Start every day like this! ☀️",
-        "peppi_good": "Great job! Your morning greeting is lovely!",
-        "peppi_try_again": "Nice try! Say it slowly - shubh pra-bhaat!",
-    },
-    {
-        "word": "अलविदा",
-        "romanization": "Alvida",
-        "meaning": "Goodbye",
-        "category": "GREETING",
-        "difficulty": 1,
-        "display_order": 4,
-        "points_reward": 20,
-        "peppi_intro": "Let's say goodbye! Listen carefully...",
-        "peppi_perfect": "PERFECT! Beautiful goodbye! See you soon! 👋",
-        "peppi_good": "Very nice! Your goodbye sounds sweet!",
-        "peppi_try_again": "Good try! Practice again - al-vi-da!",
-    },
-    {
-        "word": "कैसे हो",
-        "romanization": "Kaise ho",
-        "meaning": "How are you",
-        "category": "GREETING",
-        "difficulty": 1,
-        "display_order": 5,
-        "points_reward": 20,
-        "peppi_intro": "Ask how someone is doing! Listen...",
-        "peppi_perfect": "EXCELLENT! Perfect question! Now you can make friends! 💫",
-        "peppi_good": "Nice! Your pronunciation is improving!",
-        "peppi_try_again": "Good effort! Try again - kai-se ho!",
-    },
-
-    # ========== FAMILY (5 challenges) ==========
-    {
-        "word": "माँ",
-        "romanization": "Maa",
-        "meaning": "Mother",
-        "category": "FAMILY",
-        "difficulty": 1,
-        "display_order": 1,
-        "points_reward": 20,
-        "peppi_intro": "Let's say mother in Hindi! Listen...",
-        "peppi_perfect": "BEAUTIFUL! Perfect! Your maa will be so happy! ❤️",
-        "peppi_good": "Lovely! Keep practicing this sweet word!",
-        "peppi_try_again": "Nice try! Say it with love - maa!",
-    },
-    {
-        "word": "पापा",
-        "romanization": "Papa",
-        "meaning": "Father",
-        "category": "FAMILY",
-        "difficulty": 1,
-        "display_order": 2,
-        "points_reward": 20,
-        "peppi_intro": "Now let's say father! Listen carefully...",
-        "peppi_perfect": "WONDERFUL! Perfect papa! He'll be so proud! 💪",
-        "peppi_good": "Great! Your papa sounds perfect!",
-        "peppi_try_again": "Good try! Say it again - pa-pa!",
-    },
-    {
-        "word": "दादी",
-        "romanization": "Daadi",
-        "meaning": "Grandmother (paternal)",
-        "category": "FAMILY",
-        "difficulty": 1,
-        "display_order": 3,
-        "points_reward": 20,
-        "peppi_intro": "Let's say grandmother! Listen...",
-        "peppi_perfect": "AMAZING! Perfect daadi! She'll give you extra sweets! 🍬",
-        "peppi_good": "Very good! Grandma would be happy!",
-        "peppi_try_again": "Nice effort! Try again - daa-di!",
-    },
-    {
-        "word": "दादा",
-        "romanization": "Daada",
-        "meaning": "Grandfather (paternal)",
-        "category": "FAMILY",
-        "difficulty": 1,
-        "display_order": 4,
-        "points_reward": 20,
-        "peppi_intro": "Now grandfather! Listen carefully...",
-        "peppi_perfect": "PERFECT! Your daada will tell you extra stories! 📖",
-        "peppi_good": "Great job! Grandfather sounds proud!",
-        "peppi_try_again": "Good try! Say it slowly - daa-da!",
-    },
-    {
-        "word": "भाई",
-        "romanization": "Bhai",
-        "meaning": "Brother",
-        "category": "FAMILY",
-        "difficulty": 1,
-        "display_order": 5,
-        "points_reward": 20,
-        "peppi_intro": "Let's say brother! Listen...",
-        "peppi_perfect": "EXCELLENT! Perfect bhai! Great sibling word! 👦",
-        "peppi_good": "Nice! Your brother word sounds great!",
-        "peppi_try_again": "Good effort! Try again - bh-ai!",
-    },
-
-    # ========== NUMBERS (5 challenges) ==========
-    {
-        "word": "एक",
-        "romanization": "Ek",
-        "meaning": "One",
-        "category": "NUMBERS",
-        "difficulty": 1,
-        "display_order": 1,
-        "points_reward": 15,
-        "peppi_intro": "Let's count! Start with one...",
-        "peppi_perfect": "PERFECT! Ek is easy for you! 1️⃣",
-        "peppi_good": "Great! One down, more to learn!",
-        "peppi_try_again": "Good try! Just say - ek!",
-    },
-    {
-        "word": "दो",
-        "romanization": "Do",
-        "meaning": "Two",
-        "category": "NUMBERS",
-        "difficulty": 1,
-        "display_order": 2,
-        "points_reward": 15,
-        "peppi_intro": "Now number two! Listen...",
-        "peppi_perfect": "WONDERFUL! Perfect do! 2️⃣",
-        "peppi_good": "Nice! Two is easy for you!",
-        "peppi_try_again": "Good effort! Say - do!",
-    },
-    {
-        "word": "तीन",
-        "romanization": "Teen",
-        "meaning": "Three",
-        "category": "NUMBERS",
-        "difficulty": 1,
-        "display_order": 3,
-        "points_reward": 15,
-        "peppi_intro": "Number three now! Listen carefully...",
-        "peppi_perfect": "AMAZING! Perfect teen! 3️⃣",
-        "peppi_good": "Great! Three sounds good!",
-        "peppi_try_again": "Nice try! Say - teen!",
-    },
-    {
-        "word": "चार",
-        "romanization": "Chaar",
-        "meaning": "Four",
-        "category": "NUMBERS",
-        "difficulty": 1,
-        "display_order": 4,
-        "points_reward": 15,
-        "peppi_intro": "Now four! Listen...",
-        "peppi_perfect": "PERFECT! Chaar is done! 4️⃣",
-        "peppi_good": "Very good! Four more!",
-        "peppi_try_again": "Good try! Say - chaar!",
-    },
-    {
-        "word": "पाँच",
-        "romanization": "Paanch",
-        "meaning": "Five",
-        "category": "NUMBERS",
-        "difficulty": 1,
-        "display_order": 5,
-        "points_reward": 15,
-        "peppi_intro": "Number five! Listen...",
-        "peppi_perfect": "EXCELLENT! High five! Perfect paanch! 5️⃣",
-        "peppi_good": "Great! You can count to five now!",
-        "peppi_try_again": "Good effort! Say - paanch!",
-    },
-
-    # ========== COLORS (5 challenges) ==========
-    {
-        "word": "लाल",
-        "romanization": "Laal",
-        "meaning": "Red",
-        "category": "COLORS",
-        "difficulty": 1,
-        "display_order": 1,
-        "points_reward": 20,
-        "peppi_intro": "Let's learn red in Hindi! Listen...",
-        "peppi_perfect": "BEAUTIFUL! Perfect laal! Like an apple! 🍎",
-        "peppi_good": "Great! Red sounds lovely!",
-        "peppi_try_again": "Nice try! Say - laal!",
-    },
-    {
-        "word": "नीला",
-        "romanization": "Neela",
-        "meaning": "Blue",
-        "category": "COLORS",
-        "difficulty": 1,
-        "display_order": 2,
-        "points_reward": 20,
-        "peppi_intro": "Now blue! Listen carefully...",
-        "peppi_perfect": "WONDERFUL! Perfect neela! Like the sky! 💙",
-        "peppi_good": "Nice! Blue is beautiful!",
-        "peppi_try_again": "Good try! Say - nee-la!",
-    },
-    {
-        "word": "पीला",
-        "romanization": "Peela",
-        "meaning": "Yellow",
-        "category": "COLORS",
-        "difficulty": 1,
-        "display_order": 3,
-        "points_reward": 20,
-        "peppi_intro": "Yellow time! Listen...",
-        "peppi_perfect": "SUNNY! Perfect peela! Like sunshine! 🌻",
-        "peppi_good": "Great! Yellow sounds bright!",
-        "peppi_try_again": "Good effort! Say - pee-la!",
-    },
-    {
-        "word": "हरा",
-        "romanization": "Hara",
-        "meaning": "Green",
-        "category": "COLORS",
-        "difficulty": 1,
-        "display_order": 4,
-        "points_reward": 20,
-        "peppi_intro": "Now green! Listen...",
-        "peppi_perfect": "PERFECT! Hara like grass and trees! 🌿",
-        "peppi_good": "Nice! Green is fresh!",
-        "peppi_try_again": "Nice try! Say - ha-ra!",
-    },
-    {
-        "word": "सफेद",
-        "romanization": "Safed",
-        "meaning": "White",
-        "category": "COLORS",
-        "difficulty": 1,
-        "display_order": 5,
-        "points_reward": 20,
-        "peppi_intro": "White now! Listen carefully...",
-        "peppi_perfect": "EXCELLENT! Perfect safed! Pure like clouds! ☁️",
-        "peppi_good": "Great! White sounds clean!",
-        "peppi_try_again": "Good try! Say - sa-fed!",
-    },
-
-    # ========== ANIMALS (5 challenges) ==========
-    {
-        "word": "कुत्ता",
-        "romanization": "Kutta",
-        "meaning": "Dog",
-        "category": "ANIMALS",
-        "difficulty": 1,
-        "display_order": 1,
-        "points_reward": 20,
-        "peppi_intro": "Let's learn dog! Listen...",
-        "peppi_perfect": "WOOF WOOF! Perfect kutta! 🐕",
-        "peppi_good": "Great! Dogs are our friends!",
-        "peppi_try_again": "Nice try! Say - kut-ta!",
-    },
-    {
-        "word": "बिल्ली",
-        "romanization": "Billi",
-        "meaning": "Cat",
-        "category": "ANIMALS",
-        "difficulty": 1,
-        "display_order": 2,
-        "points_reward": 20,
-        "peppi_intro": "Now cat! Listen carefully...",
-        "peppi_perfect": "MEOW! Perfect billi! 🐱",
-        "peppi_good": "Nice! Cats are cute!",
-        "peppi_try_again": "Good try! Say - bil-li!",
-    },
-    {
-        "word": "हाथी",
-        "romanization": "Haathi",
-        "meaning": "Elephant",
-        "category": "ANIMALS",
-        "difficulty": 2,
-        "display_order": 3,
-        "points_reward": 25,
-        "peppi_intro": "Big elephant! Listen...",
-        "peppi_perfect": "AMAZING! Perfect haathi! So majestic! 🐘",
-        "peppi_good": "Great! Elephants are wonderful!",
-        "peppi_try_again": "Nice effort! Say - haa-thi!",
-    },
-    {
-        "word": "शेर",
-        "romanization": "Sher",
-        "meaning": "Lion",
-        "category": "ANIMALS",
-        "difficulty": 1,
-        "display_order": 4,
-        "points_reward": 20,
-        "peppi_intro": "The king of jungle! Listen...",
-        "peppi_perfect": "ROAR! Perfect sher! You're brave! 🦁",
-        "peppi_good": "Great! Strong like a lion!",
-        "peppi_try_again": "Good try! Say - sher!",
-    },
-    {
-        "word": "मोर",
-        "romanization": "Mor",
-        "meaning": "Peacock",
-        "category": "ANIMALS",
-        "difficulty": 1,
-        "display_order": 5,
-        "points_reward": 20,
-        "peppi_intro": "National bird of India! Listen...",
-        "peppi_perfect": "BEAUTIFUL! Perfect mor! So colorful! 🦚",
-        "peppi_good": "Nice! Peacocks are gorgeous!",
-        "peppi_try_again": "Good try! Say - mor!",
-    },
-
-    # ========== FOOD (3 challenges) ==========
-    {
-        "word": "रोटी",
-        "romanization": "Roti",
-        "meaning": "Bread/Flatbread",
-        "category": "FOOD",
-        "difficulty": 1,
-        "display_order": 1,
-        "points_reward": 20,
-        "peppi_intro": "Yummy bread! Listen...",
-        "peppi_perfect": "DELICIOUS! Perfect roti! Tasty! 🫓",
-        "peppi_good": "Great! Roti is yummy!",
-        "peppi_try_again": "Good try! Say - ro-ti!",
-    },
-    {
-        "word": "पानी",
-        "romanization": "Paani",
-        "meaning": "Water",
-        "category": "FOOD",
-        "difficulty": 1,
-        "display_order": 2,
-        "points_reward": 20,
-        "peppi_intro": "Essential water! Listen...",
-        "peppi_perfect": "REFRESHING! Perfect paani! Stay hydrated! 💧",
-        "peppi_good": "Nice! Water is important!",
-        "peppi_try_again": "Good try! Say - paa-ni!",
-    },
-    {
-        "word": "दूध",
-        "romanization": "Doodh",
-        "meaning": "Milk",
-        "category": "FOOD",
-        "difficulty": 1,
-        "display_order": 3,
-        "points_reward": 20,
-        "peppi_intro": "Healthy milk! Listen...",
-        "peppi_perfect": "HEALTHY! Perfect doodh! Grow strong! 🥛",
-        "peppi_good": "Great! Milk makes you strong!",
-        "peppi_try_again": "Nice try! Say - doodh!",
-    },
-
-    # ========== FESTIVAL (2 challenges) ==========
-    {
-        "word": "दीया",
-        "romanization": "Diya",
-        "meaning": "Lamp",
-        "category": "FESTIVAL",
-        "difficulty": 1,
-        "display_order": 1,
-        "points_reward": 25,
-        "peppi_intro": "Festival lamp! Listen...",
-        "peppi_perfect": "BRIGHT! Perfect diya! Light up the world! 🪔",
-        "peppi_good": "Beautiful! Diyas bring light!",
-        "peppi_try_again": "Good try! Say - di-ya!",
-    },
-    {
-        "word": "मिठाई",
-        "romanization": "Mithai",
-        "meaning": "Sweets",
-        "category": "FESTIVAL",
-        "difficulty": 2,
-        "display_order": 2,
-        "points_reward": 25,
-        "peppi_intro": "Yummy festival sweets! Listen...",
-        "peppi_perfect": "SWEET! Perfect mithai! Festival time! 🍬",
-        "peppi_good": "Nice! Sweets are festive!",
-        "peppi_try_again": "Good try! Say - mi-tha-i!",
-    },
-]
+# Sample words for each language
+MIMIC_CHALLENGE_DATA = {
+    'HINDI': [
+        {'word': 'नमस्ते', 'romanization': 'namaste', 'meaning': 'Hello', 'category': 'GREETING'},
+        {'word': 'धन्यवाद', 'romanization': 'dhanyavaad', 'meaning': 'Thank you', 'category': 'GREETING'},
+        {'word': 'माता', 'romanization': 'maata', 'meaning': 'Mother', 'category': 'FAMILY'},
+        {'word': 'पिता', 'romanization': 'pita', 'meaning': 'Father', 'category': 'FAMILY'},
+        {'word': 'भाई', 'romanization': 'bhaai', 'meaning': 'Brother', 'category': 'FAMILY'},
+        {'word': 'बहन', 'romanization': 'bahen', 'meaning': 'Sister', 'category': 'FAMILY'},
+        {'word': 'एक', 'romanization': 'ek', 'meaning': 'One', 'category': 'NUMBERS'},
+        {'word': 'दो', 'romanization': 'do', 'meaning': 'Two', 'category': 'NUMBERS'},
+        {'word': 'तीन', 'romanization': 'teen', 'meaning': 'Three', 'category': 'NUMBERS'},
+        {'word': 'लाल', 'romanization': 'laal', 'meaning': 'Red', 'category': 'COLORS'},
+        {'word': 'नीला', 'romanization': 'neela', 'meaning': 'Blue', 'category': 'COLORS'},
+        {'word': 'हरा', 'romanization': 'hara', 'meaning': 'Green', 'category': 'COLORS'},
+        {'word': 'केला', 'romanization': 'kela', 'meaning': 'Banana', 'category': 'FOOD'},
+        {'word': 'आम', 'romanization': 'aam', 'meaning': 'Mango', 'category': 'FOOD'},
+        {'word': 'पानी', 'romanization': 'paani', 'meaning': 'Water', 'category': 'FOOD'},
+    ],
+    'TAMIL': [
+        {'word': 'வணக்கம்', 'romanization': 'vanakkam', 'meaning': 'Hello', 'category': 'GREETING'},
+        {'word': 'நன்றி', 'romanization': 'nandri', 'meaning': 'Thank you', 'category': 'GREETING'},
+        {'word': 'அம்மா', 'romanization': 'amma', 'meaning': 'Mother', 'category': 'FAMILY'},
+        {'word': 'அப்பா', 'romanization': 'appa', 'meaning': 'Father', 'category': 'FAMILY'},
+        {'word': 'ஒன்று', 'romanization': 'onru', 'meaning': 'One', 'category': 'NUMBERS'},
+        {'word': 'இரண்டு', 'romanization': 'irandu', 'meaning': 'Two', 'category': 'NUMBERS'},
+        {'word': 'சிவப்பு', 'romanization': 'sivappu', 'meaning': 'Red', 'category': 'COLORS'},
+        {'word': 'நீலம்', 'romanization': 'neelam', 'meaning': 'Blue', 'category': 'COLORS'},
+    ],
+    'GUJARATI': [
+        {'word': 'નમસ્તે', 'romanization': 'namaste', 'meaning': 'Hello', 'category': 'GREETING'},
+        {'word': 'ધન્યવાદ', 'romanization': 'dhanyavaad', 'meaning': 'Thank you', 'category': 'GREETING'},
+        {'word': 'માતા', 'romanization': 'maata', 'meaning': 'Mother', 'category': 'FAMILY'},
+        {'word': 'પિતा', 'romanization': 'pita', 'meaning': 'Father', 'category': 'FAMILY'},
+        {'word': 'એક', 'romanization': 'ek', 'meaning': 'One', 'category': 'NUMBERS'},
+        {'word': 'બે', 'romanization': 'be', 'meaning': 'Two', 'category': 'NUMBERS'},
+        {'word': 'લાલ', 'romanization': 'laal', 'meaning': 'Red', 'category': 'COLORS'},
+    ],
+    'PUNJABI': [
+        {'word': 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ', 'romanization': 'sat sri akaal', 'meaning': 'Hello', 'category': 'GREETING'},
+        {'word': 'ਧੰਨਵਾਦ', 'romanization': 'dhanyavaad', 'meaning': 'Thank you', 'category': 'GREETING'},
+        {'word': 'ਮਾਂ', 'romanization': 'maa', 'meaning': 'Mother', 'category': 'FAMILY'},
+        {'word': 'ਪਿਓ', 'romanization': 'pio', 'meaning': 'Father', 'category': 'FAMILY'},
+    ],
+}
 
 
 class Command(BaseCommand):
-    """Seed Peppi Mimic pronunciation challenges."""
-
-    help = 'Seeds Hindi pronunciation challenges for Peppi Mimic feature'
+    help = 'Seed Peppi Mimic challenges with sample words and generate reference audio'
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--clear',
+            '--language',
+            type=str,
+            help='Specific language to seed (e.g., HINDI, TAMIL)',
+        )
+        parser.add_argument(
+            '--skip-audio',
             action='store_true',
-            help='Clear existing challenges before seeding',
+            help='Skip audio generation (faster, for testing)',
+        )
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Recreate existing challenges',
         )
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.NOTICE('Seeding Peppi Mimic challenges...'))
+        language = options.get('language')
+        skip_audio = options['skip_audio']
+        force = options['force']
 
-        if options['clear']:
-            deleted_count, _ = PeppiMimicChallenge.objects.all().delete()
-            self.stdout.write(self.style.WARNING(f'Cleared {deleted_count} existing challenges'))
+        if language:
+            languages = [language.upper()]
+        else:
+            languages = list(MIMIC_CHALLENGE_DATA.keys())
 
-        created_count = 0
-        updated_count = 0
-        skipped_count = 0
+        self.stdout.write(f"Seeding mimic challenges for: {', '.join(languages)}")
 
-        for challenge_data in HINDI_CHALLENGES:
-            # Use get_or_create with word+language as unique identifier
-            challenge, created = PeppiMimicChallenge.objects.update_or_create(
-                word=challenge_data['word'],
-                language='HINDI',
+        total_created = 0
+        total_audio = 0
+        errors = []
+
+        for lang in languages:
+            if lang not in MIMIC_CHALLENGE_DATA:
+                self.stdout.write(self.style.WARNING(f"Skipping unknown language: {lang}"))
+                continue
+
+            self.stdout.write(f"\n{'='*50}")
+            self.stdout.write(f"Processing {lang}")
+            self.stdout.write(f"{'='*50}")
+
+            created, audio_count = self._seed_language(
+                lang,
+                MIMIC_CHALLENGE_DATA[lang],
+                skip_audio,
+                force,
+                errors
+            )
+
+            total_created += created
+            total_audio += audio_count
+
+        # Summary
+        self.stdout.write(f"\n{'='*50}")
+        self.stdout.write("SEEDING COMPLETE")
+        self.stdout.write(f"{'='*50}")
+        self.stdout.write(f"Total challenges created: {total_created}")
+        self.stdout.write(f"Total audio generated: {total_audio}")
+        
+        if errors:
+            self.stdout.write(self.style.WARNING(f"\nErrors ({len(errors)}):"))
+            for error in errors[:10]:  # Show first 10 errors
+                self.stdout.write(f"  - {error}")
+            if len(errors) > 10:
+                self.stdout.write(f"  ... and {len(errors) - 10} more")
+
+    def _seed_language(self, language, words, skip_audio, force, errors):
+        """Seed challenges for a specific language."""
+        from django.utils import timezone
+
+        created = 0
+        audio_count = 0
+
+        for i, word_data in enumerate(words):
+            try:
+                with transaction.atomic():
+                    # Check if challenge already exists
+                    existing = PeppiMimicChallenge.objects.filter(
+                        word=word_data['word'],
+                        language=language
+                    ).first()
+
+                    if existing and not force:
+                        self.stdout.write(f"  ⏭ Skipping '{word_data['word']}' (already exists)")
+                        continue
+
+                    # Create or update challenge
+                    challenge, was_created = PeppiMimicChallenge.objects.update_or_create(
+                        word=word_data['word'],
+                        language=language,
+                        defaults={
+                            'romanization': word_data['romanization'],
+                            'meaning': word_data['meaning'],
+                            'category': word_data['category'],
+                            'difficulty': 1,  # Easy for basic words
+                            'display_order': i,
+                            'peppi_intro': f"Listen carefully and repeat after me: {word_data['word']}",
+                            'peppi_perfect': f"MEOW! Perfect! You said '{word_data['word']}' just like a native speaker!",
+                            'peppi_good': f"Good try! Listen again and try to match Peppi's pronunciation.",
+                            'peppi_try_again': "Let's practice together! Listen to Peppi and try again!",
+                            'is_active': True,
+                        }
+                    )
+
+                    if was_created:
+                        created += 1
+                        self.stdout.write(f"  ✓ Created: {word_data['word']} ({word_data['meaning']})")
+                    elif force:
+                        self.stdout.write(f"  ✓ Updated: {word_data['word']}")
+
+                    # Generate reference audio
+                    if not skip_audio:
+                        audio_result = self._generate_audio(challenge)
+                        if audio_result:
+                            audio_count += 1
+                            self.stdout.write(f"    🎵 Audio generated ({audio_result['duration_ms']}ms)")
+
+            except Exception as e:
+                error_msg = f"{language}/{word_data['word']}: {str(e)}"
+                errors.append(error_msg)
+                self.stdout.write(self.style.ERROR(f"  ✗ Error: {error_msg}"))
+
+        return created, audio_count
+
+    def _generate_audio(self, challenge):
+        """Generate and cache TTS audio for a challenge word."""
+        try:
+            # Generate audio using TTS
+            audio_bytes, provider, was_cached = TTSService.get_audio(
+                text=challenge.word,
+                language=challenge.language,
+                voice_profile='kid_friendly',
+            )
+
+            if not audio_bytes:
+                logger.warning(f"No audio generated for {challenge.word}")
+                return None
+
+            # Calculate duration (estimate based on word length)
+            # For accurate duration, we'd need to use a library like mutagen
+            estimated_duration_ms = len(challenge.word) * 150  # ~150ms per character
+
+            # Get or create audio cache entry
+            from django.core.files.base import ContentFile
+            import hashlib
+
+            text_hash = hashlib.md5(challenge.word.encode()).hexdigest()
+            cache_key = f"mimic:{challenge.language}:{text_hash}"
+
+            audio_cache, _ = AudioCache.objects.get_or_create(
+                cache_key=cache_key,
                 defaults={
-                    'romanization': challenge_data['romanization'],
-                    'meaning': challenge_data['meaning'],
-                    'category': challenge_data['category'],
-                    'difficulty': challenge_data['difficulty'],
-                    'display_order': challenge_data['display_order'],
-                    'points_reward': challenge_data['points_reward'],
-                    'peppi_intro': challenge_data['peppi_intro'],
-                    'peppi_perfect': challenge_data['peppi_perfect'],
-                    'peppi_good': challenge_data['peppi_good'],
-                    'peppi_try_again': challenge_data['peppi_try_again'],
-                    'is_active': True,
+                    'text_content': challenge.word,
+                    'text_hash': text_hash,
+                    'language': challenge.language,
+                    'voice_style': 'kid_friendly',
+                    'provider': provider,
+                    'audio_size_bytes': len(audio_bytes),
+                    'audio_duration_ms': estimated_duration_ms,
+                    'content_type': 'mimic',
+                    'content_id': str(challenge.id),
                 }
             )
 
-            if created:
-                created_count += 1
-                self.stdout.write(f'  + Created: {challenge.word} ({challenge.romanization})')
+            # Save audio file
+            if audio_cache.audio_file:
+                # File already exists
+                pass
             else:
-                updated_count += 1
-                self.stdout.write(f'  ~ Updated: {challenge.word} ({challenge.romanization})')
+                audio_cache.audio_file.save(
+                    f"mimic_{challenge.id}.mp3",
+                    ContentFile(audio_bytes),
+                    save=True,
+                )
 
-        # Summary by category
-        self.stdout.write('\n' + self.style.SUCCESS('Challenge summary by category:'))
-        for category, label in PeppiMimicChallenge.Category.choices:
-            count = PeppiMimicChallenge.objects.filter(category=category, language='HINDI').count()
-            if count > 0:
-                self.stdout.write(f'  {label}: {count} challenges')
+            # Link challenge to audio cache
+            challenge.audio_cache = audio_cache
+            challenge.audio_url = audio_cache.audio_url or f"/media/{audio_cache.audio_file.name}"
+            challenge.save(update_fields=['audio_cache', 'audio_url'])
 
-        total = PeppiMimicChallenge.objects.filter(language='HINDI', is_active=True).count()
-        self.stdout.write('\n' + self.style.SUCCESS(
-            f'Seeding complete!\n'
-            f'  Created: {created_count}\n'
-            f'  Updated: {updated_count}\n'
-            f'  Total Hindi challenges: {total}'
-        ))
+            return {
+                'provider': provider,
+                'duration_ms': estimated_duration_ms,
+                'cached': was_cached,
+            }
+
+        except TTSServiceError as e:
+            logger.error(f"TTS error for {challenge.word}: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Error generating audio for {challenge.word}: {e}")
+            return None

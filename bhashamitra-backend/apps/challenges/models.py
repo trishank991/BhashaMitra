@@ -36,7 +36,7 @@ class ChallengeCategory(models.TextChoices):
     FAMILY = 'family', 'Family Members'
     FOOD = 'food', 'Food & Fruits'
     GREETINGS = 'greetings', 'Greetings & Phrases'
-    MIMIC = 'mimic', 'Mimic the Sentence'
+    GRAMMAR = 'grammar', 'Grammar'
 
 
 class ChallengeDifficulty(models.TextChoices):
@@ -280,4 +280,3 @@ class UserChallengeQuota(models.Model):
         self.challenges_created_today += 1
         self.total_challenges_created += 1
         self.save(update_fields=['challenges_created_today', 'total_challenges_created'])
-        

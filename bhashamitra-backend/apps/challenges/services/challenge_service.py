@@ -54,10 +54,10 @@ class ChallengeService:
         if vocab_count >= cls.CHOICES_COUNT:
             available.append({"value": "VOCABULARY", "label": "Vocabulary", "item_count": vocab_count})
 
-        # 3. Mimic
+        # 3. Grammar
         grammar_count = GrammarRule.objects.filter(topic__language=lang_upper, topic__is_active=True).count()
         if grammar_count >= cls.CHOICES_COUNT:
-            available.append({"value": "MIMIC", "label": "Peppi Mimic", "item_count": grammar_count})
+            available.append({"value": "GRAMMAR", "label": "Grammar", "item_count": grammar_count})
 
         return available
 
@@ -66,7 +66,7 @@ class ChallengeService:
         generators = {
             'ALPHABET': cls._generate_alphabet,
             'VOCABULARY': cls._generate_vocabulary,
-            'MIMIC': cls._generate_mimic,
+            'GRAMMAR': cls._generate_grammar,
         }
         handler = generators.get(category.upper())
         if not handler: return []
@@ -118,7 +118,7 @@ class ChallengeService:
         }
 
     @classmethod
-    def _generate_mimic(cls, lang: str, count: int) -> List[Dict]:
+    def _generate_grammar(cls, lang: str, count: int) -> List[Dict]:
         items = list(GrammarRule.objects.filter(topic__language=lang, topic__is_active=True))
         if not items: return []
         selected = random.sample(items, min(len(items), count))

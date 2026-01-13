@@ -25,9 +25,10 @@ peppi_chat_end_viewset = PeppiChatViewSet.as_view({
 })
 
 # These URLs are nested under /api/v1/children/<uuid:child_id>/peppi-chat/
-# The child_id is already captured by the parent URL pattern
+# The child_id is captured by this URL pattern prefix
 urlpatterns = [
-    # Peppi chat status (global, not child-specific)
+    # Peppi chat status (child-specific for tier checking)
+    # GET /api/v1/children/{child_id}/peppi-chat/status/
     path(
         'status/',
         PeppiChatStatusView.as_view(),

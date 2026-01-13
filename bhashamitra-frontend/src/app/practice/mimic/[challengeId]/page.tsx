@@ -9,7 +9,7 @@ export default function MimicChallengePage() {
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleStopRecording = async (blob: Blob) => {
+  const handleStopRecording = async (blob: Blob, durationMs: number = 3000) => {
     setIsUploading(true);
     try {
       // 1. Upload the audio file
@@ -22,12 +22,14 @@ export default function MimicChallengePage() {
       }
 
       // 2. Submit the attempt
-      // FIXED: Changed from passing an object to passing 3 positional arguments 
-      // as required by your api.ts definition.
+      // Fixed: API expects (childId, challengeId, data) in that order
       const submitRes = await api.submitMimicAttempt(
-        challengeId as string,                                      // Arg 1: challenge_id
-        localStorage.getItem('current_child_id') || 'default',      // Arg 2: child_id
-        uploadRes.data.audio_url                                    // Arg 3: audio_url
+        localStorage.getItem('current_child_id') || 'default',      // Arg 1: child_id
+        challengeId as string,                                      // Arg 2: challenge_id
+        { 
+          audio_url: uploadRes.data.audio_url,
+          duration_ms: durationMs
+        }                                                           // Arg 3: data object
       ) as any;
 
       if (submitRes?.success) {

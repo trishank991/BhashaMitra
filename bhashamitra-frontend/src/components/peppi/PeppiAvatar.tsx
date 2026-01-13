@@ -9,6 +9,7 @@ interface PeppiAvatarProps {
   showBubble?: boolean;
   onClick?: () => void;
   className?: string;
+  mood?: 'happy' | 'excited' | 'thinking' | 'encouraging' | 'celebrating' | 'sleepy';
 }
 
 const sizeStyles = {
@@ -66,8 +67,11 @@ const moodAnimations: Record<string, Variants> = {
   },
 };
 
-export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className }: PeppiAvatarProps) {
-  const { mood, currentMessage, isTyping } = usePeppiStore();
+export function PeppiAvatar({ size = 'md', showBubble = true, onClick, className, mood: propMood }: PeppiAvatarProps) {
+  const store = usePeppiStore();
+  // Use prop mood if provided, otherwise fall back to store mood
+  const mood = propMood || store.mood;
+  const { currentMessage, isTyping } = store;
   const { container, svg } = sizeStyles[size];
   const animation = moodAnimations[mood] || moodAnimations.happy;
 

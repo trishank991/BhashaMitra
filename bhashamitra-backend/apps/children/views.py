@@ -20,6 +20,10 @@ from .serializers import (
 from apps.curriculum.models.vocabulary import VocabularyTheme, VocabularyWord
 from apps.curriculum.serializers.vocabulary import VocabularyThemeSerializer, VocabularyWordSerializer
 
+# Grammar topic proxy views
+from apps.curriculum.models.grammar import GrammarTopic
+from apps.curriculum.serializers.grammar import GrammarTopicSerializer
+
 
 class VocabularyThemeListView(APIView):
     """List vocabulary themes for a child (proxies to curriculum)."""
@@ -62,6 +66,26 @@ class VocabularyThemeWordsView(APIView):
         ).order_by('order', 'word')
         
         serializer = VocabularyWordSerializer(words, many=True)
+        return Response({'data': serializer.data})
+
+
+class GrammarTopicListView(APIView):
+    """List grammar topics for a child."""
+    permission_classes = [IsAuthenticated, IsParentOfChild]
+
+    def get(self, request, child_id):
+        try:
+            child = Child.objects.get(pk=child_id, user=request.user)
+        except Child.DoesNotExist:
+            return Response({'detail': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        language = request.query_params.get('language', child.language)
+        topics = GrammarTopic.objects.filter(
+            language=language.upper(),
+            is_active=True
+        ).order_by('level', 'order')
+        
+        serializer = GrammarTopicSerializer(topics, many=True)
         return Response({'data': serializer.data})
 
 

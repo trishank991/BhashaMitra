@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/v1/auth/', include('apps.users.urls', namespace='users')),
     path('api/v1/challenges/', include('apps.challenges.urls', namespace='challenges')),
     path('api/v1/children/', include('apps.children.urls', namespace='children')),
+    path('api/v1/peppi-chat/', include('apps.peppi_chat.urls', namespace='peppi_chat')),
     path('api/v1/stories/', include('apps.stories.urls', namespace='stories')),
     path('api/v1/speech/', include('apps.speech.urls', namespace='speech')),
     path('api/v1/festivals/', include('apps.festivals.urls')),
@@ -44,4 +45,3 @@ if settings.DEBUG:
 
     # Serve media files in development
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    

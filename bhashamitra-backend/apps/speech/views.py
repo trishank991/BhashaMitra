@@ -503,7 +503,7 @@ class MimicChallengeListView(APIView):
         )
 
         return Response({
-            'challenges': serializer.data,
+            'results': serializer.data,
             'categories': dict(PeppiMimicChallenge.Category.choices),
             'total': len(serializer.data),
         })

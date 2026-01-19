@@ -89,10 +89,60 @@ def play_challenge(request, code):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def submit_challenge(request):
+    """
+    Submit answers for a challenge and persist the attempt.
+
+    Request Body:
+    {
+        "code": "7K3M",
+        "answers": [0, 2, 1, 3, 0],
+        "participant_name": "Aarav",
+        "participant_location": "Auckland",
+        "time_taken": 120
+    }
+    """
+    from .models import ChallengeAttempt
+
     code = request.data.get('code')
     answers = request.data.get('answers', [])
+    participant_name = request.data.get('participant_name', 'Anonymous')
+    participant_location = request.data.get('participant_location', '')
+    time_taken = request.data.get('time_taken', 0)
+
     challenge = get_object_or_404(Challenge, code=code)
     result = ChallengeService.calculate_score(challenge.questions, answers)
+
+    # Create and persist the attempt
+    attempt = ChallengeAttempt.objects.create(
+        challenge=challenge,
+        participant_name=participant_name,
+        participant_location=participant_location,
+        participant_user=request.user if request.user.is_authenticated else None,
+        score=result['score'],
+        max_score=result['max_score'],
+        percentage=result['percentage'],
+        time_taken_seconds=time_taken,
+        answers=answers,
+        is_completed=True,
+        completed_at=timezone.now()
+    )
+
+    # Update challenge stats
+    challenge.total_attempts += 1
+    challenge.total_completions += 1
+    # Recalculate average score
+    all_attempts = ChallengeAttempt.objects.filter(challenge=challenge, is_completed=True)
+    if all_attempts.exists():
+        from django.db.models import Avg
+        avg = all_attempts.aggregate(avg=Avg('percentage'))['avg']
+        challenge.average_score = avg or 0
+    challenge.save(update_fields=['total_attempts', 'total_completions', 'average_score'])
+
+    # Add attempt info to result
+    result['attempt_id'] = str(attempt.id)
+    result['rank'] = attempt.rank
+    result['participant_name'] = participant_name
+
     return Response({"success": True, "data": result})
 
 @api_view(['GET'])
@@ -121,4 +171,58 @@ def challenge_detail(request, code):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def challenge_leaderboard(request, code):
-    return Response({"success": True, "data": []})
+    """
+    Get leaderboard for a challenge.
+
+    Query Parameters:
+    - limit: Max results (default 50)
+
+    Response:
+    [
+        {
+            "rank": 1,
+            "participant_name": "Aarav",
+            "participant_location": "Auckland",
+            "score": 5,
+            "max_score": 5,
+            "percentage": 100.0,
+            "time_taken_seconds": 45,
+            "completed_at": "2025-01-19T12:00:00Z"
+        },
+        ...
+    ]
+    """
+    from .models import ChallengeAttempt
+
+    challenge = get_object_or_404(Challenge, code=code)
+    limit = int(request.query_params.get('limit', 50))
+
+    # Get top attempts ordered by percentage (desc), then time (asc)
+    attempts = ChallengeAttempt.objects.filter(
+        challenge=challenge,
+        is_completed=True
+    ).order_by('-percentage', 'time_taken_seconds')[:limit]
+
+    leaderboard = []
+    for i, attempt in enumerate(attempts, 1):
+        leaderboard.append({
+            'rank': i,
+            'participant_name': attempt.participant_name,
+            'participant_location': attempt.participant_location,
+            'score': attempt.score,
+            'max_score': attempt.max_score,
+            'percentage': attempt.percentage,
+            'time_taken_seconds': attempt.time_taken_seconds,
+            'completed_at': attempt.completed_at.isoformat() if attempt.completed_at else None,
+        })
+
+    return Response({
+        "success": True,
+        "data": leaderboard,
+        "challenge": {
+            "code": challenge.code,
+            "title": challenge.title,
+            "total_participants": challenge.attempts.filter(is_completed=True).count(),
+            "average_score": round(challenge.average_score, 1),
+        }
+    })

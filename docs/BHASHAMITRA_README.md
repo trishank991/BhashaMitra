@@ -1,49 +1,42 @@
 # BhashaMitra - Complete Heritage Language Learning Platform
 
-> **Version**: 2.0 | **Last Updated**: December 2024  
+> **Version**: 3.0 | **Last Updated**: January 2025
 > **Mission**: Empower diaspora children to connect with their linguistic heritage through comprehensive, joyful learning
 
 ---
 
-## 🎯 Project Overview
+## Project Overview
 
 BhashaMitra is a **complete language learning platform** designed specifically for Indian diaspora children (ages 4-14) in New Zealand, Australia, and globally. Unlike generic language apps, BhashaMitra provides:
 
-- **📚 Alphabets & Script Learning** - Learn Devanagari, Tamil, and other scripts
-- **📖 Vocabulary Building** - 2000+ words with spaced repetition
-- **✏️ Grammar Foundations** - Age-appropriate grammar lessons
-- **📕 Story-Based Reading** - 53,000+ StoryWeaver stories
-- **🗣️ Speaking & Pronunciation** - AI-powered feedback
-- **🎮 Educational Games** - 10+ interactive game types
-- **📊 Assessments & Certificates** - Track mastery and celebrate achievements
+- **Alphabets & Script Learning** - Learn Devanagari, Tamil, and other scripts
+- **Vocabulary Building** - 2000+ words with spaced repetition (SM-2 algorithm)
+- **Grammar Foundations** - Age-appropriate grammar lessons
+- **Story-Based Reading** - 53,000+ StoryWeaver stories
+- **Speaking & Pronunciation** - Peppi Mimic with hybrid scoring
+- **Educational Games** - 10+ interactive game types
+- **Assessments & Certificates** - Track mastery and celebrate achievements
+- **Peppi AI Tutor** - Gemini 2.0 powered conversational assistant
+- **Viral Challenge System** - Shareable quizzes with leaderboards
+- **Festival Activities** - Cultural learning through celebrations
 
 ---
 
-## 🌐 Target Languages
+## Target Languages
 
-| Language | Script | Phase | Status |
-|----------|--------|-------|--------|
-| **Hindi** | Devanagari | Phase 1 | 🟢 MVP |
-| **Tamil** | Tamil Script | Phase 2 | 🟡 Month 2-3 |
-| **Gujarati** | Gujarati Script | Phase 3 | ⚪ Month 4 |
-| **Punjabi** | Gurmukhi | Phase 3 | ⚪ Month 5 |
-| **Telugu** | Telugu Script | Phase 4 | ⚪ Month 6 |
-| **Malayalam** | Malayalam Script | Phase 4 | ⚪ Month 7 |
-
----
-
-## 👥 Target Users
-
-| User Type | Age | Needs |
-|-----------|-----|-------|
-| **Children** | 4-14 | Fun, engaging learning with rewards |
-| **Parents** | 25-50 | Progress tracking, curriculum control |
-| **Grandparents** | 50+ | Voice recording contributions |
-| **Teachers** | Any | Classroom management (B2B) |
+| Language | Script | Status |
+|----------|--------|--------|
+| **Hindi** | Devanagari | Active |
+| **Tamil** | Tamil Script | Active |
+| **Gujarati** | Gujarati Script | Active |
+| **Punjabi** | Gurmukhi | Active |
+| **Telugu** | Telugu Script | Active |
+| **Malayalam** | Malayalam Script | Active |
+| **Fiji Hindi** | Devanagari | Active |
 
 ---
 
-## 🏗️ Technology Stack
+## Technology Stack
 
 ### Backend (Django)
 | Component | Technology | Purpose |
@@ -51,410 +44,352 @@ BhashaMitra is a **complete language learning platform** designed specifically f
 | **Framework** | Django 5.x | Core backend |
 | **API** | Django REST Framework | RESTful API |
 | **Database** | PostgreSQL (Supabase) | Data persistence |
-| **Auth** | JWT (SimpleJWT) | Authentication |
-| **Cache** | Redis | Session & API caching |
-| **Storage** | Supabase Storage / R2 | Audio, images |
+| **Auth** | JWT (SimpleJWT) + Google OAuth | Authentication |
+| **Deployment** | Render.com | Production hosting |
 
-### External Services
+### External Services (CURRENT)
 | Service | Provider | Purpose |
 |---------|----------|---------|
 | **Stories** | StoryWeaver | 53,000+ CC stories |
-| **TTS/STT** | Bhashini (Govt. India) | Speech services |
+| **TTS (Primary)** | Hugging Face Indic Parler | Indian language TTS |
+| **TTS (Fallback)** | Google Cloud TTS | Reliable fallback |
+| **STT** | Google Cloud STT / Sarvam | Speech recognition |
+| **AI Chat** | Google Gemini 2.0 Flash | Peppi AI conversations |
+| **Payments** | Stripe | Subscription billing |
 | **Email** | Resend | Transactional email |
-| **Analytics** | PostHog | User analytics |
-| **Monitoring** | Sentry | Error tracking |
 
-### Frontend (Separate Repo)
+> **Note**: Bhashini (Govt. India) is DEPRECATED. Current TTS chain: Cache → Hugging Face Indic Parler → Google Cloud TTS
+
+### Frontend
 | Component | Technology |
 |-----------|------------|
-| **Framework** | Next.js 14 |
-| **Styling** | Tailwind CSS + Shadcn/ui |
-| **State** | Zustand + React Query |
+| **Framework** | Next.js 14.2 (App Router) |
+| **Language** | TypeScript 5.9 |
+| **Styling** | Tailwind CSS 3.4 |
+| **State** | Zustand 5.0 with persistence |
 | **Deployment** | Vercel |
 
 ---
 
-## 📁 Documentation Structure
+## Backend Architecture (23 Django Apps)
 
 ```
-bhashamitra-docs/
-├── README.md                           # This file - Project overview
-├── IMPLEMENTATION/
-│   ├── 01_COMPLETE_SETUP.md           # Full project setup guide
-│   ├── 02_DATABASE_SCHEMA.md          # All 30+ models
-│   ├── 03_API_SPECIFICATION.md        # Complete API endpoints
-│   ├── 04_CURRICULUM_DESIGN.md        # Learning modules design
-│   └── 05_DEPLOYMENT_GUIDE.md         # Production deployment
-├── BUSINESS/
-│   ├── BUSINESS_PLAN.md               # Business strategy
-│   └── FEATURE_ROADMAP.md             # Feature timeline
-└── DEVELOPMENT/
-    ├── TESTING_STRATEGY.md            # QA approach
-    └── CONTRIBUTING.md                # Contribution guidelines
+apps/
+├── core/               - Base models, utilities, health checks
+├── users/              - Authentication, subscription tiers
+├── children/           - Child profiles
+├── stories/            - StoryWeaver integration
+├── speech/             - TTS/STT, Peppi Mimic pronunciation
+├── challenges/         - Viral shareable quiz system
+├── curriculum/         - L1-L10 comprehensive curriculum
+├── peppi_chat/         - Peppi AI chatbot with moderation
+├── gamification/       - Points, badges, streaks, Peppi evolution
+├── family/             - Multi-child family grouping
+├── payments/           - Stripe subscriptions
+├── festivals/          - Cultural festivals with activities
+├── progress/           - Learning progress tracking
+├── parent_engagement/  - Parent dashboard features
+├── live_classes/       - Live teaching sessions (premium)
+├── analytics/          - Event tracking & cohorts
+├── certifications/     - Achievement certificates
+├── offline/            - Offline content support
+├── referrals/          - User referral program
+└── localization/       - Multi-language support
 ```
+
+**Total: 103 Models, 147+ API Endpoints**
 
 ---
 
-## 📊 Complete Database Schema
+## Database Schema (Key Models)
 
-### Core Models (8)
+### Core Models
 | Model | Purpose |
 |-------|---------|
-| `User` | Parent accounts |
-| `Child` | Child profiles |
-| `Story` | Cached stories from StoryWeaver |
-| `StoryPage` | Individual story pages |
+| `User` | Parent accounts with subscription tiers |
+| `Child` | Child profiles with language, level, Peppi preferences |
+| `Story` / `StoryPage` | Cached StoryWeaver content |
 | `Progress` | Reading progress tracking |
 | `DailyActivity` | Daily activity aggregation |
-| `Badge` | Achievement definitions |
-| `Streak` | Daily streak tracking |
 
-### Curriculum Models (22)
+### Gamification Models
+| Model | Purpose |
+|-------|---------|
+| `Badge` / `ChildBadge` | Achievement badges |
+| `Streak` | Daily streak tracking |
+| `PeppiEvolution` | Peppi character evolution states |
+
+### Speech & Mimic Models
+| Model | Purpose |
+|-------|---------|
+| `AudioCache` | Permanent TTS audio storage |
+| `VoiceCharacter` | Voice profiles (Peppi, Grandmother, Teacher) |
+| `PeppiMimicChallenge` | Pronunciation practice words |
+| `PeppiMimicAttempt` | Child's pronunciation recordings with scores |
+| `PeppiMimicProgress` | Progress tracking per challenge |
+
+### Challenge Models
+| Model | Purpose |
+|-------|---------|
+| `Challenge` | Shareable 4-char code quizzes |
+| `ChallengeAttempt` | Participant attempts (no auth needed) |
+| `UserChallengeQuota` | Daily limits (FREE: 2, PAID: unlimited) |
+
+### Curriculum Models
 | Category | Models |
 |----------|--------|
-| **Script/Alphabet** | Script, AlphabetCategory, Letter, Matra, LetterActivity, LetterProgress |
-| **Vocabulary** | VocabularyTheme, VocabularyWord, WordProgress, FlashcardSession |
+| **Levels** | CurriculumLevel, CurriculumModule, Lesson, LessonContent |
+| **Alphabet** | Script, AlphabetCategory, Letter, Matra, LetterProgress |
+| **Vocabulary** | VocabularyTheme, VocabularyWord, WordProgress |
 | **Grammar** | GrammarTopic, GrammarRule, GrammarExercise, GrammarProgress |
-| **Games** | Game, GameContent, GameSession, GameLeaderboard |
+| **Games** | Game, GameSession, GameLeaderboard |
 | **Assessment** | Assessment, AssessmentQuestion, AssessmentAttempt, Certificate |
 
-**Total: 30+ Models**
+### Peppi Chat Models
+| Model | Purpose |
+|-------|---------|
+| `PeppiConversation` | Chat sessions with modes |
+| `PeppiChatMessage` | Multi-language messages |
+| `PeppiSafetyLog` | Content moderation audit |
+| `PeppiChatUsage` | Rate limiting per child |
 
 ---
 
-## 🔌 Complete API Endpoints
+## Subscription Tiers
 
-### Authentication
+| Feature | FREE | STANDARD ($20/mo) | PREMIUM ($30/mo) |
+|---------|------|-------------------|------------------|
+| Challenges/day | 2 | Unlimited | Unlimited |
+| Child profiles | 1 | 2+ | Unlimited |
+| Stories | L1 only | All | All |
+| TTS Provider | cache_only | Google Standard | Google WaveNet |
+| Games/day | 2 | Unlimited | Unlimited |
+| Peppi AI Chat | No | Yes | Yes |
+| Live Classes/mo | 0 | 2 | Unlimited |
+| Content Access | L1 browse | L1-current level | L1-L10 |
+
+---
+
+## API Endpoints Overview
+
+### Authentication (13 endpoints)
 ```
 POST   /api/v1/auth/register/
 POST   /api/v1/auth/login/
 POST   /api/v1/auth/logout/
 POST   /api/v1/auth/refresh/
+POST   /api/v1/auth/google/
+POST   /api/v1/auth/verify-email/
+POST   /api/v1/auth/resend-verification/
+POST   /api/v1/auth/password-reset/
+POST   /api/v1/auth/password-reset/confirm/
 GET    /api/v1/auth/me/
+POST   /api/v1/auth/complete-onboarding/
+GET    /api/v1/auth/subscription-tiers/
+GET    /api/v1/auth/subscription/
 ```
 
-### Children Management
+### Challenges (9 endpoints)
 ```
-GET    /api/v1/children/
-POST   /api/v1/children/
-GET    /api/v1/children/{id}/
-PATCH  /api/v1/children/{id}/
-DELETE /api/v1/children/{id}/
-GET    /api/v1/children/{id}/stats/
+# Public (no auth required)
+GET/POST /api/v1/challenges/play/{code}/
+POST     /api/v1/challenges/submit/
+GET      /api/v1/challenges/leaderboard/{code}/
+
+# Authenticated
+GET/POST /api/v1/challenges/
+GET      /api/v1/challenges/quota/
+GET      /api/v1/challenges/categories/
+GET      /api/v1/challenges/languages/
+GET      /api/v1/challenges/{code}/
 ```
 
-### Stories & Reading
-```
-GET    /api/v1/stories/?language=HINDI&level=1
-GET    /api/v1/stories/{id}/
-GET    /api/v1/stories/{id}/pages/
-GET    /api/v1/children/{id}/progress/
-POST   /api/v1/children/{id}/progress/action/
-```
-
-### Gamification
-```
-GET    /api/v1/children/{id}/badges/
-GET    /api/v1/children/{id}/streak/
-GET    /api/v1/children/{id}/level/
-GET    /api/v1/children/{id}/recordings/
-POST   /api/v1/children/{id}/recordings/
-```
-
-### Speech Services
+### Speech & Mimic (10+ endpoints)
 ```
 POST   /api/v1/speech/tts/
-POST   /api/v1/speech/stt/
+GET    /api/v1/speech/stories/{uuid}/pages/{page}/audio/
+POST   /api/v1/speech/upload-audio/
+GET    /api/v1/speech/mimic/challenges/
+GET    /api/v1/speech/mimic/challenges/{id}/
+POST   /api/v1/speech/mimic/challenges/{id}/attempt/
+GET    /api/v1/speech/mimic/progress/
+PATCH  /api/v1/speech/mimic/attempts/{id}/share/
 ```
 
-### Curriculum - Alphabets
+### Peppi Chat (8 endpoints)
 ```
-GET    /api/v1/scripts/
-GET    /api/v1/scripts/{lang}/letters/
-GET    /api/v1/scripts/{lang}/letters/{id}/
-POST   /api/v1/children/{id}/letters/progress/
-```
-
-### Curriculum - Vocabulary
-```
-GET    /api/v1/vocabulary/themes/
-GET    /api/v1/vocabulary/themes/{id}/words/
-GET    /api/v1/children/{id}/vocabulary/due/
-POST   /api/v1/children/{id}/vocabulary/review/
+GET/POST /api/v1/children/{child_id}/peppi-chat/
+GET      /api/v1/children/{child_id}/peppi-chat/status/
+GET      /api/v1/children/{child_id}/peppi-chat/{id}/
+DELETE   /api/v1/children/{child_id}/peppi-chat/{id}/
+POST     /api/v1/children/{child_id}/peppi-chat/{id}/messages/
+POST     /api/v1/children/{child_id}/peppi-chat/{id}/end/
+POST     /api/v1/children/{child_id}/peppi-chat/{id}/escalate/
 ```
 
-### Curriculum - Grammar
+### Curriculum (60+ endpoints)
 ```
-GET    /api/v1/grammar/topics/
-GET    /api/v1/grammar/topics/{id}/
-GET    /api/v1/grammar/topics/{id}/exercises/
-POST   /api/v1/children/{id}/grammar/submit/
-```
+# Levels & Modules
+GET /api/v1/curriculum/levels/
+GET /api/v1/curriculum/modules/{uuid}/lessons/
+GET /api/v1/curriculum/lessons/{uuid}/
 
-### Curriculum - Games
-```
-GET    /api/v1/games/
-GET    /api/v1/games/{id}/
-POST   /api/v1/children/{id}/games/start/
-POST   /api/v1/children/{id}/games/end/
-GET    /api/v1/games/{id}/leaderboard/
-```
+# Alphabet
+GET /api/v1/curriculum/alphabet/scripts/
+GET /api/v1/curriculum/alphabet/scripts/{uuid}/letters/
 
-### Curriculum - Assessments
-```
-GET    /api/v1/assessments/
-POST   /api/v1/children/{id}/assessments/start/
-POST   /api/v1/children/{id}/assessments/submit/
-GET    /api/v1/children/{id}/certificates/
+# Vocabulary
+GET /api/v1/curriculum/vocabulary/themes/
+GET /api/v1/curriculum/vocabulary/flashcards/due/
+POST /api/v1/curriculum/vocabulary/flashcards/review/
+
+# Grammar
+GET /api/v1/curriculum/grammar/topics/
+POST /api/v1/curriculum/grammar/exercises/{uuid}/submit/
+
+# Games
+GET /api/v1/curriculum/games/
+POST /api/v1/curriculum/games/{uuid}/start/
+
+# Assessments
+GET /api/v1/curriculum/assessments/
+POST /api/v1/curriculum/assessments/{uuid}/submit/
 ```
 
 ---
 
-## 📚 Learning Modules
+## Frontend Architecture
 
-### Module 1: Script & Alphabets (🔤)
-**Goal**: Learn to recognize and write the script
+### State Management (8 Zustand Stores)
+| Store | Purpose |
+|-------|---------|
+| `authStore` | Authentication, tokens, children |
+| `progressStore` | XP, levels, badges, streaks |
+| `peppiStore` | Peppi AI state, mood, preferences |
+| `peppiChatStore` | Chat conversations, messages |
+| `subscriptionStore` | Tier info, feature limits |
+| `familyStore` | Family groups, invites |
+| `parentStore` | Dashboard data |
+| `offlineStore` | Offline queue |
 
-| Component | Description |
-|-----------|-------------|
-| Letter Recognition | See letter, identify sound |
-| Letter Tracing | Practice writing with guides |
-| Letter Sounds | Audio pronunciation |
-| Matra System | Vowel marks on consonants |
-| Letter Games | Interactive learning |
+### Key Pages
+| Route | Feature |
+|-------|---------|
+| `/home` | Main dashboard with Peppi |
+| `/learn/levels` | L1-L10 curriculum |
+| `/learn/alphabet` | Script learning |
+| `/learn/vocabulary` | Flashcards |
+| `/learn/grammar` | Grammar exercises |
+| `/stories` | Story library |
+| `/games/{id}` | Interactive games |
+| `/practice/mimic/{id}` | Pronunciation practice |
+| `/challenges` | Create/manage quizzes |
+| `/c/{code}` | Play shared quiz (public) |
+| `/parent/dashboard` | Parent analytics |
+| `/festivals` | Cultural activities |
 
-**Hindi Devanagari**: 13 vowels + 33 consonants + matras
+---
 
-### Module 2: Vocabulary Building (📖)
-**Goal**: Build a strong word foundation
+## Peppi AI System
 
-| Component | Description |
-|-----------|-------------|
-| Thematic Lists | Family, Colors, Numbers, etc. |
-| Flashcards | SRS-based spaced repetition |
-| Audio | Native speaker pronunciation |
-| Images | Visual association |
-| Example Sentences | Contextual usage |
+### Peppi Chat Modes
+1. **HOMEWORK_HELP** - Answer questions about lessons
+2. **CASUAL_CHAT** - Friendly conversation
+3. **FESTIVAL_STORY** - Festival-themed storytelling
 
-**Target**: 500+ words per language across 5 levels
+### Peppi Evolution
+```
+Kitten (0-500 XP) → Young Cat (500-2000 XP) → Adult Cat (2000-5000 XP) → Wise Cat (5000+ XP)
+```
 
-### Module 3: Stories (📕)
-**Goal**: Develop reading comprehension
-
-| Component | Description |
-|-----------|-------------|
-| Story Library | 53,000+ StoryWeaver stories |
-| Read-Along | TTS audio support |
-| Comprehension | Story-based vocabulary |
-| Voice Recording | Practice pronunciation |
-| Progress Tracking | Pages, time, completion |
-
-### Module 4: Grammar Foundations (✏️)
-**Goal**: Understand sentence structure
-
-| Component | Description |
-|-----------|-------------|
-| Rules | Age-appropriate explanations |
-| Examples | Clear, relatable examples |
-| Exercises | Fill-blank, reorder, translate |
-| Progress | Track mastery per topic |
-
-**Topics**: Sentence structure, Gender, Number, Pronouns, Verbs
-
-### Module 5: Speaking & Pronunciation (🗣️)
-**Goal**: Develop speaking confidence
-
-| Component | Description |
-|-----------|-------------|
-| Listen & Repeat | Shadow native speakers |
-| Pronunciation Feedback | STT-based scoring |
-| Conversation Practice | Dialogue exercises |
-| Family Recordings | Grandparent voice messages |
-
-### Module 6: Games & Activities (🎮)
-**Goal**: Make learning fun
-
-| Game Type | Skills |
+### Mimic Pronunciation Scoring (V2 Hybrid)
+| Component | Weight |
 |-----------|--------|
-| Memory Match | Vocabulary recall |
-| Word Search | Letter recognition |
-| Quiz Challenge | Mixed skills |
-| Hangman | Spelling |
-| Word Builder | Letter combination |
-| Sentence Jumble | Grammar |
-| Speed Round | Quick recall |
+| STT Match | 50% |
+| Text Match | 30% |
+| Audio Energy | 15% |
+| Duration Match | 5% |
 
-### Module 7: Assessments (📊)
-**Goal**: Measure and certify progress
-
-| Assessment Type | Purpose |
-|-----------------|---------|
-| Placement Test | Initial level determination |
-| Level-Up Test | Advance to next level |
-| Module Test | Topic mastery |
-| Skill Assessment | Reading, Writing, etc. |
-| Certificates | Shareable achievements |
+**Star Thresholds**: 3 stars (85+), 2 stars (65-84), 1 star (40-64), 0 stars (<40)
 
 ---
 
-## 🗺️ Implementation Timeline
-
-### Phase 1: Foundation (Week 1-2) ✅
-- [x] Django project setup
-- [x] User authentication (JWT)
-- [x] Child profile management
-- [x] Core database models
-
-### Phase 2: Stories & Progress (Week 2-3) ✅
-- [x] StoryWeaver integration
-- [x] Story caching system
-- [x] Progress tracking
-- [x] Basic gamification (points, badges, streaks)
-
-### Phase 3: Speech Services (Week 3-4) ✅
-- [x] Bhashini TTS integration
-- [x] Bhashini STT integration
-- [x] Voice recording storage
-
-### Phase 4: Vocabulary Module (Week 4-5) 🔄
-- [ ] Vocabulary theme models
-- [ ] Spaced Repetition System (SRS)
-- [ ] Flashcard API
-- [ ] Vocabulary games
-
-### Phase 5: Alphabet Module (Week 5-6) 🔄
-- [ ] Script/Letter models
-- [ ] Letter activities
-- [ ] Tracing exercises
-- [ ] Letter games
-
-### Phase 6: Grammar Module (Week 6-7) ⏳
-- [ ] Grammar topic models
-- [ ] Exercise system
-- [ ] Progress tracking
-
-### Phase 7: Games Module (Week 7-8) ⏳
-- [ ] Game framework
-- [ ] 5+ game types
-- [ ] Leaderboards
-
-### Phase 8: Assessments (Week 8-9) ⏳
-- [ ] Assessment system
-- [ ] Certificate generation
-- [ ] Level progression
-
-### Phase 9: Polish & Launch (Week 9-10) ⏳
-- [ ] UI/UX polish
-- [ ] Performance optimization
-- [ ] Security audit
-- [ ] Production deployment
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.11+
-- PostgreSQL 14+
-- Redis (optional, for caching)
-
-### Setup
-
-```bash
-# Clone repository
-git clone https://github.com/yourusername/bhashamitra-backend.git
-cd bhashamitra-backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements/dev.txt
-
-# Setup environment
-cp .env.example .env
-# Edit .env with your credentials
-
-# Run migrations
-python manage.py migrate
-
-# Seed initial data
-python manage.py seed_badges
-python manage.py seed_hindi_alphabet  # Coming soon
-python manage.py seed_vocabulary      # Coming soon
-
-# Create superuser
-python manage.py createsuperuser
-
-# Run development server
-python manage.py runserver
-
-# Run tests
-pytest -v
-```
-
-### Environment Variables
+## Environment Variables
 
 ```bash
 # Django
 SECRET_KEY=your-secret-key
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
+DEBUG=False
+ALLOWED_HOSTS=bhashamitra.onrender.com
 
-# Database
-DB_NAME=bhashamitra_dev
+# Database (Supabase)
+DB_NAME=postgres
 DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=localhost
+DB_PASSWORD=your-password
+DB_HOST=db.xxx.supabase.co
 DB_PORT=5432
 
-# Bhashini API
-BHASHINI_USER_ID=your-user-id
-BHASHINI_API_KEY=your-api-key
+# Google AI (Peppi Chat)
+GOOGLE_GEMINI_API_KEY=your-key
+GEMINI_MODEL_ID=gemini-2.0-flash
 
-# Storage (Production)
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_STORAGE_BUCKET_NAME=
+# TTS Providers
+GOOGLE_TTS_API_KEY=your-key
+HUGGINGFACE_API_TOKEN=your-token
+TTS_SPACE_ID=ai4bharat/indic-parler-tts
+
+# Stripe
+STRIPE_SECRET_KEY=sk_live_xxx
+STRIPE_PUBLISHABLE_KEY=pk_live_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+
+# Frontend
+FRONTEND_URL=https://bhashamitra.app
 ```
 
 ---
 
-## 📈 Success Metrics
+## Quick Start
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| User Registration | 500+ families | Month 1 |
-| Daily Active Users | 40% of registered | Week 2+ |
-| Story Completion | 50%+ started stories | Ongoing |
-| Vocabulary Retention | 80%+ after 30 days | SRS tracking |
-| Letter Mastery | 100% in 4 weeks | Progress tracking |
-| Level Completion | 1 level per month | Assessment pass rate |
-| Parent Satisfaction | 4.5/5 stars | In-app survey |
+### Prerequisites
+- Python 3.11+
+- PostgreSQL 14+
+- Node.js 18+
+
+### Backend Setup
+```bash
+cd bhashamitra-backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+# Edit .env with your credentials
+python manage.py migrate
+python manage.py seed_all
+python manage.py runserver
+```
+
+### Frontend Setup
+```bash
+cd bhashamitra-frontend
+npm install
+cp .env.example .env.local
+# Edit .env.local
+npm run dev
+```
 
 ---
 
-## 📄 License
+## Known Issues & Critical Gaps
 
-MIT License - See LICENSE file for details.
-
-StoryWeaver content used under CC 4.0 license with attribution.
-
----
-
-## 🤝 Contributing
-
-See CONTRIBUTING.md for guidelines on:
-- Code contributions
-- Content contributions (curriculum, translations)
-- Voice recording contributions
-- Bug reports and feature requests
+See [CRITICAL_GAPS.md](./CRITICAL_GAPS.md) for:
+- Mimic feature URL routing issues
+- Challenge creation/leaderboard issues
+- Grammar question generation issues
 
 ---
 
-## 📞 Contact
+## Contact
 
-- **Founder**: Genius (Orvyn Consulting)
 - **Email**: contact@bhashamitra.co.nz
-- **Website**: https://bhashamitra.co.nz
+- **Website**: https://bhashamitra.app

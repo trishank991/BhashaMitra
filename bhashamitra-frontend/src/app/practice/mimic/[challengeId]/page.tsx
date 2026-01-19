@@ -1,19 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function MimicChallengePage() {
   const { challengeId } = useParams();
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
 
+  // Get child_id from auth store or localStorage
+  const activeChild = useAuthStore((state) => state.activeChild);
+  const [childId, setChildId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Get child ID from store or localStorage
+    const storedChildId = activeChild?.id || localStorage.getItem('current_child_id');
+    if (storedChildId) {
+      setChildId(storedChildId);
+    }
+  }, [activeChild]);
+
   const handleStopRecording = async (blob: Blob, durationMs: number = 3000) => {
+    if (!childId) {
+      alert("Please select a child profile first");
+      return;
+    }
+
     setIsUploading(true);
     try {
-      // 1. Upload the audio file
-      const uploadRes = await api.uploadMimicAudio(challengeId as string, blob) as any;
+      // 1. Upload the audio file - FIXED: pass childId instead of challengeId
+      const uploadRes = await api.uploadMimicAudio(childId, blob) as any;
 
       if (!uploadRes?.success || !uploadRes?.data?.audio_url) {
         alert(uploadRes?.error || "Upload failed");
@@ -22,14 +40,13 @@ export default function MimicChallengePage() {
       }
 
       // 2. Submit the attempt
-      // Fixed: API expects (childId, challengeId, data) in that order
       const submitRes = await api.submitMimicAttempt(
-        localStorage.getItem('current_child_id') || 'default',      // Arg 1: child_id
-        challengeId as string,                                      // Arg 2: challenge_id
-        { 
+        childId,                                                     // Arg 1: child_id
+        challengeId as string,                                       // Arg 2: challenge_id
+        {
           audio_url: uploadRes.data.audio_url,
           duration_ms: durationMs
-        }                                                           // Arg 3: data object
+        }                                                            // Arg 3: data object
       ) as any;
 
       if (submitRes?.success) {

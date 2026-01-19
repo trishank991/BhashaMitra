@@ -8,6 +8,7 @@
 export type ChallengeCategory =
   | 'alphabet'
   | 'vocabulary'
+  | 'grammar'
   | 'numbers'
   | 'colors'
   | 'animals'

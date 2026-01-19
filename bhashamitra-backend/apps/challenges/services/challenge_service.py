@@ -1,13 +1,14 @@
-# DEPLOY_VER: 2026-01-03-V6-FINAL
+# DEPLOY_VER: 2025-01-19-V7-GRAMMAR-FIX
 import random
 import logging
 from typing import List, Dict, Any
 from django.db.models import Count
-from django.apps import apps 
+from django.apps import apps
 
 from apps.curriculum.models import (
     Script, Letter, VocabularyTheme, VocabularyWord, GrammarRule
 )
+from apps.curriculum.models.grammar import GrammarExercise
 
 logger = logging.getLogger(__name__)
 
@@ -27,14 +28,7 @@ class ChallengeService:
         """Returns list of active language codes."""
         if not Language:
             logger.error("Language model could not be loaded.")
-            return ["HINDI"] # Safe fallback
-        return list(Language.objects.filter(is_active=True).values_list('code', flat=True))
-
-    @staticmethod
-    def get_available_languages() -> List[str]:
-        if not Language:
-            logger.error("Language model could not be loaded.")
-            return ["HINDI"]
+            return ["HINDI"]  # Safe fallback
         return list(Language.objects.filter(is_active=True).values_list('code', flat=True))
 
     @classmethod
@@ -119,15 +113,108 @@ class ChallengeService:
 
     @classmethod
     def _generate_grammar(cls, lang: str, count: int) -> List[Dict]:
-        items = list(GrammarRule.objects.filter(topic__language=lang, topic__is_active=True))
-        if not items: return []
-        selected = random.sample(items, min(len(items), count))
-        return [{
-            "id": str(item.id),
-            "question": item.examples[0] if item.examples else "Repeat after Peppi",
-            "options": [item.explanation[:50], "Option B", "Option C", "Option D"],
-            "correct_index": 0
-        } for item in selected]
+        """
+        Generate grammar questions from GrammarExercise model.
+        Uses multiple choice exercises with real options.
+        """
+        # Get multiple choice grammar exercises for this language
+        exercises = list(GrammarExercise.objects.filter(
+            rule__topic__language=lang,
+            rule__topic__is_active=True,
+            exercise_type='MC'  # Multiple Choice only
+        ).select_related('rule', 'rule__topic'))
+
+        if len(exercises) < cls.CHOICES_COUNT:
+            # Fallback: Try to use any exercise type
+            exercises = list(GrammarExercise.objects.filter(
+                rule__topic__language=lang,
+                rule__topic__is_active=True
+            ).select_related('rule', 'rule__topic'))
+
+        if not exercises:
+            # Last fallback: Generate from GrammarRule examples
+            return cls._generate_grammar_from_rules(lang, count)
+
+        selected = random.sample(exercises, min(len(exercises), count))
+        questions = []
+
+        for ex in selected:
+            # Build options from exercise's options field or generate them
+            if ex.options and len(ex.options) >= cls.CHOICES_COUNT:
+                # Use exercise's predefined options
+                options = ex.options[:cls.CHOICES_COUNT]
+                # Ensure correct answer is in options
+                if ex.correct_answer not in options:
+                    options[0] = ex.correct_answer
+                random.shuffle(options)
+                correct_index = options.index(ex.correct_answer)
+            else:
+                # Generate options from correct answer and distractors
+                other_exercises = [e for e in exercises if e.id != ex.id and e.correct_answer != ex.correct_answer]
+                distractors = random.sample(
+                    [e.correct_answer for e in other_exercises],
+                    min(cls.CHOICES_COUNT - 1, len(other_exercises))
+                )
+                # Pad with generic distractors if needed
+                while len(distractors) < cls.CHOICES_COUNT - 1:
+                    distractors.append(f"Option {len(distractors) + 2}")
+
+                options = [ex.correct_answer] + distractors
+                random.shuffle(options)
+                correct_index = options.index(ex.correct_answer)
+
+            questions.append({
+                "id": str(ex.id),
+                "question": ex.question,
+                "options": options,
+                "correct_index": correct_index,
+                "hint": ex.hint if ex.hint else None,
+                "topic": ex.rule.topic.name if ex.rule and ex.rule.topic else None,
+            })
+
+        return questions
+
+    @classmethod
+    def _generate_grammar_from_rules(cls, lang: str, count: int) -> List[Dict]:
+        """Fallback: Generate questions from GrammarRule examples."""
+        rules = list(GrammarRule.objects.filter(
+            topic__language=lang,
+            topic__is_active=True
+        ).exclude(examples=[]))
+
+        if not rules:
+            return []
+
+        selected = random.sample(rules, min(len(rules), count))
+        questions = []
+
+        for rule in selected:
+            if not rule.examples:
+                continue
+
+            # Use the rule's example as the question
+            example = rule.examples[0] if rule.examples else ""
+            # Use the rule title/explanation as the correct answer
+            correct_answer = rule.title
+
+            # Get other rule titles as distractors
+            other_rules = [r for r in rules if r.id != rule.id]
+            distractors = random.sample(
+                [r.title for r in other_rules],
+                min(cls.CHOICES_COUNT - 1, len(other_rules))
+            )
+
+            options = [correct_answer] + distractors
+            random.shuffle(options)
+
+            questions.append({
+                "id": str(rule.id),
+                "question": f"What grammar rule applies to: '{example}'?",
+                "options": options,
+                "correct_index": options.index(correct_answer),
+            })
+
+        return questions
 
     @classmethod
     def calculate_score(cls, questions: List[Dict], answers: List[int]) -> Dict:

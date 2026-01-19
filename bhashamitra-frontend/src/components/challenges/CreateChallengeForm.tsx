@@ -32,7 +32,8 @@ export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, is
     language: 'HINDI',
     category: '',
     difficulty: 'medium',
-    time_limit_seconds: 60
+    question_count: 5,
+    time_limit_seconds: 30
   });
 
   useEffect(() => {
@@ -137,32 +138,50 @@ export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, is
         </select>
       </div>
 
-      {/* Difficulty and Time Limit Row */}
+      {/* Difficulty Row */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Difficulty</label>
+        <select
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          value={formData.difficulty}
+          onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+          disabled={!canCreate || isSubmitting}
+        >
+          <option value="easy">Easy (Ages 4-6)</option>
+          <option value="medium">Medium (Ages 7-10)</option>
+          <option value="hard">Hard (Ages 11-14)</option>
+        </select>
+      </div>
+
+      {/* Question Count and Time Limit Row */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Difficulty</label>
+          <label className="block text-sm font-medium text-gray-700">Number of Questions</label>
           <select
             className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            value={formData.difficulty}
-            onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+            value={formData.question_count}
+            onChange={(e) => setFormData({ ...formData, question_count: parseInt(e.target.value) })}
             disabled={!canCreate || isSubmitting}
           >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
+            <option value={3}>3 Questions</option>
+            <option value={5}>5 Questions</option>
+            <option value={7}>7 Questions</option>
+            <option value={10}>10 Questions</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Time Limit (Secs)</label>
-          <input
-            type="number"
-            min="10"
-            max="300"
+          <label className="block text-sm font-medium text-gray-700">Time per Question (Secs)</label>
+          <select
             className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
             value={formData.time_limit_seconds}
             onChange={(e) => setFormData({ ...formData, time_limit_seconds: parseInt(e.target.value) })}
             disabled={!canCreate || isSubmitting}
-          />
+          >
+            <option value={15}>15 seconds</option>
+            <option value={30}>30 seconds</option>
+            <option value={45}>45 seconds</option>
+            <option value={60}>60 seconds</option>
+          </select>
         </div>
       </div>
 

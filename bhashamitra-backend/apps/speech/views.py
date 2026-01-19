@@ -511,13 +511,24 @@ class MimicChallengeListView(APIView):
 
 class MimicChallengeDetailView(APIView):
     """
-    GET /api/v1/children/{child_id}/mimic/challenges/{challenge_id}/
+    GET /api/v1/speech/mimic/challenges/{challenge_id}/
 
     Get detailed info for a specific challenge.
+
+    Query Parameters:
+    - child_id: UUID of the child (required)
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, child_id, challenge_id):
+    def get(self, request, challenge_id):
+        # Get child_id from query params
+        child_id = request.query_params.get('child_id')
+        if not child_id:
+            return Response(
+                {"detail": "child_id query parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         child = get_object_or_404(Child, id=child_id, user=request.user)
         challenge = get_object_or_404(
             PeppiMimicChallenge,
@@ -541,14 +552,15 @@ class MimicAttemptThrottle(ScopedRateThrottle):
 
 class MimicAttemptSubmitView(APIView):
     """
-    POST /api/v1/children/{child_id}/mimic/challenges/{challenge_id}/attempt/
+    POST /api/v1/speech/mimic/challenges/{challenge_id}/attempt/
 
     Submit a pronunciation attempt for scoring.
 
     Request Body:
     {
         "audio_url": "https://r2.example.com/recordings/xxx.webm",
-        "duration_ms": 3000
+        "duration_ms": 3000,
+        "child_id": "uuid"  // Required
     }
 
     Response:
@@ -569,7 +581,15 @@ class MimicAttemptSubmitView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [MimicAttemptThrottle]
 
-    def post(self, request, child_id, challenge_id):
+    def post(self, request, challenge_id):
+        # Get child_id from request body
+        child_id = request.data.get('child_id')
+        if not child_id:
+            return Response(
+                {"detail": "child_id is required in request body"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         child = get_object_or_404(Child, id=child_id, user=request.user)
         challenge = get_object_or_404(
             PeppiMimicChallenge,
@@ -759,13 +779,27 @@ class MimicProgressView(APIView):
 
 class MimicAttemptShareView(APIView):
     """
-    PATCH /api/v1/children/{child_id}/mimic/attempts/{attempt_id}/share/
+    PATCH /api/v1/speech/mimic/attempts/{attempt_id}/share/
 
     Mark an attempt as shared to family.
+
+    Request Body:
+    {
+        "child_id": "uuid",  // Required
+        "shared_to_family": true
+    }
     """
     permission_classes = [IsAuthenticated]
 
-    def patch(self, request, child_id, attempt_id):
+    def patch(self, request, attempt_id):
+        # Get child_id from request body
+        child_id = request.data.get('child_id')
+        if not child_id:
+            return Response(
+                {"detail": "child_id is required in request body"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         child = get_object_or_404(Child, id=child_id, user=request.user)
         attempt = get_object_or_404(
             PeppiMimicAttempt,

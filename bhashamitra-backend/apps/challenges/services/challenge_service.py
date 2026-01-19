@@ -218,17 +218,29 @@ class ChallengeService:
 
     @classmethod
     def calculate_score(cls, questions: List[Dict], answers: List[int]) -> Dict:
-        score = sum(
-            str(ans) == str(questions[i].get('correct_index'))
-            for i, ans in enumerate(answers)
-            if i < len(questions)
-        )
+        detailed_results = []
+        score = 0
+
+        for i, ans in enumerate(answers):
+            if i < len(questions):
+                correct_index = questions[i].get('correct_index')
+                # Handle both int and string comparisons
+                is_correct = str(ans) == str(correct_index)
+                if is_correct:
+                    score += 1
+                detailed_results.append({
+                    "question_id": i,
+                    "correct": is_correct,
+                    "user_answer": ans,
+                    "correct_answer": int(correct_index) if correct_index is not None else 0
+                })
+
         max_score = len(questions)
         return {
             "score": score,
             "max_score": max_score,
             "percentage": round((score / max_score * 100), 1) if max_score > 0 else 0,
-            "detailed_results": []
+            "detailed_results": detailed_results
         }
 
     @staticmethod

@@ -427,6 +427,64 @@ After fixes, verify:
 - [x] Grammar questions have shuffled options
 - [x] Frontend passes correct childId to mimic upload
 - [x] Challenge form includes question_count field
+- [x] TTS API calls include /api/v1 prefix
+- [x] Challenge play endpoint returns full metadata
 - [ ] End-to-end test: Create mimic attempt and get score
 - [ ] End-to-end test: Create challenge, play, see leaderboard
 - [ ] End-to-end test: Grammar challenge with varied correct answers
+
+---
+
+## FIXES APPLIED (January 19, 2025 - Session 2)
+
+### Frontend Fixes
+
+#### 1. TTS API URL Fix (src/lib/api.ts)
+
+**Issue**: `getAudio()` and `uploadMimicAudio()` methods made direct fetch calls without ensuring `/api/v1/` prefix in the URL. If `NEXT_PUBLIC_API_URL` was set without the prefix, these calls would 404.
+
+**Fix**: Added `buildApiUrl()` helper method and updated both methods to use it:
+```typescript
+private buildApiUrl(path: string): string {
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  const baseHasApiPrefix = this.baseUrl.includes('/api/v1');
+  if (baseHasApiPrefix) {
+    return `${this.baseUrl.replace(/\/$/, '')}/${cleanPath}`;
+  } else {
+    return `${this.baseUrl.replace(/\/$/, '')}/api/v1/${cleanPath}`;
+  }
+}
+```
+
+### Backend Fixes
+
+#### 2. Challenge Play Endpoint (apps/challenges/views.py)
+
+**Issue**: `play_challenge` endpoint returned incomplete data:
+- GET: Only returned `title` and `questions`
+- POST: Didn't create attempt or return `attempt_id`
+
+**Fix**: Updated to return full challenge metadata matching `PublicChallengeResponse`:
+- GET: Returns all fields (id, code, title, language, category, difficulty, etc.)
+- POST: Creates `ChallengeAttempt` record and returns `attempt_id` + full challenge data
+
+#### 3. Challenge Submit Endpoint (apps/challenges/views.py)
+
+**Issue**: Created new attempt instead of updating existing one from `play_challenge` POST.
+
+**Fix**: Now supports both flows:
+- With `attempt_id`: Updates existing attempt created by play_challenge POST
+- Without `attempt_id` (legacy): Creates new attempt using code
+
+#### 4. Detailed Results (apps/challenges/services/challenge_service.py)
+
+**Issue**: `calculate_score()` returned empty `detailed_results: []`
+
+**Fix**: Now returns proper detailed results:
+```python
+detailed_results.append({
+    "question_id": i,
+    "correct": is_correct,
+    "user_answer": ans,
+    "correct_answer": int(correct_index)
+})

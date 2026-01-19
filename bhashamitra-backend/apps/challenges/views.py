@@ -62,28 +62,57 @@ def challenges_list_create(request):
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def play_challenge(request, code):
+    from .models import ChallengeAttempt
+
     challenge = get_object_or_404(Challenge, code=code)
-    
+
+    # Helper to build full challenge response (matches PublicChallengeResponse)
+    def build_challenge_data(include_questions=True):
+        data = {
+            "id": str(challenge.id),
+            "code": challenge.code,
+            "title": challenge.title,
+            "title_native": challenge.title_native or "",
+            "language": challenge.language,
+            "language_name": dict(Challenge.LANGUAGE_CHOICES).get(challenge.language, challenge.language),
+            "category": challenge.category,
+            "difficulty": challenge.difficulty,
+            "question_count": len(challenge.questions) if challenge.questions else 0,
+            "time_limit_seconds": challenge.time_limit_seconds,
+            "is_expired": challenge.is_expired,
+            "creator_name": challenge.creator_name or challenge.creator.email.split('@')[0] if challenge.creator else "Anonymous",
+        }
+        if include_questions:
+            data["questions"] = ChallengeService.strip_answers(challenge.questions)
+        return data
+
     if request.method == 'POST':
-        # POST: Start a challenge attempt or just return success for starting
+        # POST: Start a challenge attempt
+        participant_name = request.data.get('participant_name', 'Anonymous')
+        participant_location = request.data.get('participant_location', '')
+
+        # Create the attempt record (not yet completed)
+        attempt = ChallengeAttempt.objects.create(
+            challenge=challenge,
+            participant_name=participant_name[:50],  # Limit length
+            participant_location=participant_location[:50] if participant_location else '',
+            participant_user=request.user if request.user.is_authenticated else None,
+            is_completed=False,
+        )
+
         return Response({
             "success": True,
             "data": {
-                "message": "Challenge ready to play",
-                "code": challenge.code,
-                "title": challenge.title,
-                "questions": ChallengeService.strip_answers(challenge.questions),
+                "attempt_id": str(attempt.id),
+                "challenge": build_challenge_data(include_questions=True),
                 "started_at": timezone.now().isoformat()
             }
         })
-    
-    # GET: Return challenge info
+
+    # GET: Return full challenge info for display
     return Response({
-        "success": True, 
-        "data": {
-            "title": challenge.title,
-            "questions": ChallengeService.strip_answers(challenge.questions)
-        }
+        "success": True,
+        "data": build_challenge_data(include_questions=True)
     })
 
 @api_view(['POST'])
@@ -92,7 +121,14 @@ def submit_challenge(request):
     """
     Submit answers for a challenge and persist the attempt.
 
-    Request Body:
+    Request Body (with attempt_id from play_challenge POST):
+    {
+        "attempt_id": "uuid-here",
+        "answers": [0, 2, 1, 3, 0],
+        "time_taken_seconds": 120
+    }
+
+    OR legacy format (without attempt_id):
     {
         "code": "7K3M",
         "answers": [0, 2, 1, 3, 0],
@@ -102,30 +138,47 @@ def submit_challenge(request):
     }
     """
     from .models import ChallengeAttempt
+    from django.db.models import Avg
 
-    code = request.data.get('code')
+    attempt_id = request.data.get('attempt_id')
     answers = request.data.get('answers', [])
-    participant_name = request.data.get('participant_name', 'Anonymous')
-    participant_location = request.data.get('participant_location', '')
-    time_taken = request.data.get('time_taken', 0)
+    time_taken = request.data.get('time_taken_seconds') or request.data.get('time_taken', 0)
 
-    challenge = get_object_or_404(Challenge, code=code)
+    if attempt_id:
+        # New flow: Update existing attempt created by play_challenge POST
+        attempt = get_object_or_404(ChallengeAttempt, id=attempt_id)
+        challenge = attempt.challenge
+    else:
+        # Legacy flow: Create new attempt using code
+        code = request.data.get('code')
+        if not code:
+            return Response(
+                {"success": False, "error": "Either attempt_id or code is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        challenge = get_object_or_404(Challenge, code=code)
+        participant_name = request.data.get('participant_name', 'Anonymous')
+        participant_location = request.data.get('participant_location', '')
+        attempt = ChallengeAttempt.objects.create(
+            challenge=challenge,
+            participant_name=participant_name[:50],
+            participant_location=participant_location[:50] if participant_location else '',
+            participant_user=request.user if request.user.is_authenticated else None,
+            is_completed=False,
+        )
+
+    # Calculate score
     result = ChallengeService.calculate_score(challenge.questions, answers)
 
-    # Create and persist the attempt
-    attempt = ChallengeAttempt.objects.create(
-        challenge=challenge,
-        participant_name=participant_name,
-        participant_location=participant_location,
-        participant_user=request.user if request.user.is_authenticated else None,
-        score=result['score'],
-        max_score=result['max_score'],
-        percentage=result['percentage'],
-        time_taken_seconds=time_taken,
-        answers=answers,
-        is_completed=True,
-        completed_at=timezone.now()
-    )
+    # Update the attempt with results
+    attempt.score = result['score']
+    attempt.max_score = result['max_score']
+    attempt.percentage = result['percentage']
+    attempt.time_taken_seconds = time_taken
+    attempt.answers = answers
+    attempt.is_completed = True
+    attempt.completed_at = timezone.now()
+    attempt.save()
 
     # Update challenge stats
     challenge.total_attempts += 1
@@ -133,15 +186,18 @@ def submit_challenge(request):
     # Recalculate average score
     all_attempts = ChallengeAttempt.objects.filter(challenge=challenge, is_completed=True)
     if all_attempts.exists():
-        from django.db.models import Avg
         avg = all_attempts.aggregate(avg=Avg('percentage'))['avg']
         challenge.average_score = avg or 0
     challenge.save(update_fields=['total_attempts', 'total_completions', 'average_score'])
 
-    # Add attempt info to result
+    # Build response with additional info (matching ChallengeResultResponse)
     result['attempt_id'] = str(attempt.id)
     result['rank'] = attempt.rank
-    result['participant_name'] = participant_name
+    result['participant_name'] = attempt.participant_name
+    result['challenge_title'] = challenge.title
+    result['share_url'] = f"/c/{challenge.code}"
+    result['total_participants'] = all_attempts.count()
+    result['time_taken_seconds'] = time_taken
 
     return Response({"success": True, "data": result})
 

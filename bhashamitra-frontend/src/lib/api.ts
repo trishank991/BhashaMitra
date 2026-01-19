@@ -125,6 +125,26 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
+  /**
+   * Build a full API URL ensuring /api/v1/ prefix is present
+   * Handles both cases: baseUrl with or without /api/v1
+   */
+  private buildApiUrl(path: string): string {
+    // Remove leading slash from path
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+
+    // Check if baseUrl already has /api/v1
+    const baseHasApiPrefix = this.baseUrl.includes('/api/v1');
+
+    if (baseHasApiPrefix) {
+      // BaseUrl already has /api/v1, just append path
+      return `${this.baseUrl.replace(/\/$/, '')}/${cleanPath}`;
+    } else {
+      // BaseUrl doesn't have /api/v1, add it
+      return `${this.baseUrl.replace(/\/$/, '')}/api/v1/${cleanPath}`;
+    }
+  }
+
   setAccessToken(token: string | null) {
     this.accessToken = token;
   }
@@ -539,7 +559,7 @@ private async request<T>(
     language: string = 'HINDI',
     voiceStyle: 'kid_friendly' | 'calm_story' | 'enthusiastic' | 'male_teacher' = 'kid_friendly'
   ): Promise<{ success: boolean; audioBlob?: Blob; audioUrl?: string; error?: string }> {
-    const url = `${this.baseUrl}/speech/tts/`;
+    const url = this.buildApiUrl('/speech/tts/');
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -1031,7 +1051,7 @@ private async request<T>(
     formData.append('audio', audioBlob, filename);
     formData.append('child_id', childId);
 
-    const url = `${this.baseUrl}/speech/upload-audio/`;
+    const url = this.buildApiUrl('/speech/upload-audio/');
     const headers: Record<string, string> = {};
     if (this.accessToken) {
       headers['Authorization'] = `Bearer ${this.accessToken}`;

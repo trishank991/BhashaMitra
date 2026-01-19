@@ -993,6 +993,20 @@ private async request<T>(
   }
 
   /**
+   * Get a single mimic challenge detail.
+   * @param challengeId Challenge UUID
+   * @param childId Child UUID (for progress info)
+   */
+  async getMimicChallengeDetail(
+    challengeId: string,
+    childId: string
+  ): Promise<ApiResponse<PeppiMimicChallengeWithProgress>> {
+    return this.request<PeppiMimicChallengeWithProgress>(
+      `/speech/mimic/challenges/${challengeId}/?child_id=${childId}`
+    );
+  }
+
+  /**
    * Submit an attempt for a Mimic challenge.
    * NOTE: childId is passed for compatibility, but not used in the URL.
    */

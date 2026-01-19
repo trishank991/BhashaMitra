@@ -74,13 +74,13 @@ def play_challenge(request, code):
             "title": challenge.title,
             "title_native": challenge.title_native or "",
             "language": challenge.language,
-            "language_name": dict(Challenge.LANGUAGE_CHOICES).get(challenge.language, challenge.language),
+            "language_name": challenge.get_language_display(),  # Django's built-in for choices
             "category": challenge.category,
             "difficulty": challenge.difficulty,
             "question_count": len(challenge.questions) if challenge.questions else 0,
             "time_limit_seconds": challenge.time_limit_seconds,
             "is_expired": challenge.is_expired,
-            "creator_name": challenge.creator_name or challenge.creator.email.split('@')[0] if challenge.creator else "Anonymous",
+            "creator_name": challenge.creator_name or (challenge.creator.email.split('@')[0] if challenge.creator else "Anonymous"),
         }
         if include_questions:
             data["questions"] = ChallengeService.strip_answers(challenge.questions)

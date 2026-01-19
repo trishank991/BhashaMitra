@@ -440,7 +440,9 @@ class PronunciationScorer:
             stars=stars,
             feedback_key=feedback_key,
             scoring_version=self.SCORING_VERSION,
-            score_breakdown=score_breakdown
+            score_breakdown=score_breakdown,
+            language_name=language_name,
+            ai_coach_tip=ai_feedback
         )
 
     def _normalize_text(self, text: str) -> str:

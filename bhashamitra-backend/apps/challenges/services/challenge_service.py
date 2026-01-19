@@ -245,4 +245,16 @@ class ChallengeService:
 
     @staticmethod
     def strip_answers(questions: List[Dict]) -> List[Dict]:
-        return [{k: v for k, v in q.items() if k != 'correct_index'} for q in questions]
+        """Remove correct_index from questions for public display."""
+        # Handle None or empty questions
+        if not questions:
+            return []
+        # Handle non-list input
+        if not isinstance(questions, list):
+            return []
+        # Strip answers, handling malformed items
+        return [
+            {k: v for k, v in q.items() if k != 'correct_index'}
+            for q in questions
+            if isinstance(q, dict)
+        ]

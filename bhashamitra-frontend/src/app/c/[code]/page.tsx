@@ -31,7 +31,8 @@ export default function ChallengePlayPage() {
     const fetchChallenge = async () => {
       const response = await api.getPublicChallenge(code);
       if (response.success && response.data) {
-        const challengeData = response.data.data;
+        // Backend returns data directly, not nested in another 'data' field
+        const challengeData = response.data as any;
         if (challengeData.is_expired) {
           setGameState('expired');
         } else {
@@ -55,8 +56,10 @@ export default function ChallengePlayPage() {
     });
 
     if (response.success && response.data) {
-      setAttemptId(response.data.data.attempt_id);
-      setChallenge(response.data.data.challenge);
+      // Backend returns { attempt_id, challenge, started_at } directly
+      const data = response.data as any;
+      setAttemptId(data.attempt_id);
+      setChallenge(data.challenge);
       setGameState('playing');
     } else {
       setError(response.error || 'Failed to start challenge');
@@ -73,7 +76,8 @@ export default function ChallengePlayPage() {
     });
 
     if (response.success && response.data) {
-      setResult(response.data.data);
+      // Backend returns result directly
+      setResult(response.data as any);
       setGameState('result');
     } else {
       setError(response.error || 'Failed to submit answers');
@@ -84,7 +88,8 @@ export default function ChallengePlayPage() {
   const handleViewLeaderboard = async () => {
     const response = await api.getChallengeLeaderboard(code);
     if (response.success && response.data) {
-      setLeaderboard(response.data.data);
+      // Backend returns leaderboard directly
+      setLeaderboard(response.data as any);
       setGameState('leaderboard');
     }
   };

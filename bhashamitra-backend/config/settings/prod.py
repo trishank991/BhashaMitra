@@ -51,8 +51,14 @@ if DATABASE_URL:
         'default': dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=60,
+            conn_health_checks=True,  # Django 4.1+ health checks
             ssl_require=True,
         )
+    }
+    # Add connection options for better reliability
+    DATABASES['default']['OPTIONS'] = {
+        'connect_timeout': 10,
+        'options': '-c statement_timeout=30000',  # 30s query timeout
     }
 else:
     # Fallback to individual environment variables (Supabase style)
@@ -65,7 +71,11 @@ else:
             'HOST': os.getenv('DB_HOST'),
             'PORT': os.getenv('DB_PORT', '5432'),
             'CONN_MAX_AGE': 60,
-            'OPTIONS': {'sslmode': 'require'},
+            'CONN_HEALTH_CHECKS': True,
+            'OPTIONS': {
+                'sslmode': 'require',
+                'connect_timeout': 10,
+            },
         }
     }
 

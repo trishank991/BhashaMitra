@@ -8,6 +8,9 @@ urlpatterns = [
     # Main TTS endpoint (Hugging Face Indic Parler-TTS)
     path('tts/', views.TextToSpeechView.as_view(), name='tts'),
 
+    # Speech-to-Text endpoint (Google Cloud STT with pronunciation evaluation)
+    path('stt/', views.SpeechToTextView.as_view(), name='stt'),
+
     # Story-specific audio
     path(
         'stories/<uuid:story_id>/pages/<int:page_number>/audio/',

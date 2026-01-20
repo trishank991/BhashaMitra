@@ -908,3 +908,113 @@ class AudioUploadView(APIView):
                 {'detail': f'Error uploading audio: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class SpeechToTextView(APIView):
+    """
+    POST /api/v1/speech/stt/
+
+    Transcribe speech to text using Google Cloud STT.
+    Optionally evaluates pronunciation against expected text.
+
+    Request Body:
+    {
+        "audio_url": "https://example.com/audio.webm",
+        "language": "HINDI",
+        "expected_text": "namaste",  // Optional - for pronunciation scoring
+        "attempt_number": 1  // Optional - for varied feedback messages
+    }
+
+    Response (with expected_text):
+    {
+        "success": true,
+        "data": {
+            "transcription": "namaste",
+            "confidence": 92,
+            "evaluation": {
+                "score": 95,
+                "stars": 3,
+                "is_correct": true,
+                "expected": {"native": "namaste", "roman": "namaste"},
+                "heard": {"native": "namaste", "roman": "namaste"},
+                "feedback": {
+                    "level": "excellent",
+                    "emoji": "star",
+                    "message_hindi": "bahut badhiya!",
+                    "message_english": "Amazing pronunciation!",
+                    "encouragement": "You sound just like a native speaker!"
+                },
+                "word_comparison": [...],
+                "hints": []
+            }
+        }
+    }
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'speech'
+
+    def post(self, request):
+        from apps.speech.services.stt_service import stt_service
+        from apps.speech.services.transliteration import evaluate_pronunciation_enhanced
+
+        audio_url = request.data.get('audio_url')
+        language = request.data.get('language', 'HINDI')
+        expected_text = request.data.get('expected_text')  # For pronunciation evaluation
+        attempt_number = request.data.get('attempt_number', 1)
+
+        # Validation
+        if not audio_url:
+            return Response(
+                {'detail': 'audio_url is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        valid_languages = ['FIJI_HINDI', 'HINDI', 'TAMIL', 'GUJARATI', 'PUNJABI', 'TELUGU', 'MALAYALAM', 'BENGALI', 'KANNADA', 'MARATHI', 'ODIA']
+        if language not in valid_languages:
+            return Response(
+                {'detail': f'Invalid language. Must be one of: {valid_languages}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Transcribe audio using STT service
+            stt_result = stt_service.transcribe(
+                audio_url=audio_url,
+                language=language,
+                expected_word=expected_text  # For mock testing
+            )
+
+            response_data = {
+                'success': True,
+                'data': {
+                    'transcription': stt_result.transcription,
+                    'confidence': int(stt_result.confidence * 100),
+                    'provider': stt_result.provider,
+                    'duration_ms': stt_result.duration_ms,
+                }
+            }
+
+            # If expected text provided, evaluate pronunciation with enhanced feedback
+            if expected_text:
+                evaluation = evaluate_pronunciation_enhanced(
+                    expected_text=expected_text,
+                    transcribed_text=stt_result.transcription,
+                    confidence=stt_result.confidence,
+                    language=language,
+                    attempt_number=attempt_number,
+                )
+                response_data['data']['evaluation'] = evaluation
+
+            return Response(response_data)
+
+        except Exception as e:
+            logger.exception(f'STT service error: {e}')
+            return Response({
+                'success': False,
+                'error': str(e),
+                'data': {
+                    'transcription': '',
+                    'confidence': 0,
+                }
+            }, status=status.HTTP_200_OK)  # Return 200 with error in body for graceful handling

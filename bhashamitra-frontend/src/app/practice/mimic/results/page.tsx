@@ -65,8 +65,22 @@ export default function MimicResultsPage() {
   };
 
   useEffect(() => {
-    // For demo/testing, use mock result
-    // In production, fetch from API using attempt_id stored in session/localStorage
+    // Try to get actual result from sessionStorage
+    const storedResult = sessionStorage.getItem('mimicResult');
+    if (storedResult) {
+      try {
+        const parsedResult = JSON.parse(storedResult);
+        setResult(parsedResult);
+        setLoading(false);
+        // Clear the stored result after retrieving
+        sessionStorage.removeItem('mimicResult');
+        return;
+      } catch (e) {
+        console.error('Failed to parse mimic result:', e);
+      }
+    }
+
+    // Fallback to mock data if no stored result
     setTimeout(() => {
       setResult(mockResult);
       setLoading(false);
@@ -125,7 +139,7 @@ export default function MimicResultsPage() {
 
         {/* Score Display */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 text-center">
-          <div className="text-5xl font-bold mb-2 {getScoreColor(result.score)}">{result.score}%</div>
+          <div className={`text-5xl font-bold mb-2 ${getScoreColor(result.score)}`}>{result.score}%</div>
           <div className="text-3xl mb-2">{getStarEmojis(result.stars)}</div>
           <p className="text-sm text-gray-500">
             {result.is_personal_best && <span className="text-green-500 font-semibold">🎉 Personal Best! </span>}

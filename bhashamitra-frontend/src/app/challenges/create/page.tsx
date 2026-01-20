@@ -67,8 +67,8 @@ const dailyLimit = quota ? ((quota as any).daily_limit === null ? 'unlimited' : 
         )}
       </div>
 
-      <CreateChallengeForm 
-        onSuccess={(code: string) => router.push(`/challenges/manage/${code}`)} 
+      <CreateChallengeForm
+        onSuccess={(code: string) => router.push(`/c/${code}`)}
         onCancel={() => router.back()}
         /* Logic: fallback to false if quota object is missing */
         canCreate={quota?.can_create ?? false}

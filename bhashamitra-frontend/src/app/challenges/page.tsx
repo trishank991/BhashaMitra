@@ -98,7 +98,7 @@ export default function ChallengesPage() {
               </div>
               {!isPaidUser && !quota.can_create && (
                 <button
-                  onClick={() => router.push('/subscription')}
+                  onClick={() => router.push('/pricing')}
                   className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium"
                 >
                   Upgrade

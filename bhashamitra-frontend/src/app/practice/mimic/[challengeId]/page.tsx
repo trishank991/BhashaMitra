@@ -256,12 +256,15 @@ export default function MimicChallengePage() {
       }
 
       // 2. Submit the attempt
+      // Ensure duration_ms is at least 100 (backend minimum) and at most 10000 (backend maximum)
+      const durationMs = Math.max(100, Math.min(10000, recordingTime * 1000 || 1000));
+
       const submitRes = await api.submitMimicAttempt(
         childId,
         challengeId as string,
         {
           audio_url: uploadRes.data.audio_url,
-          duration_ms: recordingTime * 1000
+          duration_ms: durationMs
         }
       ) as { success: boolean; data?: MimicResult; error?: string };
 

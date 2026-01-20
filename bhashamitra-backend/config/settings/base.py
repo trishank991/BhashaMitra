@@ -64,9 +64,9 @@ LOCAL_APPS = [
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # MUST be first for CORS to work
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -180,6 +180,29 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r'^https://bhashamitra-frontend.*\.vercel\.app$',
     r'^https://bhasha-mitra.*\.vercel\.app$',
+]
+
+# Explicitly allow all HTTP methods
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# Explicitly allow common headers including Authorization
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 # ===========================================

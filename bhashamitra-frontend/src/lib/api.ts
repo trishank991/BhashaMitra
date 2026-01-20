@@ -1099,6 +1099,96 @@ private async request<T>(
     }
   }
 
+  /**
+   * Transcribe audio using Speech-to-Text with optional pronunciation evaluation.
+   * @param audioUrl - URL of the uploaded audio file
+   * @param language - Language code (HINDI, TAMIL, etc.)
+   * @param expectedText - Optional expected text for pronunciation scoring
+   * @param attemptNumber - Optional attempt number for varied feedback
+   */
+  async transcribeSpeech(
+    audioUrl: string,
+    language: string,
+    expectedText?: string,
+    attemptNumber?: number
+  ): Promise<ApiResponse<{
+    transcription: string;
+    confidence: number;
+    provider?: string;
+    duration_ms?: number;
+    evaluation?: {
+      score: number;
+      similarity: number;
+      confidence: number;
+      stars: number;
+      is_correct: boolean;
+      expected: { native: string; roman: string };
+      heard: { native: string; roman: string };
+      feedback: {
+        level: string;
+        emoji: string;
+        message_hindi: string;
+        message_english: string;
+        encouragement: string;
+      };
+      word_comparison: Array<{
+        expected: string;
+        expected_roman: string;
+        heard: string;
+        heard_roman: string;
+        is_correct: boolean;
+        similarity: number;
+        hint?: string | null;
+      }>;
+      hints: string[];
+      attempt_number: number;
+    };
+  }>> {
+    const url = this.buildApiUrl('/speech/stt/');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
+    }
+
+    const body: Record<string, unknown> = {
+      audio_url: audioUrl,
+      language,
+    };
+    if (expectedText) body.expected_text = expectedText;
+    if (attemptNumber) body.attempt_number = attemptNumber;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.detail || data.error || 'Transcription failed',
+        };
+      }
+
+      // Handle the nested response format from the backend
+      if (data.success && data.data) {
+        return { success: true, data: data.data };
+      }
+
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      };
+    }
+  }
+
   // ========================================
   // CURRICULUM HIERARCHY ENDPOINTS
   // ========================================

@@ -139,13 +139,24 @@ class SpeechApiService {
    */
   async transcribe(request: STTRequest): Promise<STTResponse> {
     try {
-      const response = await api.request<STTResponse>('/speech/stt/', {
-        method: 'POST',
-        body: JSON.stringify(request),
-      });
+      const response = await api.transcribeSpeech(
+        request.audio_url,
+        request.language,
+        request.expected_text,
+        request.attempt_number
+      );
 
       if (response.success && response.data) {
-        return response.data;
+        return {
+          success: true,
+          data: {
+            transcription: response.data.transcription,
+            confidence: response.data.confidence,
+            provider: response.data.provider,
+            duration_ms: response.data.duration_ms,
+            evaluation: response.data.evaluation as PronunciationEvaluation | undefined,
+          },
+        };
       }
 
       return {

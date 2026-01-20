@@ -80,7 +80,7 @@ def play_challenge(request, code):
             "question_count": len(challenge.questions) if challenge.questions else 0,
             "time_limit_seconds": challenge.time_limit_seconds,
             "is_expired": challenge.is_expired,
-            "creator_name": challenge.creator_name or (challenge.creator.email.split('@')[0] if challenge.creator else "Anonymous"),
+            "creator_name": challenge.creator.email.split('@')[0] if challenge.creator else "Anonymous",
         }
         if include_questions:
             data["questions"] = ChallengeService.strip_answers(challenge.questions)

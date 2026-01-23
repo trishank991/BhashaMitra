@@ -109,9 +109,34 @@ class AudioAnalyzer:
 
     @classmethod
     def _download_audio(cls, url: str, max_retries: int = 3) -> Optional[bytes]:
-        """Download audio file from URL with retry logic."""
+        """
+        Get audio content from URL or local file.
+
+        For local media URLs (containing /media/), reads directly from disk
+        to avoid HTTP timeout issues when server downloads from itself.
+        """
+        from django.conf import settings
         import time
 
+        # Check if this is a local media URL
+        if '/media/' in url:
+            try:
+                # Extract relative path from URL
+                # URL: https://bhashamitra.onrender.com/media/mimic_recordings/xxx/yyy.webm
+                # Relative path: mimic_recordings/xxx/yyy.webm
+                relative_path = url.split('/media/')[-1]
+                file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+
+                if os.path.exists(file_path):
+                    logger.info(f"Reading audio from local file: {file_path}")
+                    with open(file_path, 'rb') as f:
+                        return f.read()
+                else:
+                    logger.warning(f"Local file not found: {file_path}, falling back to HTTP")
+            except Exception as e:
+                logger.warning(f"Failed to read local file, falling back to HTTP: {e}")
+
+        # Fall back to HTTP download for external URLs or if local read failed
         for attempt in range(max_retries):
             try:
                 response = requests.get(url, timeout=15)

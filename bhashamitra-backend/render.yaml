@@ -14,7 +14,7 @@ services:
     rootDir: bhashamitra-backend
     buildCommand: "./build.sh"
     preDeployCommand: "python manage.py migrate --run-syncdb || echo 'Migration skipped - run manually if needed'"
-    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --timeout 120 --workers 2"
     envVars:
       - key: DJANGO_ENV
         value: prod
@@ -23,7 +23,7 @@ services:
       - key: ALLOWED_HOSTS
         value: ".onrender.com"
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://bhashamitra-frontend.vercel.app,https://bhashamitra-frontend-cjiyfxc3f-trishank-dattas-projects.vercel.app"
+        value: "https://bhasha-mitra.vercel.app,https://bhashamitra.vercel.app,https://bhashamitra-frontend.vercel.app"
       - key: DATABASE_URL
         fromDatabase:
           name: bhashamitra-db

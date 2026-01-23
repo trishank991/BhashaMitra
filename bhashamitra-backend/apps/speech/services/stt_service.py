@@ -377,7 +377,7 @@ class SarvamSTTClient:
         cls,
         audio_url: str,
         language: str = 'HINDI',
-        model: str = 'saarika:v2'
+        model: str = 'saarika:v2.5'
     ) -> STTResult:
         """
         Transcribe audio from URL using Sarvam AI STT.
@@ -385,7 +385,7 @@ class SarvamSTTClient:
         Args:
             audio_url: URL to audio file (wav, mp3, webm)
             language: Language code (HINDI, TAMIL, etc.)
-            model: Sarvam model (default: saarika:v2)
+            model: Sarvam model (default: saarika:v2.5)
 
         Returns:
             STTResult with transcription and confidence

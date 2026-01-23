@@ -59,8 +59,8 @@ export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, is
     setError(null);
     try {
       const res = await api.createChallenge(formData) as any;
-      if (res?.success && res?.data?.code) {
-        onSuccess(res.data.code);
+      if (res?.success && res?.data?.data?.code) {
+        onSuccess(res.data.data.code);
       } else if (res?.error) {
         setError(res.error);
       }

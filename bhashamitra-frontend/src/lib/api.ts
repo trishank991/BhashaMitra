@@ -1881,7 +1881,23 @@ private async request<T>(
    * List user's created challenges (AUTH REQUIRED)
    */
   async getMyChallenges(): Promise<ApiResponse<{ data: ChallengeResponse[] }>> {
-    return this.request<{ data: ChallengeResponse[] }>('/challenges/');
+    // Backend returns { success: true, data: [...] } which gets wrapped by request() method
+    // So response.data will be { success: true, data: [...] }
+    const response = await this.request<{ success: boolean; data: ChallengeResponse[] }>('/challenges/');
+    if (response.success && response.data) {
+      // Access the nested data array
+      return {
+        success: true,
+        data: {
+          data: response.data.data || [],
+        },
+      };
+    }
+    return {
+      success: false,
+      error: response.error,
+      data: { data: [] },
+    };
   }
 
   /**
@@ -1889,10 +1905,25 @@ private async request<T>(
    * @param data Challenge creation data
    */
   async createChallenge(data: CreateChallengeRequest): Promise<ApiResponse<{ data: ChallengeResponse; message: string }>> {
-    return this.request(`/challenges/`, {
+    // Backend returns { success: true, data: {...} } which gets wrapped by request() method
+    const response = await this.request<{ success: boolean; data: ChallengeResponse }>(`/challenges/`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
+    if (response.success && response.data) {
+      // Access the nested data object
+      return {
+        success: true,
+        data: {
+          data: response.data.data,
+          message: 'Challenge created successfully',
+        },
+      };
+    }
+    return {
+      success: false,
+      error: response.error,
+    };
   }
 
   /**
@@ -1900,14 +1931,42 @@ private async request<T>(
    * @param code Challenge code
    */
   async getMyChallenge(code: string): Promise<ApiResponse<{ data: ChallengeResponse }>> {
-    return this.request<{ data: ChallengeResponse }>(`/challenges/${code.toUpperCase()}/`);
+    // Backend returns { success: true, data: {...} } which gets wrapped by request() method
+    const response = await this.request<{ success: boolean; data: ChallengeResponse }>(`/challenges/${code.toUpperCase()}/`);
+    if (response.success && response.data) {
+      // Access the nested data object
+      return {
+        success: true,
+        data: {
+          data: response.data.data,
+        },
+      };
+    }
+    return {
+      success: false,
+      error: response.error,
+    };
   }
 
   /**
    * Get my challenge creation quota (AUTH REQUIRED)
    */
   async getChallengeQuota(): Promise<ApiResponse<{ data: ChallengeQuotaResponse }>> {
-    return this.request<{ data: ChallengeQuotaResponse }>('/challenges/quota/');
+    // Backend returns { success: true, data: {...} } which gets wrapped by request() method
+    const response = await this.request<{ success: boolean; data: ChallengeQuotaResponse }>('/challenges/quota/');
+    if (response.success && response.data) {
+      // Access the nested data object
+      return {
+        success: true,
+        data: {
+          data: response.data.data,
+        },
+      };
+    }
+    return {
+      success: false,
+      error: response.error,
+    };
   }
 
   /**
@@ -1916,7 +1975,22 @@ private async request<T>(
    */
   async getChallengeCategories(language: string = 'HINDI'): Promise<ApiResponse<{ data: ChallengeCategoryOption[] }>> {
     const upperLanguage = language.toUpperCase();
-    return this.request<{ data: ChallengeCategoryOption[] }>(`/challenges/categories/?language=${upperLanguage}`);
+    // Backend returns { success: true, data: [...] } which gets wrapped by request() method
+    const response = await this.request<{ success: boolean; data: ChallengeCategoryOption[] }>(`/challenges/categories/?language=${upperLanguage}`);
+    if (response.success && response.data) {
+      // Access the nested data array
+      return {
+        success: true,
+        data: {
+          data: response.data.data || [],
+        },
+      };
+    }
+    return {
+      success: false,
+      error: response.error,
+      data: { data: [] },
+    };
   }
 }
 

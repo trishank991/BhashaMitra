@@ -31,13 +31,16 @@ export default function ChallengePlayPage() {
     const fetchChallenge = async () => {
       const response = await api.getPublicChallenge(code);
       if (response.success && response.data) {
-        // Backend returns data directly, not nested in another 'data' field
-        const challengeData = response.data as any;
-        if (challengeData.is_expired) {
+        // Access nested data structure: response.data.data contains the challenge
+        const challengeData = (response.data as any).data;
+        if (challengeData?.is_expired) {
           setGameState('expired');
-        } else {
+        } else if (challengeData) {
           setChallenge(challengeData);
           setGameState('intro');
+        } else {
+          setError('Challenge not found');
+          setGameState('error');
         }
       } else {
         setError(response.error || 'Challenge not found');
@@ -56,11 +59,15 @@ export default function ChallengePlayPage() {
     });
 
     if (response.success && response.data) {
-      // Backend returns { attempt_id, challenge, started_at } directly
-      const data = response.data as any;
-      setAttemptId(data.attempt_id);
-      setChallenge(data.challenge);
-      setGameState('playing');
+      // Access nested data structure: response.data.data contains { attempt_id, challenge, started_at }
+      const data = (response.data as any).data;
+      if (data) {
+        setAttemptId(data.attempt_id);
+        setChallenge(data.challenge);
+        setGameState('playing');
+      } else {
+        setError('Failed to start challenge');
+      }
     } else {
       setError(response.error || 'Failed to start challenge');
     }
@@ -76,9 +83,15 @@ export default function ChallengePlayPage() {
     });
 
     if (response.success && response.data) {
-      // Backend returns result directly
-      setResult(response.data as any);
-      setGameState('result');
+      // Access nested data structure: response.data.data contains the result
+      const resultData = (response.data as any).data;
+      if (resultData) {
+        setResult(resultData);
+        setGameState('result');
+      } else {
+        setError('Failed to submit answers');
+        setGameState('error');
+      }
     } else {
       setError(response.error || 'Failed to submit answers');
       setGameState('error');
@@ -88,9 +101,12 @@ export default function ChallengePlayPage() {
   const handleViewLeaderboard = async () => {
     const response = await api.getChallengeLeaderboard(code);
     if (response.success && response.data) {
-      // Backend returns leaderboard directly
-      setLeaderboard(response.data as any);
-      setGameState('leaderboard');
+      // Access nested data structure: response.data.data contains the leaderboard
+      const leaderboardData = (response.data as any).data;
+      if (leaderboardData) {
+        setLeaderboard(leaderboardData);
+        setGameState('leaderboard');
+      }
     }
   };
 

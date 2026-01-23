@@ -1840,7 +1840,20 @@ private async request<T>(
    * @param code Challenge code (e.g., "7K3M")
    */
   async getPublicChallenge(code: string): Promise<ApiResponse<{ data: PublicChallengeResponse }>> {
-    return this.request<{ data: PublicChallengeResponse }>(`/challenges/play/${code.toUpperCase()}/`);
+    // Backend returns { success: true, data: {...} } which gets wrapped by request() method
+    const response = await this.request<{ success: boolean; data: PublicChallengeResponse }>(`/challenges/play/${code.toUpperCase()}/`);
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: {
+          data: response.data.data,
+        },
+      };
+    }
+    return {
+      success: false,
+      error: response.error,
+    };
   }
 
   /**
@@ -1852,10 +1865,23 @@ private async request<T>(
     code: string,
     data: StartChallengeAttemptRequest
   ): Promise<ApiResponse<{ data: { attempt_id: string; challenge: PublicChallengeResponse } }>> {
-    return this.request(`/challenges/play/${code.toUpperCase()}/`, {
+    // Backend returns { success: true, data: {...} } which gets wrapped by request() method
+    const response = await this.request<{ success: boolean; data: { attempt_id: string; challenge: PublicChallengeResponse } }>(`/challenges/play/${code.toUpperCase()}/`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: {
+          data: response.data.data,
+        },
+      };
+    }
+    return {
+      success: false,
+      error: response.error,
+    };
   }
 
   /**
@@ -1863,10 +1889,23 @@ private async request<T>(
    * @param data Submit data with attempt_id, answers, and time_taken
    */
   async submitChallengeAnswers(data: SubmitChallengeRequest): Promise<ApiResponse<{ data: ChallengeResultResponse }>> {
-    return this.request(`/challenges/submit/`, {
+    // Backend returns { success: true, data: {...} } which gets wrapped by request() method
+    const response = await this.request<{ success: boolean; data: ChallengeResultResponse }>(`/challenges/submit/`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: {
+          data: response.data.data,
+        },
+      };
+    }
+    return {
+      success: false,
+      error: response.error,
+    };
   }
 
   /**
@@ -1874,7 +1913,20 @@ private async request<T>(
    * @param code Challenge code
    */
   async getChallengeLeaderboard(code: string): Promise<ApiResponse<{ data: ChallengeLeaderboardResponse }>> {
-    return this.request<{ data: ChallengeLeaderboardResponse }>(`/challenges/leaderboard/${code.toUpperCase()}/`);
+    // Backend returns { success: true, data: [...] } which gets wrapped by request() method
+    const response = await this.request<{ success: boolean; data: ChallengeLeaderboardResponse }>(`/challenges/leaderboard/${code.toUpperCase()}/`);
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: {
+          data: response.data.data,
+        },
+      };
+    }
+    return {
+      success: false,
+      error: response.error,
+    };
   }
 
   /**

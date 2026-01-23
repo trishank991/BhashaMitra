@@ -643,13 +643,22 @@ class MimicAttemptSubmitView(APIView):
                 is_personal_best
             )
 
+            # Step 6.5: Truncate transcription to fit database field (max 200 chars)
+            transcription = stt_result.transcription or ''
+            MAX_TRANSCRIPTION_LENGTH = 200
+            if len(transcription) > MAX_TRANSCRIPTION_LENGTH:
+                logger.warning(
+                    f"Truncating transcription from {len(transcription)} to {MAX_TRANSCRIPTION_LENGTH} chars"
+                )
+                transcription = transcription[:MAX_TRANSCRIPTION_LENGTH - 3] + '...'
+
             # Step 7: Create attempt record with V2 acoustic fields
             attempt = PeppiMimicAttempt.objects.create(
                 child=child,
                 challenge=challenge,
                 audio_url=audio_url,
                 duration_ms=duration_ms,
-                stt_transcription=stt_result.transcription,
+                stt_transcription=transcription,
                 stt_confidence=stt_result.confidence,
                 text_match_score=score_result.text_match_score,
                 final_score=score_result.final_score,

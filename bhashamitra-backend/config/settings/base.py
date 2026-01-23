@@ -169,11 +169,21 @@ SIMPLE_JWT = {
 # CORS Settings
 # Parse CORS origins, cleaning up any whitespace/newlines and invalid entries
 _cors_origins_raw = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000')
-CORS_ALLOWED_ORIGINS = [
+_cors_origins_from_env = [
     origin.strip().rstrip('/')  # Remove whitespace and trailing slashes
     for origin in _cors_origins_raw.replace('\n', ',').split(',')
     if origin.strip() and origin.strip().startswith(('http://', 'https://'))
 ]
+
+# Production origins that must always be allowed
+_cors_production_origins = [
+    'https://bhasha-mitra.vercel.app',
+    'https://bhashamitra.vercel.app',
+    'https://bhashamitra-frontend.vercel.app',
+]
+
+# Combine env origins with production origins (deduped)
+CORS_ALLOWED_ORIGINS = list(dict.fromkeys(_cors_origins_from_env + _cors_production_origins))
 CORS_ALLOW_CREDENTIALS = True
 
 # Allow all Vercel preview deployments for bhashamitra/bhasha-mitra

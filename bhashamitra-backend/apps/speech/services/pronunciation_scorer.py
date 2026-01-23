@@ -20,15 +20,10 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, Tuple
 import requests
-from openai import OpenAI  # Add this
+
+from .feedback_service import get_pronunciation_feedback
 
 logger = logging.getLogger(__name__)
-
-# Initialize MiniMax Client globally
-minimax_client = OpenAI(
-    api_key=os.getenv("MINIMAX_API_KEY"),
-    base_url="https://api.minimax.io/v1"
-)
 
 @dataclass
 class AudioAnalysisResult:
@@ -416,18 +411,16 @@ class PronunciationScorer:
 
         # Determine stars and feedback
         stars, feedback_key = self._get_stars_and_feedback(final_score)
-# --- NEW: MiniMax 2.1 AI Coaching Integration ---
-        ai_feedback = ""
-        if stars < 3:
-            # We call the helper method we added to the bottom of this class
-            ai_feedback = self._get_minimax_feedback(
-                expected_word, 
-                transcription, 
-                language_name
-            )
-        else:
-            ai_feedback = "Perfect pronunciation! Well done."
-# --- NEW: MiniMax 2.1 AI Coaching Integration ---
+
+        # Get rich feedback from static feedback service (free, fast, reliable)
+        rich_feedback = get_pronunciation_feedback(
+            score=int(round(final_score)),
+            language=language_name,
+            word=expected_word,
+            transcription=transcription,
+        )
+        ai_feedback = rich_feedback.get('tip', 'Keep practicing!')
+
         # Build score breakdown for transparency
         score_breakdown = {
             'stt_confidence': {
@@ -622,96 +615,6 @@ class PronunciationScorer:
             f"Learning {language.title()} on BhashaMitra! 📚🐱\n\n"
             f"Send them an encouraging voice message! 💕"
         )
-
-    @staticmethod
-    def _get_minimax_feedback(target, user_said, language_name):
-        """
-        Calls MiniMax 2.1 to provide a language-specific phonetic tip.
-        
-        Falls back gracefully if MiniMax API is unavailable.
-        """
-        # Check if MiniMax is configured
-        minimax_api_key = os.getenv("MINIMAX_API_KEY")
-        if not minimax_api_key:
-            logger.warning("MiniMax API key not configured - using fallback feedback")
-            return PronunciationScorer._get_fallback_feedback(target, user_said, language_name)
-        
-        try:
-            response = minimax_client.chat.completions.create(
-                model="MiniMax-M2.1",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": f"You are an expert {language_name} pronunciation coach for children. "
-                                   "Provide a one-sentence tip in simple English on how to improve pronunciation."
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Target word: '{target}'. Child said: '{user_said}'. "
-                                   f"Give one short, encouraging tip to help them pronounce '{target}' better."
-                    }
-                ],
-                max_tokens=100,
-                temperature=0.7
-            )
-            feedback = response.choices[0].message.content.strip()
-            logger.info(f"MiniMax feedback for '{target}': {feedback}")
-            return feedback
-        except Exception as e:
-            logger.error(f"MiniMax Coaching Error: {e}")
-            return PronunciationScorer._get_fallback_feedback(target, user_said, language_name)
-
-    @staticmethod
-    def _get_fallback_feedback(target, user_said, language_name):
-        """
-        Generate fallback feedback when MiniMax is unavailable.
-        Uses simple heuristic-based tips.
-        """
-        # Simple language-specific phonetic tips
-        phonetic_tips = {
-            'HINDI': {
-                'ख': 'Focus on the breathy "kh" sound at the start',
-                'घ': 'Make sure to voice the "gh" - it\'s like a soft "g"',
-                'छ': 'The "chh" needs a strong puff of air',
-                'झ': 'This "jh" sound vibrates in your throat',
-                'ट': 'The "ṭ" is like a retroflex "t" - touch the roof of your mouth',
-                'ठ': 'The "ṭh" has a hint of aspiration',
-                'ड': 'The "ḍ" curls back like a retroflex "d"',
-                'ढ': 'The "ḍh" has a breathy quality',
-                'ँ': 'The "chandrabindu" adds a nasal sound',
-            },
-            'TAMIL': {
-                'ழ': 'The "zh" sound comes from the side of your tongue',
-                'ஜ': 'The "j" is soft and quick',
-                'ண': 'The "ṇ" curls back - touch the roof of your mouth',
-                'ந': 'The "n" is more nasal, from the front',
-            },
-            'GUJARATI': {
-                'ક': 'The "k" is sharp and clean',
-                'ગ': 'The "g" is soft, like in "girl"',
-                'ચ': 'The "ch" touches the palate',
-                'છ': 'The "chh" has more air flow',
-            },
-        }
-        
-        # Check if target starts with a character that has a specific tip
-        for lang, tips in phonetic_tips.items():
-            if language_name.upper() == lang:
-                for char, tip in tips.items():
-                    if target and target.startswith(char):
-                        return tip
-        
-        # Generic fallback tips
-        generic_tips = [
-            "Try saying the word slowly, one syllable at a time.",
-            "Listen to Peppi's pronunciation again and try to match it.",
-            "Open your mouth wider for clearer sounds.",
-            "Practice saying each sound separately before combining them.",
-            "Take a deep breath before speaking to get better volume.",
-        ]
-        
-        import random
-        return random.choice(generic_tips)
 
 
 # Singleton instance for easy access

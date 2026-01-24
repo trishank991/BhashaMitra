@@ -40,28 +40,9 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
 
   const timeLimit = challenge?.time_limit_seconds ?? 30;
 
-  // Timer
-  useEffect(() => {
-    if (!questions.length) return; // Don't run timer if no questions
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          // Time's up - auto-submit current answer or -1 for no answer
-          handleNext();
-          return timeLimit;
-        }
-        return prev - 1;
-      });
-      setTotalTime((prev) => prev + 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [currentIndex, timeLimit, questions.length]);
-
-  const handleNext = useCallback(() => {
-    const answerToSave = selectedAnswer ?? -1; // -1 for unanswered
-    const newAnswers = [...answers, answerToSave];
+  // Move to next question with the given answer
+  const moveToNext = useCallback((answerIndex: number) => {
+    const newAnswers = [...answers, answerIndex];
     setAnswers(newAnswers);
 
     if (isLastQuestion) {
@@ -72,15 +53,39 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
       setIsAnswerLocked(false);
       setTimeLeft(timeLimit);
     }
-  }, [selectedAnswer, answers, isLastQuestion, totalTime, onComplete, timeLimit]);
+  }, [answers, isLastQuestion, totalTime, onComplete, timeLimit]);
+
+  // Skip/timeout handler (uses -1 for unanswered)
+  const handleSkip = useCallback(() => {
+    moveToNext(selectedAnswer ?? -1);
+  }, [selectedAnswer, moveToNext]);
 
   const handleSelectAnswer = (index: number) => {
     if (isAnswerLocked) return;
     setSelectedAnswer(index);
     setIsAnswerLocked(true);
-    // Brief delay before moving to next
-    setTimeout(handleNext, 500);
+    // Brief delay before moving to next - pass the index directly to avoid stale closure
+    setTimeout(() => moveToNext(index), 500);
   };
+
+  // Timer
+  useEffect(() => {
+    if (!questions.length) return; // Don't run timer if no questions
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          // Time's up - auto-submit current answer or -1 for no answer
+          handleSkip();
+          return timeLimit;
+        }
+        return prev - 1;
+      });
+      setTotalTime((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [currentIndex, timeLimit, questions.length, handleSkip]);
 
   const progressPercent = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
   const timerPercent = timeLimit > 0 ? (timeLeft / timeLimit) * 100 : 0;
@@ -197,7 +202,7 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
       {/* Skip button */}
       <div className="max-w-lg mx-auto text-center">
         <button
-          onClick={handleNext}
+          onClick={handleSkip}
           className="text-gray-400 hover:text-gray-600 text-sm underline"
         >
           Skip this question

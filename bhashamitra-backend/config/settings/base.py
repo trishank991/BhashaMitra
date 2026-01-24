@@ -283,6 +283,69 @@ LEVEL_THRESHOLDS = {
 }
 
 # ===========================================
+# CHALLENGE SCORING CONFIGURATION
+# ===========================================
+
+SCORING_CONFIG = {
+    # Base points
+    'CORRECT_ANSWER': 10,
+    'CHALLENGE_COMPLETE': 25,
+    'PERFECT_ROUND': 50,
+    'FIRST_ATTEMPT_BONUS': 5,
+
+    # Time multipliers (answer speed)
+    'TIME_MULTIPLIER': {
+        'FAST': {'max_seconds': 5, 'multiplier': 1.5},
+        'NORMAL': {'max_seconds': 15, 'multiplier': 1.2},
+        'SLOW': {'max_seconds': 25, 'multiplier': 1.0},
+        'VERY_SLOW': {'max_seconds': 999, 'multiplier': 0.8},
+    },
+
+    # Difficulty multipliers
+    'DIFFICULTY_MULTIPLIER': {
+        'easy': 1.0,
+        'medium': 1.25,
+        'hard': 1.5,
+    },
+
+    # Streak multipliers (consecutive correct)
+    'STREAK_MULTIPLIER': {
+        'LOW': {'min': 2, 'max': 4, 'multiplier': 1.1},
+        'MEDIUM': {'min': 5, 'max': 9, 'multiplier': 1.25},
+        'HIGH': {'min': 10, 'max': 999, 'multiplier': 1.5},
+    },
+
+    # Underdog bonus (beating higher level opponent)
+    'UNDERDOG_BONUS': {
+        1: {'score_bonus': 0.25, 'points': 10},   # 1 level higher
+        2: {'score_bonus': 0.50, 'points': 25},   # 2 levels higher
+        3: {'score_bonus': 1.00, 'points': 50},   # 3+ levels higher
+    },
+}
+
+# ===========================================
+# ELO RATING CONFIGURATION
+# ===========================================
+
+RATING_CONFIG = {
+    'INITIAL_RATING': 1000,
+    'K_FACTOR_NEW': 32,      # For players with <30 games
+    'K_FACTOR_ESTABLISHED': 16,  # For players with 30+ games
+    'GAMES_THRESHOLD': 30,
+
+    'RANK_TITLES': {
+        800: 'Beginner',
+        1000: 'Learner',
+        1200: 'Student',
+        1400: 'Scholar',
+        1600: 'Expert',
+        1800: 'Master',
+        2000: 'Grandmaster',
+        2200: 'Legend',
+    },
+}
+
+# ===========================================
 # APP CONFIGURATION
 # ===========================================
 

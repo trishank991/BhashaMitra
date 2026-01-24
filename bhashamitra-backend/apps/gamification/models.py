@@ -108,6 +108,7 @@ class Badge(TimeStampedModel):
     """Achievement badges."""
 
     class CriteriaType(models.TextChoices):
+        # Existing criteria
         STORIES_COMPLETED = 'STORIES_COMPLETED', 'Stories Completed'
         STREAK_DAYS = 'STREAK_DAYS', 'Streak Days'
         POINTS_EARNED = 'POINTS_EARNED', 'Points Earned'
@@ -116,20 +117,73 @@ class Badge(TimeStampedModel):
         LETTERS_MASTERED = 'LETTERS_MASTERED', 'Letters Mastered'
         WORDS_MASTERED = 'WORDS_MASTERED', 'Words Mastered'
 
+        # NEW: Challenge criteria
+        CHALLENGES_COMPLETED = 'CHALLENGES_COMPLETED', 'Challenges Completed'
+        CHALLENGES_WON = 'CHALLENGES_WON', 'Challenges Won'
+        CHALLENGE_WIN_STREAK = 'CHALLENGE_WIN_STREAK', 'Challenge Win Streak'
+        PERFECT_CHALLENGES = 'PERFECT_CHALLENGES', 'Perfect Challenges'
+        UNDERDOG_WINS = 'UNDERDOG_WINS', 'Underdog Wins'
+        GIANT_SLAYER = 'GIANT_SLAYER', 'Giant Slayer Wins'
+
+        # NEW: Social criteria
+        FRIENDS_INVITED = 'FRIENDS_INVITED', 'Friends Invited'
+        FRIENDS_CONVERTED = 'FRIENDS_CONVERTED', 'Friends Converted to Users'
+        MULTIPLAYER_GAMES = 'MULTIPLAYER_GAMES', 'Multiplayer Games'
+
+        # NEW: Skill-based criteria
+        RATING_ACHIEVED = 'RATING_ACHIEVED', 'Rating Achieved'
+        ACCURACY_ACHIEVED = 'ACCURACY_ACHIEVED', 'Accuracy Percentage'
+
+    class BadgeRarity(models.TextChoices):
+        COMMON = 'COMMON', 'Common'
+        UNCOMMON = 'UNCOMMON', 'Uncommon'
+        RARE = 'RARE', 'Rare'
+        EPIC = 'EPIC', 'Epic'
+        LEGENDARY = 'LEGENDARY', 'Legendary'
+
+    class BadgeCategory(models.TextChoices):
+        ACHIEVEMENT = 'ACHIEVEMENT', 'Achievement'
+        SKILL = 'SKILL', 'Skill'
+        SOCIAL = 'SOCIAL', 'Social'
+        STREAK = 'STREAK', 'Streak'
+        SPECIAL = 'SPECIAL', 'Special'
+        SEASONAL = 'SEASONAL', 'Seasonal'
+
     name = models.CharField(max_length=100)
     description = models.TextField()
     icon = models.CharField(max_length=50)
     criteria_type = models.CharField(max_length=30, choices=CriteriaType.choices)
     criteria_value = models.IntegerField()
+    criteria_extra = models.JSONField(null=True, blank=True)  # For complex criteria
+
+    # New fields for expanded badge system
+    category = models.CharField(
+        max_length=20,
+        choices=BadgeCategory.choices,
+        default=BadgeCategory.ACHIEVEMENT
+    )
+    rarity = models.CharField(
+        max_length=20,
+        choices=BadgeRarity.choices,
+        default=BadgeRarity.COMMON
+    )
+
     display_order = models.IntegerField(default=0)
     points_bonus = models.IntegerField(default=0)
 
+    # Seasonal badges
+    is_seasonal = models.BooleanField(default=False)
+    available_from = models.DateField(null=True, blank=True)
+    available_until = models.DateField(null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+
     class Meta:
         db_table = 'badges'
-        ordering = ['display_order']
+        ordering = ['category', 'display_order']
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.rarity})"
 
 
 class ChildBadge(TimeStampedModel):

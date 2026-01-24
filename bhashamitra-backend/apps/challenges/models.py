@@ -280,3 +280,89 @@ class UserChallengeQuota(models.Model):
         self.challenges_created_today += 1
         self.total_challenges_created += 1
         self.save(update_fields=['challenges_created_today', 'total_challenges_created'])
+
+
+class PlayerRating(TimeStampedModel):
+    """ELO-style competitive rating for registered players."""
+
+    child = models.OneToOneField(
+        'children.Child',
+        on_delete=models.CASCADE,
+        related_name='challenge_rating'
+    )
+
+    # Current rating
+    current_rating = models.IntegerField(default=1000)
+    highest_rating = models.IntegerField(default=1000)
+    lowest_rating = models.IntegerField(default=1000)
+
+    # Match statistics
+    total_matches = models.IntegerField(default=0)
+    wins = models.IntegerField(default=0)
+    losses = models.IntegerField(default=0)
+    draws = models.IntegerField(default=0)
+
+    # Streaks
+    current_win_streak = models.IntegerField(default=0)
+    best_win_streak = models.IntegerField(default=0)
+    current_loss_streak = models.IntegerField(default=0)
+
+    # Underdog statistics
+    underdog_wins = models.IntegerField(default=0)  # Wins against higher-rated opponents
+    giant_slayer_wins = models.IntegerField(default=0)  # Wins against 200+ higher rated
+
+    # Derived fields
+    rank_title = models.CharField(max_length=50, default='Learner')
+
+    class Meta:
+        db_table = 'player_ratings'
+        ordering = ['-current_rating']
+
+    @property
+    def win_rate(self) -> float:
+        if self.total_matches == 0:
+            return 0.0
+        return round((self.wins / self.total_matches) * 100, 1)
+
+    def update_rank_title(self):
+        """Update rank title based on current rating."""
+        from django.conf import settings
+        titles = settings.RATING_CONFIG['RANK_TITLES']
+
+        for rating_threshold in sorted(titles.keys(), reverse=True):
+            if self.current_rating >= rating_threshold:
+                self.rank_title = titles[rating_threshold]
+                break
+        self.save(update_fields=['rank_title'])
+
+    def __str__(self):
+        return f"{self.child.name} - {self.current_rating} ({self.rank_title})"
+
+
+class RatingHistory(TimeStampedModel):
+    """Track rating changes over time."""
+
+    player_rating = models.ForeignKey(
+        PlayerRating,
+        on_delete=models.CASCADE,
+        related_name='history'
+    )
+    challenge_attempt = models.ForeignKey(
+        ChallengeAttempt,
+        on_delete=models.CASCADE,
+        related_name='rating_changes'
+    )
+
+    rating_before = models.IntegerField()
+    rating_after = models.IntegerField()
+    rating_change = models.IntegerField()
+
+    opponent_rating = models.IntegerField(null=True, blank=True)
+    is_win = models.BooleanField()
+
+    class Meta:
+        db_table = 'rating_history'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.player_rating.child.name}: {self.rating_before} -> {self.rating_after}"

@@ -167,6 +167,14 @@ def submit_challenge(request):
             is_completed=False,
         )
 
+    # Log for debugging scoring issues
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Scoring challenge {challenge.code}: {len(challenge.questions)} questions, {len(answers)} answers")
+    if challenge.questions:
+        first_q = challenge.questions[0]
+        logger.info(f"First question has correct_index: {'correct_index' in first_q}, keys: {list(first_q.keys())}")
+
     # Calculate score
     result = ChallengeService.calculate_score(challenge.questions, answers)
 

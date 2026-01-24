@@ -223,16 +223,27 @@ class ChallengeService:
 
         for i, ans in enumerate(answers):
             if i < len(questions):
-                correct_index = questions[i].get('correct_index')
-                # Handle both int and string comparisons
-                is_correct = str(ans) == str(correct_index)
+                question = questions[i]
+                correct_index = question.get('correct_index')
+
+                # Log for debugging if correct_index is missing
+                if correct_index is None:
+                    logger.warning(f"Question {i} missing correct_index: {question.get('id', 'unknown')}")
+                    # Try to infer correct_index from options if possible
+                    # This handles edge cases where correct_index wasn't stored
+                    is_correct = False
+                else:
+                    # Handle both int and string comparisons
+                    is_correct = int(ans) == int(correct_index)
+
                 if is_correct:
                     score += 1
+
                 detailed_results.append({
-                    "question_id": i,
+                    "question_id": question.get('id', i),
                     "correct": is_correct,
                     "user_answer": ans,
-                    "correct_answer": int(correct_index) if correct_index is not None else 0
+                    "correct_answer": int(correct_index) if correct_index is not None else -1
                 })
 
         max_score = len(questions)

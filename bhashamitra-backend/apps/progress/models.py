@@ -47,6 +47,13 @@ class DailyActivity(TimeStampedModel):
     class Meta:
         db_table = 'daily_activities'
         unique_together = ['child', 'date']
+        indexes = [
+            models.Index(fields=['date']),
+            models.Index(fields=['child', 'date']),
+        ]
+
+    def __str__(self):
+        return f"{self.child.name} - {self.date}"
 
 
 class DailyProgress(TimeStampedModel):
@@ -64,6 +71,9 @@ class DailyProgress(TimeStampedModel):
         db_table = 'daily_progress'
         unique_together = ['child', 'date']
         ordering = ['-date']
+        indexes = [
+            models.Index(fields=['date']),
+        ]
 
     def __str__(self):
         return f"{self.child.name} - {self.date}"

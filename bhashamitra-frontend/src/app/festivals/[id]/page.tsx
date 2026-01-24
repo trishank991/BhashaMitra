@@ -31,7 +31,7 @@ interface LocalStoryPage {
 export default function FestivalStoryPage() {
   const router = useRouter();
   const params = useParams();
-  const festivalId = params.id as string;
+  const festivalId = params?.id as string | undefined;
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [festival, setFestival] = useState<Festival | null>(null);
@@ -66,6 +66,12 @@ export default function FestivalStoryPage() {
     }
 
     const fetchFestivalData = async () => {
+      if (!festivalId) {
+        setError('Invalid festival ID');
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
 

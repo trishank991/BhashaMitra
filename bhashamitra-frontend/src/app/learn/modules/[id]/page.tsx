@@ -15,7 +15,7 @@ import { CurriculumModuleWithProgress, LessonWithProgress, MODULE_TYPE_INFO } fr
 export default function ModuleDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const moduleId = params.id as string;
+  const moduleId = params?.id as string | undefined;
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [module, setModule] = useState<CurriculumModuleWithProgress | null>(null);
@@ -32,6 +32,11 @@ export default function ModuleDetailPage() {
     if (!isHydrated) return;
     if (!isAuthenticated) {
       router.push('/login');
+      return;
+    }
+    if (!moduleId) {
+      setError('Invalid module ID');
+      setLoading(false);
       return;
     }
 
@@ -122,7 +127,7 @@ export default function ModuleDetailPage() {
         {/* Back Button */}
         <motion.div variants={fadeInUp}>
           <Link
-            href={`/learn/levels/${module.level}`}
+            href={module.level ? `/learn/levels/${module.level}` : '/learn/levels'}
             className="inline-flex items-center text-gray-600 hover:text-gray-900"
           >
             <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">

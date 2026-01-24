@@ -25,6 +25,9 @@ class VocabularyTheme(TimeStampedModel):
         ordering = ['level', 'order']
         unique_together = ['language', 'name']
 
+    def __str__(self):
+        return f"{self.name} ({self.language})"
+
     @property
     def word_count(self):
         return self.words.count()
@@ -64,6 +67,9 @@ class VocabularyWord(TimeStampedModel):
         db_table = 'vocabulary_words'
         ordering = ['order']
         unique_together = ['theme', 'word']
+
+    def __str__(self):
+        return f"{self.word} - {self.translation}"
 
 
 class WordProgress(TimeStampedModel):

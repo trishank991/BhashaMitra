@@ -14,7 +14,7 @@ import { useAudio } from '@/hooks/useAudio';
 export default function GrammarTopicDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const topicId = params.id as string;
+  const topicId = params?.id as string | undefined;
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [topic, setTopic] = useState<GrammarTopic | null>(null);
@@ -122,6 +122,11 @@ export default function GrammarTopicDetailPage() {
     }
 
     const fetchTopicAndRules = async () => {
+      if (!topicId) {
+        setError('Invalid topic ID');
+        setLoading(false);
+        return;
+      }
       if (!activeChild?.id) {
         setError('Please select a child profile first');
         setLoading(false);

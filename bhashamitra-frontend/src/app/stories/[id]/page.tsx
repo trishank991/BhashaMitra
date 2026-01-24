@@ -16,7 +16,7 @@ import type { SubscriptionTier, LanguageCode, Story } from '@/types';
 export default function StoryDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const storyId = params.id as string;
+  const storyId = params?.id as string | undefined;
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -292,7 +292,7 @@ export default function StoryDetailPage() {
 
         {/* Peppi Narrator Section - Plays FULL story continuously */}
         <motion.div variants={fadeInUp}>
-          {showPeppiNarrator ? (
+          {showPeppiNarrator && storyId ? (
             <PeppiNarrator
               storyId={storyId}
               storyTitle={story?.title}

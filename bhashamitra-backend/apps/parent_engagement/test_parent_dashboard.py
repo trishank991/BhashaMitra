@@ -26,6 +26,7 @@ class ParentDashboardAPITest(TestCase):
         """Set up test data."""
         # Create parent user
         self.parent = User.objects.create_user(
+            username='parent@test.com',
             email='parent@test.com',
             password='testpass123',
             name='Test Parent'
@@ -148,6 +149,7 @@ class ParentDashboardAPITest(TestCase):
         """Test that parents can only see their own children."""
         # Create another parent
         other_parent = User.objects.create_user(
+            username='other@test.com',
             email='other@test.com',
             password='testpass123',
             name='Other Parent'
@@ -167,7 +169,8 @@ class ParentDashboardIntegrationTest(TestCase):
     def setUp(self):
         """Set up comprehensive test data."""
         self.parent = User.objects.create_user(
-            email='parent@test.com',
+            username='parent2@test.com',
+            email='parent2@test.com',
             password='testpass123',
             name='Test Parent'
         )

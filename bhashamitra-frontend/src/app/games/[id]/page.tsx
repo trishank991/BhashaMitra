@@ -487,7 +487,7 @@ function ListenSpeakGame({
 export default function GameDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const gameId = params.id as string;
+  const gameId = params?.id as string | undefined;
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'complete'>('intro');

@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/v1/challenges/', include('apps.challenges.urls', namespace='challenges')),
     path('api/v1/children/', include('apps.children.urls', namespace='children')),
     path('api/v1/children/<uuid:child_id>/peppi-chat/', include('apps.peppi_chat.urls', namespace='peppi_chat')),
+    path('api/v1/children/<uuid:child_id>/progress/', include('apps.progress.urls', namespace='progress')),
     path('api/v1/stories/', include('apps.stories.urls', namespace='stories')),
     path('api/v1/speech/', include('apps.speech.urls', namespace='speech')),
     path('api/v1/festivals/', include('apps.festivals.urls')),

@@ -314,7 +314,7 @@ class ProgressUpdateTests(ParentEngagementBaseTest):
 
     def test_update_progress_lesson(self):
         """Can update progress for a lesson."""
-        url = reverse('parent_engagement:child-progress', kwargs={'child_id': self.child1.id})
+        url = reverse('parent_engagement:child-progress-update', kwargs={'child_id': self.child1.id})
         data = {
             'type': 'lesson',
             'duration_minutes': 15,
@@ -330,7 +330,7 @@ class ProgressUpdateTests(ParentEngagementBaseTest):
 
     def test_update_progress_exercise(self):
         """Can update progress for an exercise."""
-        url = reverse('parent_engagement:child-progress', kwargs={'child_id': self.child1.id})
+        url = reverse('parent_engagement:child-progress-update', kwargs={'child_id': self.child1.id})
         data = {
             'type': 'exercise',
             'duration_minutes': 10,
@@ -343,7 +343,7 @@ class ProgressUpdateTests(ParentEngagementBaseTest):
 
     def test_update_progress_game(self):
         """Can update progress for a game."""
-        url = reverse('parent_engagement:child-progress', kwargs={'child_id': self.child1.id})
+        url = reverse('parent_engagement:child-progress-update', kwargs={'child_id': self.child1.id})
         data = {
             'type': 'game',
             'duration_minutes': 5,
@@ -364,7 +364,7 @@ class ProgressUpdateTests(ParentEngagementBaseTest):
             language='HINDI',
         )
 
-        url = reverse('parent_engagement:child-progress', kwargs={'child_id': new_child.id})
+        url = reverse('parent_engagement:child-progress-update', kwargs={'child_id': new_child.id})
         data = {
             'type': 'lesson',
             'duration_minutes': 10,
@@ -384,7 +384,7 @@ class ProgressUpdateTests(ParentEngagementBaseTest):
         """Progress update updates relevant goals."""
         initial_value = self.goal.current_value
 
-        url = reverse('parent_engagement:child-progress', kwargs={'child_id': self.child1.id})
+        url = reverse('parent_engagement:child-progress-update', kwargs={'child_id': self.child1.id})
         data = {
             'type': 'lesson',
             'duration_minutes': 10,
@@ -400,7 +400,7 @@ class ProgressUpdateTests(ParentEngagementBaseTest):
 
     def test_update_progress_invalid_type(self):
         """Invalid progress type returns error."""
-        url = reverse('parent_engagement:child-progress', kwargs={'child_id': self.child1.id})
+        url = reverse('parent_engagement:child-progress-update', kwargs={'child_id': self.child1.id})
         data = {
             'type': 'invalid',
             'duration_minutes': 10,

@@ -42,7 +42,7 @@ const getThemeEmoji = (themeName?: string): string => {
 export default function VocabularyThemeDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const themeId = params.id as string;
+  const themeId = params?.id as string | undefined;
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [theme, setTheme] = useState<VocabularyTheme | null>(null);
@@ -99,6 +99,11 @@ export default function VocabularyThemeDetailPage() {
 
     // Fetch theme and words from API
     const fetchThemeAndWords = async () => {
+      if (!themeId) {
+        setLoading(false);
+        setError('Invalid theme ID');
+        return;
+      }
       if (!activeChild?.id) {
         setLoading(false);
         setError('No active child profile');

@@ -85,7 +85,15 @@ urlpatterns = [
     path('progress/levels/', ChildLevelProgressView.as_view(), name='child-level-progress'),
     path('children/<uuid:child_id>/homepage-progress/', ChildHomepageProgressView.as_view(), name='child-homepage-progress'),
 
-    # ========== ALPHABET ==========
+    # ========== ALPHABET (with child_id) ==========
+    path('children/<uuid:child_id>/alphabet/scripts/', ScriptListView.as_view(), name='child-script-list'),
+    path('children/<uuid:child_id>/alphabet/scripts/<uuid:pk>/', ScriptDetailView.as_view(), name='child-script-detail'),
+    path('children/<uuid:child_id>/alphabet/scripts/<uuid:pk>/letters/', ScriptLettersView.as_view(), name='child-script-letters'),
+    path('children/<uuid:child_id>/alphabet/letters/', LetterListView.as_view(), name='child-letter-list'),
+    path('children/<uuid:child_id>/alphabet/letters/<uuid:pk>/', LetterDetailView.as_view(), name='child-letter-detail'),
+    path('children/<uuid:child_id>/alphabet/letters/<uuid:pk>/progress/', LetterProgressView.as_view(), name='child-letter-progress'),
+    path('children/<uuid:child_id>/alphabet/progress/', AlphabetProgressView.as_view(), name='child-alphabet-progress'),
+    # Legacy routes without child_id (for backward compatibility)
     path('alphabet/scripts/', ScriptListView.as_view(), name='script-list'),
     path('alphabet/scripts/<uuid:pk>/', ScriptDetailView.as_view(), name='script-detail'),
     path('alphabet/scripts/<uuid:pk>/letters/', ScriptLettersView.as_view(), name='script-letters'),
@@ -94,7 +102,16 @@ urlpatterns = [
     path('alphabet/letters/<uuid:pk>/progress/', LetterProgressView.as_view(), name='letter-progress'),
     path('alphabet/progress/', AlphabetProgressView.as_view(), name='alphabet-progress'),
 
-    # ========== VOCABULARY ==========
+    # ========== VOCABULARY (with child_id) ==========
+    path('children/<uuid:child_id>/vocabulary/themes/', VocabularyThemeListView.as_view(), name='child-theme-list'),
+    path('children/<uuid:child_id>/vocabulary/themes/<uuid:pk>/', ThemeDetailView.as_view(), name='child-theme-detail'),
+    path('children/<uuid:child_id>/vocabulary/themes/<uuid:pk>/words/', ThemeWordsView.as_view(), name='child-theme-words'),
+    path('children/<uuid:child_id>/vocabulary/themes/<uuid:pk>/stats/', ThemeStatsView.as_view(), name='child-theme-stats'),
+    path('children/<uuid:child_id>/vocabulary/words/<uuid:pk>/', WordDetailView.as_view(), name='child-word-detail'),
+    path('children/<uuid:child_id>/vocabulary/flashcards/due/', FlashcardsDueView.as_view(), name='child-flashcards-due'),
+    path('children/<uuid:child_id>/vocabulary/flashcards/review/', FlashcardReviewView.as_view(), name='child-flashcard-review'),
+    path('children/<uuid:child_id>/vocabulary/flashcards/session/', FlashcardSessionView.as_view(), name='child-flashcard-session'),
+    # Legacy routes without child_id
     path('vocabulary/themes/', VocabularyThemeListView.as_view(), name='theme-list'),
     path('vocabulary/themes/<uuid:pk>/', ThemeDetailView.as_view(), name='theme-detail'),
     path('vocabulary/themes/<uuid:pk>/words/', ThemeWordsView.as_view(), name='theme-words'),

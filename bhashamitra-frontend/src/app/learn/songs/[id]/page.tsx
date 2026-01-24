@@ -15,7 +15,7 @@ import { Song, SONG_CATEGORY_INFO, SubscriptionTier, PeppiGender } from '@/types
 export default function SongDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const songId = params.id as string;
+  const songId = params?.id as string | undefined;
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [song, setSong] = useState<Song | null>(null);
@@ -40,6 +40,11 @@ export default function SongDetailPage() {
     if (!isHydrated) return;
     if (!isAuthenticated) {
       router.push('/login');
+      return;
+    }
+    if (!songId) {
+      setError('Invalid song ID');
+      setLoading(false);
       return;
     }
 
@@ -247,7 +252,7 @@ export default function SongDetailPage() {
 
         {/* Peppi Narrator Section */}
         <motion.div variants={fadeInUp}>
-          {showPeppiNarrator ? (
+          {showPeppiNarrator && songId ? (
             <PeppiSongNarrator
               songId={songId}
               songTitle={song?.title_english}

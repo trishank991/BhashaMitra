@@ -15,7 +15,7 @@ import { CurriculumLevelWithProgress, CurriculumModuleWithProgress } from '@/typ
 export default function LevelDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const levelId = params.id as string;
+  const levelId = params?.id as string | undefined;
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [level, setLevel] = useState<CurriculumLevelWithProgress | null>(null);
@@ -32,6 +32,11 @@ export default function LevelDetailPage() {
     if (!isHydrated) return;
     if (!isAuthenticated) {
       router.push('/login');
+      return;
+    }
+    if (!levelId) {
+      setError('Invalid level ID');
+      setLoading(false);
       return;
     }
 

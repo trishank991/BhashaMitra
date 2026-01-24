@@ -25,7 +25,7 @@ interface QuizQuestion {
 export default function LessonDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const lessonId = params.id as string;
+  const lessonId = params?.id as string | undefined;
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [lesson, setLesson] = useState<LessonWithProgress | null>(null);
@@ -56,6 +56,11 @@ export default function LessonDetailPage() {
     if (!isHydrated) return;
     if (!isAuthenticated) {
       router.push('/login');
+      return;
+    }
+    if (!lessonId) {
+      setError('Invalid lesson ID');
+      setLoading(false);
       return;
     }
 
@@ -215,7 +220,7 @@ export default function LessonDetailPage() {
 
   // Submit quiz and update lesson progress
   const handleSubmitQuiz = async () => {
-    if (!activeChild || !lesson) return;
+    if (!activeChild || !lesson || !lessonId) return;
 
     const finalScore = Math.round((quizScore / quizQuestions.length) * 100);
 

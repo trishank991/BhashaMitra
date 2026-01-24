@@ -10,6 +10,9 @@ interface ChallengeLeaderboardProps {
 }
 
 export function ChallengeLeaderboard({ leaderboard, myAttemptId, onBack }: ChallengeLeaderboardProps) {
+  // Safe access to leaderboard array
+  const entries = leaderboard?.leaderboard ?? [];
+
   const getRankBadge = (rank: number) => {
     if (rank === 1) return { emoji: '🥇', color: 'from-yellow-400 to-yellow-600' };
     if (rank === 2) return { emoji: '🥈', color: 'from-gray-300 to-gray-500' };
@@ -32,24 +35,24 @@ export function ChallengeLeaderboard({ leaderboard, myAttemptId, onBack }: Chall
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Leaderboard</h1>
-            <p className="text-gray-500">{leaderboard.challenge_title}</p>
+            <p className="text-gray-500">{leaderboard?.challenge_title ?? 'Challenge'}</p>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-white rounded-xl p-4 shadow-md text-center">
-            <div className="text-2xl font-bold text-purple-600">{leaderboard.total_participants}</div>
+            <div className="text-2xl font-bold text-purple-600">{leaderboard?.total_participants ?? 0}</div>
             <div className="text-sm text-gray-500">Players</div>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-md text-center">
-            <div className="text-2xl font-bold text-pink-600">{leaderboard.average_score.toFixed(0)}%</div>
+            <div className="text-2xl font-bold text-pink-600">{(leaderboard?.average_score ?? 0).toFixed(0)}%</div>
             <div className="text-sm text-gray-500">Avg Score</div>
           </div>
         </div>
 
         {/* Top 3 Podium */}
-        {leaderboard.leaderboard.length >= 3 && (
+        {entries.length >= 3 && (
           <div className="flex items-end justify-center gap-2 mb-6">
             {/* 2nd place */}
             <motion.div
@@ -61,10 +64,10 @@ export function ChallengeLeaderboard({ leaderboard, myAttemptId, onBack }: Chall
               <div className="text-4xl mb-2">🥈</div>
               <div className="bg-gradient-to-b from-gray-200 to-gray-300 rounded-t-lg p-3 w-24 h-20">
                 <div className="text-sm font-bold text-gray-800 truncate">
-                  {leaderboard.leaderboard[1]?.participant_name || '-'}
+                  {entries[1]?.participant_name || '-'}
                 </div>
                 <div className="text-lg font-bold text-gray-700">
-                  {leaderboard.leaderboard[1]?.percentage || 0}%
+                  {entries[1]?.percentage || 0}%
                 </div>
               </div>
             </motion.div>
@@ -79,10 +82,10 @@ export function ChallengeLeaderboard({ leaderboard, myAttemptId, onBack }: Chall
               <div className="text-5xl mb-2">🥇</div>
               <div className="bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-t-lg p-3 w-28 h-28">
                 <div className="text-sm font-bold text-yellow-900 truncate">
-                  {leaderboard.leaderboard[0]?.participant_name || '-'}
+                  {entries[0]?.participant_name || '-'}
                 </div>
                 <div className="text-2xl font-bold text-yellow-900">
-                  {leaderboard.leaderboard[0]?.percentage || 0}%
+                  {entries[0]?.percentage || 0}%
                 </div>
               </div>
             </motion.div>
@@ -97,10 +100,10 @@ export function ChallengeLeaderboard({ leaderboard, myAttemptId, onBack }: Chall
               <div className="text-4xl mb-2">🥉</div>
               <div className="bg-gradient-to-b from-orange-200 to-orange-400 rounded-t-lg p-3 w-24 h-16">
                 <div className="text-sm font-bold text-orange-900 truncate">
-                  {leaderboard.leaderboard[2]?.participant_name || '-'}
+                  {entries[2]?.participant_name || '-'}
                 </div>
                 <div className="text-lg font-bold text-orange-800">
-                  {leaderboard.leaderboard[2]?.percentage || 0}%
+                  {entries[2]?.percentage || 0}%
                 </div>
               </div>
             </motion.div>
@@ -113,7 +116,7 @@ export function ChallengeLeaderboard({ leaderboard, myAttemptId, onBack }: Chall
             <h2 className="font-semibold text-gray-700">All Players</h2>
           </div>
           <div className="divide-y">
-            {leaderboard.leaderboard.map((entry, index) => {
+            {entries.map((entry, index) => {
               const badge = getRankBadge(entry.rank);
               const isMe = entry.id === myAttemptId;
 

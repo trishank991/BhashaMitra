@@ -13,22 +13,43 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState(challenge.time_limit_seconds);
+  const [timeLeft, setTimeLeft] = useState(challenge?.time_limit_seconds ?? 30);
   const [totalTime, setTotalTime] = useState(0);
   const [isAnswerLocked, setIsAnswerLocked] = useState(false);
 
-  const questions = challenge.questions;
-  const currentQuestion = questions[currentIndex] as Omit<ChallengeQuestion, 'correct_index'>;
+  // Safe access to questions array with fallback
+  const questions = challenge?.questions ?? [];
+  const currentQuestion = (questions[currentIndex] ?? {}) as Omit<ChallengeQuestion, 'correct_index'>;
   const isLastQuestion = currentIndex === questions.length - 1;
+
+  // Return early if no questions
+  if (!questions.length) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 text-center max-w-sm">
+          <div className="text-6xl mb-4">📝</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Questions</h1>
+          <p className="text-gray-500 mb-6">This challenge has no questions yet.</p>
+          <a href="/" className="inline-block px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-semibold">
+            Go Home
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  const timeLimit = challenge?.time_limit_seconds ?? 30;
 
   // Timer
   useEffect(() => {
+    if (!questions.length) return; // Don't run timer if no questions
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           // Time's up - auto-submit current answer or -1 for no answer
           handleNext();
-          return challenge.time_limit_seconds;
+          return timeLimit;
         }
         return prev - 1;
       });
@@ -36,7 +57,7 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [currentIndex, challenge.time_limit_seconds]);
+  }, [currentIndex, timeLimit, questions.length]);
 
   const handleNext = useCallback(() => {
     const answerToSave = selectedAnswer ?? -1; // -1 for unanswered
@@ -49,9 +70,9 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
       setCurrentIndex((prev) => prev + 1);
       setSelectedAnswer(null);
       setIsAnswerLocked(false);
-      setTimeLeft(challenge.time_limit_seconds);
+      setTimeLeft(timeLimit);
     }
-  }, [selectedAnswer, answers, isLastQuestion, totalTime, onComplete, challenge.time_limit_seconds]);
+  }, [selectedAnswer, answers, isLastQuestion, totalTime, onComplete, timeLimit]);
 
   const handleSelectAnswer = (index: number) => {
     if (isAnswerLocked) return;
@@ -61,8 +82,8 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
     setTimeout(handleNext, 500);
   };
 
-  const progressPercent = ((currentIndex + 1) / questions.length) * 100;
-  const timerPercent = (timeLeft / challenge.time_limit_seconds) * 100;
+  const progressPercent = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
+  const timerPercent = timeLimit > 0 ? (timeLeft / timeLimit) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 p-4">
@@ -139,7 +160,7 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
 
             {/* Answer choices */}
             <div className="grid grid-cols-2 gap-3">
-              {currentQuestion.choices.map((choice, index) => (
+              {(currentQuestion.choices ?? []).map((choice, index) => (
                 <motion.button
                   key={index}
                   whileHover={{ scale: isAnswerLocked ? 1 : 1.02 }}

@@ -2416,15 +2416,16 @@ export interface GameWord {
 
 // Challenge Types (Viral Quiz Sharing)
 export interface ChallengeQuestion {
-  id: number;
-  type: 'alphabet_recognition' | 'vocabulary_to_english' | 'english_to_vocabulary' | 'mimic';
+  id: string;
+  type?: 'alphabet_recognition' | 'vocabulary_to_english' | 'english_to_vocabulary' | 'mimic';
   question: string;
-  prompt: string;
+  prompt?: string;
   prompt_native?: string;
   romanization?: string;
-  choices: string[];
+  options: string[];  // API returns 'options'
+  choices?: string[]; // Keep for backwards compatibility
   correct_index?: number; // Only present for creators
-  image_url?: string;
+  image_url?: string | null;
   audio_url?: string;
   hint?: string;
 }

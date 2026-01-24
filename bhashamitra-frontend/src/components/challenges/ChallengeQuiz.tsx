@@ -145,22 +145,29 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
                 />
               )}
 
-              <h2 className="text-4xl font-bold text-gray-900 mb-2">
-                {currentQuestion.prompt_native || currentQuestion.prompt}
-              </h2>
-
-              {currentQuestion.romanization && (
-                <p className="text-lg text-gray-500 italic">
-                  {currentQuestion.romanization}
-                </p>
+              {/* Show native prompt if available, otherwise show question text */}
+              {currentQuestion.prompt_native ? (
+                <>
+                  <h2 className="text-4xl font-bold text-gray-900 mb-2">
+                    {currentQuestion.prompt_native}
+                  </h2>
+                  {currentQuestion.romanization && (
+                    <p className="text-lg text-gray-500 italic">
+                      {currentQuestion.romanization}
+                    </p>
+                  )}
+                  <p className="text-gray-600 mt-2">{currentQuestion.question}</p>
+                </>
+              ) : (
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  {currentQuestion.question}
+                </h2>
               )}
-
-              <p className="text-gray-600 mt-2">{currentQuestion.question}</p>
             </div>
 
-            {/* Answer choices */}
+            {/* Answer choices - use 'options' from API, fallback to 'choices' */}
             <div className="grid grid-cols-2 gap-3">
-              {(currentQuestion.choices ?? []).map((choice, index) => (
+              {(currentQuestion.options ?? currentQuestion.choices ?? []).map((choice, index) => (
                 <motion.button
                   key={index}
                   whileHover={{ scale: isAnswerLocked ? 1 : 1.02 }}

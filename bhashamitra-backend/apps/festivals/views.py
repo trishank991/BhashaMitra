@@ -46,7 +46,8 @@ class FestivalViewSet(viewsets.ReadOnlyModelViewSet):
             total_stories=Count('festival_stories')
         )
 
-        return queryset
+        # Ensure ordering by month (January to December)
+        return queryset.order_by('typical_month', 'name')
 
     def get_serializer_context(self):
         """Add child language to context."""

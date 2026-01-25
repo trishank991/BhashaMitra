@@ -37,9 +37,10 @@ class VocabularyThemeListView(APIView):
 
         language = request.query_params.get('language', child.language)
         themes = VocabularyTheme.objects.filter(
-            language=language.upper()
-        ).order_by('order', 'name')
-        
+            language=language.upper(),
+            is_active=True
+        ).order_by('level', 'order', 'name')
+
         serializer = VocabularyThemeSerializer(themes, many=True)
         return Response({'data': serializer.data})
 
@@ -59,12 +60,12 @@ class VocabularyThemeWordsView(APIView):
         except VocabularyTheme.DoesNotExist:
             return Response({'detail': 'Theme not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        language = request.query_params.get('language', child.language)
+        # Words belong to themes, and themes have language
+        # So we just filter by theme - the theme already has the correct language
         words = VocabularyWord.objects.filter(
-            theme=theme,
-            language=language.upper()
+            theme=theme
         ).order_by('order', 'word')
-        
+
         serializer = VocabularyWordSerializer(words, many=True)
         return Response({'data': serializer.data})
 

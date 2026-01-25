@@ -71,7 +71,7 @@ export default function CheckoutSuccessPage() {
 
         {/* Peppi Character */}
         <div className="bg-gradient-to-r from-orange-100 to-amber-100 rounded-xl p-6 mb-8">
-          <div className="text-6xl mb-3">🦜</div>
+          <div className="text-6xl mb-3">🐱</div>
           <p className="text-lg font-medium text-orange-800">
             &ldquo;Namaste! I&apos;m Peppi, and I can&apos;t wait to help your child learn Hindi!&rdquo;
           </p>

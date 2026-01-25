@@ -191,7 +191,7 @@ export default function ModuleDetailPage() {
         {module.peppi_intro && (
           <motion.div variants={fadeInUp}>
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 flex items-start gap-3">
-              <span className="text-2xl">🦜</span>
+              <span className="text-2xl">🐱</span>
               <div>
                 <p className="font-medium text-amber-900">{module.peppi_intro}</p>
                 <p className="text-xs text-amber-700 mt-1">- Peppi</p>

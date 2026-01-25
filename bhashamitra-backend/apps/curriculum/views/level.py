@@ -320,8 +320,19 @@ class LessonProgressUpdateView(APIView):
     """Update lesson progress."""
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, child_id, lesson_id):
-        """Update lesson progress with score."""
+    def post(self, request, lesson_id):
+        """Update lesson progress with score.
+
+        child_id should be passed in request body, not URL.
+        """
+        # Get child_id from request body
+        child_id = request.data.get('child_id')
+        if not child_id:
+            return Response(
+                {'detail': 'child_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         try:
             child = Child.objects.get(pk=child_id, user=request.user)
         except Child.DoesNotExist:
@@ -345,9 +356,18 @@ class LessonProgressUpdateView(APIView):
         # Update progress
         lesson_progress.update_progress(serializer.validated_data['score'])
 
+        # Calculate points to award
+        points_awarded = 0
+        if lesson_progress.is_complete:
+            # Award points based on score
+            base_points = lesson.points_available or 10
+            score_multiplier = lesson_progress.best_score / 100
+            points_awarded = int(base_points * score_multiplier)
+
         response_serializer = LessonProgressSerializer(lesson_progress)
         return Response({
             'data': response_serializer.data,
+            'points_awarded': points_awarded,
             'message': 'Lesson completed!' if lesson_progress.is_complete else 'Progress saved!'
         })
 

@@ -160,6 +160,34 @@ export default function SongDetailPage() {
           </Card>
         </motion.div>
 
+        {/* Peppi Narrator Section - Listen with Peppi (Above Lyrics/Actions) */}
+        <motion.div variants={fadeInUp}>
+          {showPeppiNarrator && songId ? (
+            <PeppiSongNarrator
+              songId={songId}
+              songTitle={song?.title_english}
+              language="HINDI"
+              defaultGender={peppiGender as PeppiGender}
+              subscriptionTier={subscriptionTier}
+              onComplete={() => {
+                // Song narration completed
+              }}
+            />
+          ) : (
+            <button
+              onClick={() => setShowPeppiNarrator(true)}
+              className="w-full py-4 px-6 bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white rounded-2xl font-semibold transition-all shadow-lg flex items-center justify-center gap-3"
+            >
+              <span className="text-2xl">🐱</span>
+              <span>Listen with Peppi</span>
+              <span className="text-xs opacity-75">(Full Song)</span>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+              </svg>
+            </button>
+          )}
+        </motion.div>
+
         {/* Lyrics Toggle */}
         <motion.div variants={fadeInUp} className="flex gap-2">
           <Button
@@ -249,34 +277,6 @@ export default function SongDetailPage() {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Peppi Narrator Section */}
-        <motion.div variants={fadeInUp}>
-          {showPeppiNarrator && songId ? (
-            <PeppiSongNarrator
-              songId={songId}
-              songTitle={song?.title_english}
-              language="HINDI"
-              defaultGender={peppiGender as PeppiGender}
-              subscriptionTier={subscriptionTier}
-              onComplete={() => {
-                // Song narration completed
-              }}
-            />
-          ) : (
-            <button
-              onClick={() => setShowPeppiNarrator(true)}
-              className="w-full py-4 px-6 bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white rounded-2xl font-semibold transition-all shadow-lg flex items-center justify-center gap-3"
-            >
-              <span className="text-2xl">🐱</span>
-              <span>Listen with Peppi</span>
-              <span className="text-xs opacity-75">(Full Song)</span>
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-              </svg>
-            </button>
-          )}
-        </motion.div>
 
         {/* Peppi Encouragement */}
         <motion.div variants={fadeInUp}>

@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/v1/children/<uuid:child_id>/progress/', include('apps.progress.urls', namespace='progress')),
     path('api/v1/stories/', include('apps.stories.urls', namespace='stories')),
     path('api/v1/speech/', include('apps.speech.urls', namespace='speech')),
+    path('api/v1/peppi/', include('apps.speech.peppi_urls', namespace='peppi')),
     path('api/v1/festivals/', include('apps.festivals.urls')),
     path('api/v1/curriculum/', include('apps.curriculum.urls', namespace='curriculum-global')),
     path('api/v1/parent/', include('apps.parent_engagement.urls', namespace='parent_engagement')),

@@ -18,22 +18,26 @@ export function LevelCard({ level, isLocked = false, isCurrent = false }: LevelC
 
   const isCompleted = level.progress?.is_complete || progressPercent === 100;
 
+  // Check if level has no content (Coming Soon)
+  const isComingSoon = level.total_modules === 0;
+  const isDisabled = isLocked || isComingSoon;
+
   return (
     <Link
-      href={isLocked ? '#' : `/learn/levels/${level.id}`}
+      href={isDisabled ? '#' : `/learn/levels/${level.id}`}
       className={`
         block rounded-2xl p-4 transition-all duration-300
-        ${isLocked
-          ? 'opacity-50 cursor-not-allowed bg-gray-100'
+        ${isDisabled
+          ? 'opacity-60 cursor-not-allowed bg-gray-50'
           : 'hover:shadow-lg hover:-translate-y-1 bg-white shadow-md'
         }
-        ${isCurrent ? 'ring-2 ring-offset-2' : ''}
+        ${isCurrent && !isComingSoon ? 'ring-2 ring-offset-2' : ''}
       `}
       style={{
-        borderLeft: `4px solid ${level.theme_color}`,
-        ...(isCurrent ? { ringColor: level.theme_color } : {}),
+        borderLeft: `4px solid ${isComingSoon ? '#9CA3AF' : level.theme_color}`,
+        ...(isCurrent && !isComingSoon ? { ringColor: level.theme_color } : {}),
       }}
-      onClick={(e) => isLocked && e.preventDefault()}
+      onClick={(e) => isDisabled && e.preventDefault()}
     >
       <div className="flex items-start gap-4">
         {/* Emoji and Progress */}
@@ -54,10 +58,17 @@ export function LevelCard({ level, isLocked = false, isCurrent = false }: LevelC
               </svg>
             </div>
           )}
-          {isLocked && (
+          {isLocked && !isComingSoon && (
             <div className="absolute -top-1 -right-1 w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center">
               <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+          )}
+          {isComingSoon && (
+            <div className="absolute -top-1 -right-1 w-6 h-6 bg-purple-400 rounded-full flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           )}
@@ -72,9 +83,14 @@ export function LevelCard({ level, isLocked = false, isCurrent = false }: LevelC
             >
               {level.code}
             </span>
-            {isCurrent && (
+            {isCurrent && !isComingSoon && (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
                 Current
+              </span>
+            )}
+            {isComingSoon && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                Coming Soon
               </span>
             )}
           </div>
@@ -91,18 +107,26 @@ export function LevelCard({ level, isLocked = false, isCurrent = false }: LevelC
 
         {/* Stats */}
         <div className="text-right">
-          <p className="text-xs text-gray-500">Modules</p>
-          <p className="font-bold text-gray-900">
-            {level.completed_modules}/{level.total_modules}
-          </p>
-          {level.progress?.total_points ? (
+          {isComingSoon ? (
+            <p className="text-xs text-purple-500 font-medium">
+              Content being<br />prepared
+            </p>
+          ) : (
             <>
-              <p className="text-xs text-gray-500 mt-1">Points</p>
-              <p className="font-bold text-amber-600">
-                {level.progress.total_points}
+              <p className="text-xs text-gray-500">Modules</p>
+              <p className="font-bold text-gray-900">
+                {level.completed_modules}/{level.total_modules}
               </p>
+              {level.progress?.total_points ? (
+                <>
+                  <p className="text-xs text-gray-500 mt-1">Points</p>
+                  <p className="font-bold text-amber-600">
+                    {level.progress.total_points}
+                  </p>
+                </>
+              ) : null}
             </>
-          ) : null}
+          )}
         </div>
       </div>
 
@@ -119,7 +143,9 @@ export function LevelCard({ level, isLocked = false, isCurrent = false }: LevelC
 
       {/* Description */}
       <p className="text-sm text-gray-600 mt-3 line-clamp-2">
-        {level.description}
+        {isComingSoon
+          ? `${level.description} This level's content is being prepared and will be available soon!`
+          : level.description}
       </p>
     </Link>
   );

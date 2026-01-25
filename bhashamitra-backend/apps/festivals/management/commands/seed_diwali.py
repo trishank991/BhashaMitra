@@ -84,6 +84,7 @@ class Command(BaseCommand):
                 story=story,
                 page_number=page_data['page_number'],
                 text_content=page_data['text_content'],
+                text_hindi=page_data['text_content'],  # Also set text_hindi for Peppi narration
             )
         self.stdout.write(self.style.SUCCESS(f'Created {len(DIWALI_STORY_PAGES)} story pages'))
 

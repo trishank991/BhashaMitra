@@ -224,6 +224,35 @@ export default function StoryDetailPage() {
           Page {currentPage + 1} of {story.pages.length}
         </p>
 
+        {/* Peppi Narrator Section - Listen to Full Story (Moved to TOP) */}
+        <motion.div variants={fadeInUp}>
+          {showPeppiNarrator && storyId ? (
+            <PeppiNarrator
+              storyId={storyId}
+              storyTitle={story?.title}
+              language={storyLanguage}
+              defaultGender={peppiGender}
+              subscriptionTier={subscriptionTier}
+              onComplete={() => {
+                // Story narration completed
+                setIsCompleted(true);
+              }}
+            />
+          ) : (
+            <button
+              onClick={() => setShowPeppiNarrator(true)}
+              className="w-full py-4 px-6 bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white rounded-2xl font-semibold transition-all shadow-lg flex items-center justify-center gap-3"
+            >
+              <span className="text-2xl">🐱</span>
+              <span>Listen with Peppi</span>
+              <span className="text-xs opacity-75">(Full Story)</span>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+              </svg>
+            </button>
+          )}
+        </motion.div>
+
         {/* Story Content Card */}
         <motion.div variants={fadeInUp}>
           <Card className="min-h-[300px] flex flex-col">
@@ -288,35 +317,6 @@ export default function StoryDetailPage() {
               )}
             </div>
           </Card>
-        </motion.div>
-
-        {/* Peppi Narrator Section - Plays FULL story continuously */}
-        <motion.div variants={fadeInUp}>
-          {showPeppiNarrator && storyId ? (
-            <PeppiNarrator
-              storyId={storyId}
-              storyTitle={story?.title}
-              language={storyLanguage}
-              defaultGender={peppiGender}
-              subscriptionTier={subscriptionTier}
-              onComplete={() => {
-                // Story narration completed
-                setIsCompleted(true);
-              }}
-            />
-          ) : (
-            <button
-              onClick={() => setShowPeppiNarrator(true)}
-              className="w-full py-4 px-6 bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white rounded-2xl font-semibold transition-all shadow-lg flex items-center justify-center gap-3"
-            >
-              <span className="text-2xl">🐱</span>
-              <span>Listen with Peppi</span>
-              <span className="text-xs opacity-75">(Full Story)</span>
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-              </svg>
-            </button>
-          )}
         </motion.div>
 
         {/* Navigation Buttons */}

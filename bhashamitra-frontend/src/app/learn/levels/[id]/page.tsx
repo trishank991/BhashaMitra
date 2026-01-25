@@ -222,9 +222,19 @@ export default function LevelDetailPage() {
         <motion.div variants={fadeInUp}>
           <h2 className="text-lg font-bold text-gray-900 mb-4">Modules</h2>
           {modules.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl">
-              <p>No modules available yet.</p>
-              <p className="text-sm mt-1">Content coming soon!</p>
+            <div className="text-center py-8 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-dashed border-purple-200">
+              <span className="text-4xl mb-3 block">🚀</span>
+              <p className="font-semibold text-purple-800">Coming Soon!</p>
+              <p className="text-sm text-purple-600 mt-2 px-4">
+                We&apos;re working hard to create amazing content for {level.name_english}.
+                <br />Check back soon!
+              </p>
+              <Link
+                href="/learn/levels"
+                className="inline-block mt-4 px-4 py-2 bg-purple-600 text-white rounded-xl text-sm font-medium hover:bg-purple-700 transition-colors"
+              >
+                Explore Other Levels
+              </Link>
             </div>
           ) : (
             <div className="space-y-3">

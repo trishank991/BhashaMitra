@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores';
 import { MainLayout } from '@/components/layout';
-import { Loading } from '@/components/ui';
+import { Loading, Breadcrumb } from '@/components/ui';
 import { ModuleCard, ProgressRing } from '@/components/curriculum';
 import { fadeInUp, staggerContainer } from '@/lib/constants';
 import api from '@/lib/api';
@@ -118,17 +118,15 @@ export default function LevelDetailPage() {
         animate="animate"
         className="space-y-6"
       >
-        {/* Back Button */}
+        {/* Breadcrumb Navigation */}
         <motion.div variants={fadeInUp}>
-          <Link
-            href="/learn/levels"
-            className="inline-flex items-center text-gray-600 hover:text-gray-900"
-          >
-            <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            All Levels
-          </Link>
+          <Breadcrumb
+            items={[
+              { label: 'Learn', href: '/learn', emoji: '\uD83D\uDCDA' },
+              { label: 'Levels', href: '/learn/levels' },
+              { label: level.name_english, emoji: level.emoji },
+            ]}
+          />
         </motion.div>
 
         {/* Level Header */}

@@ -202,6 +202,7 @@ export default function HomePage() {
           limits={subscription.limits}
           upgradeCta={subscription.upgradeCta}
           curriculumStats={curriculumStats}
+          childProgress={childProgress}
         />
       )}
 

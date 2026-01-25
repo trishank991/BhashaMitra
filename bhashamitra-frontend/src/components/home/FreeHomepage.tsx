@@ -6,6 +6,7 @@ import { Card } from '@/components/ui';
 import { fadeInUp, staggerContainer, SUPPORTED_LANGUAGES } from '@/lib/constants';
 import { ChildProfile, LanguageCode } from '@/types';
 import { UpgradeCTA, SubscriptionLimits } from '@/lib/api';
+import { ChildProgress } from '@/hooks/useSubscription';
 
 interface FreeHomepageProps {
   child: ChildProfile | null;
@@ -20,6 +21,7 @@ interface FreeHomepageProps {
     topicCount: number;
     storyCount: number;
   };
+  childProgress: ChildProgress | null;
 }
 
 // Language-specific metadata
@@ -41,6 +43,7 @@ export function FreeHomepage({
   limits,
   upgradeCta,
   curriculumStats,
+  childProgress,
 }: FreeHomepageProps) {
   const languageCode = child?.language
     ? (typeof child.language === 'string' ? child.language : child.language.code)
@@ -81,6 +84,38 @@ export function FreeHomepage({
           </div>
         </div>
       </motion.div>
+
+      {/* Continue Learning Card */}
+      {childProgress?.currentProgress && (
+        <motion.div variants={fadeInUp}>
+          <Card className="bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-200">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center">
+                <span className="text-3xl">
+                  <span role="img" aria-label="rocket">&#x1F680;</span>
+                </span>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-green-500 font-medium uppercase tracking-wide">
+                  Continue Learning
+                </p>
+                <h3 className="font-bold text-green-700 text-lg">
+                  {childProgress.currentProgress.module?.name || 'Start Your Journey'}
+                </h3>
+                <p className="text-sm text-green-600">
+                  {childProgress.currentProgress.level.name}
+                </p>
+              </div>
+              <Link href={childProgress.currentProgress.continue_url}>
+                <button className="bg-green-600 text-white px-5 py-2.5 rounded-full font-bold hover:bg-green-700 transition-all flex items-center gap-2">
+                  Start
+                  <span>&rarr;</span>
+                </button>
+              </Link>
+            </div>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Upgrade Banner */}
       {upgradeCta && (

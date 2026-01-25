@@ -487,35 +487,67 @@ class ChildHomepageProgressView(APIView):
             'current_progress': None,
         }
 
-        # Only include curriculum progress for paid users
-        if is_paid and current_level:
+        # Include curriculum progress for ALL users (paid get full, free get basic)
+        if current_level:
+            if is_paid:
+                # Paid users get full curriculum navigation
+                response_data['current_progress'] = {
+                    'level': {
+                        'id': str(current_level.id),
+                        'name': current_level.name_english,
+                        'hindi_name': current_level.name_hindi,
+                        'order': current_level.order,
+                    },
+                    'module': {
+                        'id': str(current_module.id),
+                        'name': current_module.name_english,
+                        'hindi_name': current_module.name_hindi,
+                        'order': current_module.order,
+                    } if current_module else None,
+                    'lesson': {
+                        'id': str(current_lesson.id),
+                        'title': current_lesson.title_english,
+                        'hindi_title': current_lesson.title_hindi,
+                        'order': current_lesson.order,
+                    } if current_lesson else None,
+                    'continue_url': f'/learn/lessons/{current_lesson.id}' if current_lesson else f'/learn/levels/{current_level.id}',
+                }
+            else:
+                # Free users get basic navigation (to alphabet or vocabulary)
+                response_data['current_progress'] = {
+                    'level': {
+                        'id': 'free',
+                        'name': 'Free Learning',
+                        'hindi_name': 'मुफ़्त सीखना',
+                        'order': 0,
+                    },
+                    'module': {
+                        'id': 'alphabet',
+                        'name': 'Hindi Alphabet',
+                        'hindi_name': 'हिंदी वर्णमाला',
+                        'order': 1,
+                    },
+                    'lesson': None,
+                    'continue_url': '/learn/alphabet',
+                }
+                # Also include upgrade prompt
+                response_data['upgrade_prompt'] = {
+                    'message': 'Unlock structured learning with L1-L10 curriculum!',
+                    'cta': 'Upgrade to Standard',
+                    'price': 'NZD $20/month',
+                }
+        else:
+            # No levels in database - provide default path
             response_data['current_progress'] = {
                 'level': {
-                    'id': str(current_level.id),
-                    'name': current_level.name_english,
-                    'hindi_name': current_level.name_hindi,
-                    'order': current_level.order,
+                    'id': 'default',
+                    'name': 'Start Learning',
+                    'hindi_name': 'सीखना शुरू करें',
+                    'order': 0,
                 },
-                'module': {
-                    'id': str(current_module.id),
-                    'name': current_module.name_english,
-                    'hindi_name': current_module.name_hindi,
-                    'order': current_module.order,
-                } if current_module else None,
-                'lesson': {
-                    'id': str(current_lesson.id),
-                    'title': current_lesson.title_english,
-                    'hindi_title': current_lesson.title_hindi,
-                    'order': current_lesson.order,
-                } if current_lesson else None,
-                'continue_url': f'/learn/lessons/{current_lesson.id}' if current_lesson else f'/learn/levels/{current_level.id}',
-            }
-        elif not is_paid:
-            # Free users get a teaser
-            response_data['upgrade_prompt'] = {
-                'message': 'Unlock structured learning with L1-L10 curriculum!',
-                'cta': 'Upgrade to Standard',
-                'price': 'NZD $20/month',
+                'module': None,
+                'lesson': None,
+                'continue_url': '/learn/alphabet',
             }
 
         return Response({'data': response_data})

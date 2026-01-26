@@ -24,7 +24,7 @@ export function LevelCard({ level, isLocked = false, isCurrent = false }: LevelC
 
   return (
     <Link
-      href={isDisabled ? '#' : `/learn/levels/${level.id}`}
+      href={isDisabled ? '#' : `/languages/levels/${level.id}`}
       className={`
         block rounded-2xl p-4 transition-all duration-300
         ${isDisabled

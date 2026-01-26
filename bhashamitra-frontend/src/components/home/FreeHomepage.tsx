@@ -181,7 +181,7 @@ export function FreeHomepage({
           Fun Activities
         </h2>
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/learn/alphabet">
+          <Link href="/languages/alphabet">
             <Card interactive className="bg-gradient-to-br from-red-100 to-orange-100 border-2 border-orange-200 hover:border-orange-400 transition-all">
               <div className="text-center py-4">
                 <div className="text-4xl mb-2">{languageMeta.sampleLetter}</div>
@@ -194,7 +194,7 @@ export function FreeHomepage({
             </Card>
           </Link>
 
-          <Link href="/learn/vocabulary">
+          <Link href="/languages/vocabulary">
             <Card interactive className="bg-gradient-to-br from-blue-100 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 transition-all">
               <div className="text-center py-4">
                 <div className="text-4xl mb-2">

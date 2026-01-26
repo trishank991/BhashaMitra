@@ -56,7 +56,7 @@ export function ComingSoonLanguages({ onWaitlistClick, className }: ComingSoonLa
           <h2 className="text-2xl font-bold text-gray-800">More Languages Coming!</h2>
         </div>
         <p className="text-gray-600">
-          BhashaMitra will soon support more Indian languages!
+          PeppiAcademy will soon support more Indian languages!
         </p>
       </div>
 
@@ -85,7 +85,7 @@ export function ComingSoonLanguages({ onWaitlistClick, className }: ComingSoonLa
             And more languages coming!
           </h3>
           <p className="text-gray-600 mb-4">
-            We&apos;re working to bring all 22 official Indian languages to BhashaMitra.
+            We&apos;re working to bring all 22 official Indian languages to PeppiAcademy.
           </p>
           <p className="text-sm text-gray-500">
             Telugu, Marathi, Kannada, Malayalam, Odia, Assamese and more!

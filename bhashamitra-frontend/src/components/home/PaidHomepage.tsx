@@ -210,12 +210,12 @@ export function PaidHomepage({
             </span>
             Learning Path
           </h2>
-          <Link href="/learn/levels" className="text-sm text-indigo-600 font-medium">
+          <Link href="/languages/levels" className="text-sm text-indigo-600 font-medium">
             View All Levels &rarr;
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/learn/levels">
+          <Link href="/languages/levels">
             <Card interactive className="bg-gradient-to-br from-indigo-100 to-purple-100 border-2 border-indigo-200 hover:border-indigo-400 transition-all">
               <div className="text-center py-4">
                 <div className="text-4xl mb-2">
@@ -230,7 +230,7 @@ export function PaidHomepage({
             </Card>
           </Link>
 
-          <Link href="/learn/songs">
+          <Link href="/languages/songs">
             <Card interactive className="bg-gradient-to-br from-pink-100 to-rose-100 border-2 border-pink-200 hover:border-pink-400 transition-all">
               <div className="text-center py-4">
                 <div className="text-4xl mb-2">
@@ -256,7 +256,7 @@ export function PaidHomepage({
           Study Materials
         </h2>
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/learn/alphabet">
+          <Link href="/languages/alphabet">
             <Card interactive className="bg-gradient-to-br from-red-100 to-orange-100 border-2 border-orange-200 hover:border-orange-400 transition-all">
               <div className="text-center py-4">
                 <div className="text-4xl mb-2">{languageMeta.sampleLetter}</div>
@@ -269,7 +269,7 @@ export function PaidHomepage({
             </Card>
           </Link>
 
-          <Link href="/learn/vocabulary">
+          <Link href="/languages/vocabulary">
             <Card interactive className="bg-gradient-to-br from-blue-100 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 transition-all">
               <div className="text-center py-4">
                 <div className="text-4xl mb-2">
@@ -284,7 +284,7 @@ export function PaidHomepage({
             </Card>
           </Link>
 
-          <Link href="/learn/grammar">
+          <Link href="/languages/grammar">
             <Card interactive className="bg-gradient-to-br from-green-100 to-teal-100 border-2 border-green-200 hover:border-green-400 transition-all">
               <div className="text-center py-4">
                 <div className="text-4xl mb-2">

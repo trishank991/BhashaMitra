@@ -31,6 +31,16 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.PARENT)
     avatar_url = models.URLField(blank=True, null=True)
 
+    # Multi-tenant support (nullable for backward compatibility)
+    tenant = models.ForeignKey(
+        'core.Tenant',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users',
+        help_text='Organization/tenant this user belongs to'
+    )
+
     # Subscription fields
     subscription_tier = models.CharField(
         max_length=20,

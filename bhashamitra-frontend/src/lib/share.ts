@@ -80,7 +80,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
  */
 export function generateFamilyInviteMessage(familyName: string, inviteCode: string, inviterName?: string): string {
   const inviter = inviterName ? `${inviterName} has` : 'You have';
-  return `${inviter} invited you to join the "${familyName}" family on BhashaMitra!\n\nUse code: ${inviteCode}`;
+  return `${inviter} invited you to join the "${familyName}" family on PeppiAcademy!\n\nUse code: ${inviteCode}`;
 }
 
 /**

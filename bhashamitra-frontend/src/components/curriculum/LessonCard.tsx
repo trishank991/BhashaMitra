@@ -33,7 +33,7 @@ export function LessonCard({
 
   return (
     <Link
-      href={isLocked ? '#' : `/learn/lessons/${lesson.id}`}
+      href={isLocked ? '#' : `/languages/lessons/${lesson.id}`}
       className={`
         flex items-center gap-3 p-3 rounded-xl transition-all duration-200
         ${isLocked

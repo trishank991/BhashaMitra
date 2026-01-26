@@ -3,6 +3,35 @@ import uuid
 from django.db import models
 
 
+class Tenant(models.Model):
+    """Multi-tenant foundation model.
+
+    Represents an organization/school/institution that uses PeppiAcademy.
+    For now, all users belong to the default 'PeppiAcademy' tenant.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, help_text='Organization name')
+    slug = models.SlugField(max_length=100, unique=True, help_text='URL-safe identifier')
+    domain = models.CharField(
+        max_length=255, blank=True, null=True, unique=True,
+        help_text='Custom domain for this tenant (e.g., school.peppiacademy.com)'
+    )
+    logo_url = models.URLField(blank=True, null=True, help_text='Tenant logo URL')
+    theme_config = models.JSONField(
+        default=dict, blank=True,
+        help_text='Custom theme configuration (colors, branding)'
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class TimeStampedModel(models.Model):
     """Abstract model with created/updated timestamps."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

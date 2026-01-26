@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Route protection middleware for BhashaMitra
+ * Route protection middleware for PeppiAcademy
  *
  * Handles client-side route protection by checking for auth tokens.
  * Note: This is a lightweight check - actual auth validation happens on the backend.
@@ -20,6 +20,7 @@ const PUBLIC_ROUTES = [
   '/childrens-privacy',
   '/forgot-password',
   '/reset-password',
+  '/pricing',
 ];
 
 // Public route prefixes (anyone can access)
@@ -30,13 +31,21 @@ const PUBLIC_PREFIXES = [
 // Protected route prefixes that require authentication
 const PROTECTED_PREFIXES = [
   '/home',
-  '/learn',
+  '/dashboard',
+  '/languages',
+  '/children',
   '/games',
   '/parent',
   '/profile',
   '/practice',
   '/onboarding',
   '/stories',
+  '/festivals',
+  '/challenges',
+  '/progress',
+  '/live-classes',
+  '/checkout',
+  '/join',
 ];
 
 // Static assets and API routes to skip
@@ -75,7 +84,8 @@ export function middleware(request: NextRequest) {
   if (isProtectedRoute) {
     // Check for auth token in cookies
     // Zustand persist stores auth in localStorage, but we can check for session cookie
-    const authCookie = request.cookies.get('bhashamitra-auth');
+    // Check for new cookie name first, fall back to legacy
+    const authCookie = request.cookies.get('peppi-auth') || request.cookies.get('bhashamitra-auth');
 
     // For client-side state management, we rely on the client to redirect
     // The middleware provides an additional layer of protection

@@ -158,11 +158,11 @@ export function generateShareMessage(
   const languageLabel = language.charAt(0) + language.slice(1).toLowerCase();
 
   if (stars === 3) {
-    return `🎉 ${childName} just MASTERED saying "${word}" (${romanization}) in ${languageLabel}! ${starEmoji}\n\nScore: ${Math.round(score)}% - PERFECT!\n\n🎓 Learning languages with BhashaMitra!`;
+    return `🎉 ${childName} just MASTERED saying "${word}" (${romanization}) in ${languageLabel}! ${starEmoji}\n\nScore: ${Math.round(score)}% - PERFECT!\n\n🎓 Learning languages with PeppiAcademy!`;
   } else if (stars === 2) {
-    return `✨ ${childName} is getting great at saying "${word}" (${romanization}) in ${languageLabel}! ${starEmoji}\n\nScore: ${Math.round(score)}%\n\n🎓 Learning languages with BhashaMitra!`;
+    return `✨ ${childName} is getting great at saying "${word}" (${romanization}) in ${languageLabel}! ${starEmoji}\n\nScore: ${Math.round(score)}%\n\n🎓 Learning languages with PeppiAcademy!`;
   } else {
-    return `💪 ${childName} is practicing "${word}" (${romanization}) in ${languageLabel}! ${starEmoji}\n\nScore: ${Math.round(score)}% - Keep it up!\n\n🎓 Learning languages with BhashaMitra!`;
+    return `💪 ${childName} is practicing "${word}" (${romanization}) in ${languageLabel}! ${starEmoji}\n\nScore: ${Math.round(score)}% - Keep it up!\n\n🎓 Learning languages with PeppiAcademy!`;
   }
 }
 

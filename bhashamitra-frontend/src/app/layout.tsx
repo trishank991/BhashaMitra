@@ -16,15 +16,15 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "BhashaMitra - Your Language Friend",
+  title: "PeppiAcademy - Your Language Friend",
   description: "Help your children connect with their heritage through fun, interactive stories in Indian languages.",
-  keywords: ["language learning", "Indian languages", "kids education", "Hindi", "Tamil", "Telugu", "heritage language"],
-  authors: [{ name: "BhashaMitra Team" }],
+  keywords: ["language learning", "Indian languages", "kids education", "Hindi", "Tamil", "Telugu", "heritage language", "PeppiAcademy"],
+  authors: [{ name: "PeppiAcademy Team" }],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "BhashaMitra",
+    title: "PeppiAcademy",
   },
   other: {
     "mobile-web-app-capable": "yes",

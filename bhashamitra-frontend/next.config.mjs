@@ -1,5 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/learn',
+        destination: '/languages',
+        permanent: true,
+      },
+      {
+        source: '/learn/:path*',
+        destination: '/languages/:path*',
+        permanent: true,
+      },
+    ];
+  },
   eslint: {
     // Allow ESLint warnings during builds - fix incrementally
     // Note: 86 pre-existing errors need to be fixed

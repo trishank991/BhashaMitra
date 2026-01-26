@@ -25,7 +25,7 @@ export function ModuleCard({ module, levelColor = '#6366f1', isLocked = false }:
 
   return (
     <Link
-      href={isLocked ? '#' : `/learn/modules/${module.id}`}
+      href={isLocked ? '#' : `/languages/modules/${module.id}`}
       className={`
         block rounded-xl p-4 transition-all duration-300
         ${isLocked

@@ -186,7 +186,7 @@ export default function LessonDetailPage() {
     setSelectedAnswer(answerIndex);
     setShowFeedback(true);
 
-    const isCorrect = answerIndex === quizQuestions[currentQuestion].correctIndex;
+    const isCorrect = answerIndex === quizQuestions[currentQuestion]?.correctIndex;
 
     if (isCorrect) {
       setQuizScore(quizScore + 1);
@@ -554,9 +554,9 @@ export default function LessonDetailPage() {
 
                     {/* Options */}
                     <div className="space-y-2">
-                      {quizQuestions[currentQuestion]?.options.map((option, idx) => {
+                      {quizQuestions[currentQuestion]?.options?.map((option, idx) => {
                         const isSelected = selectedAnswer === idx;
-                        const isCorrect = idx === quizQuestions[currentQuestion].correctIndex;
+                        const isCorrect = idx === quizQuestions[currentQuestion]?.correctIndex;
                         const showCorrect = showFeedback && isCorrect;
                         const showWrong = showFeedback && isSelected && !isCorrect;
 
@@ -592,13 +592,13 @@ export default function LessonDetailPage() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className={`mb-4 p-3 rounded-lg ${
-                        selectedAnswer === quizQuestions[currentQuestion].correctIndex
+                        selectedAnswer === quizQuestions[currentQuestion]?.correctIndex
                           ? 'bg-green-100 text-green-800'
                           : 'bg-amber-100 text-amber-800'
                       }`}
                     >
                       <p className="font-medium">
-                        {selectedAnswer === quizQuestions[currentQuestion].correctIndex
+                        {selectedAnswer === quizQuestions[currentQuestion]?.correctIndex
                           ? 'Correct! Well done!'
                           : 'Not quite! Keep learning!'}
                       </p>

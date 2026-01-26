@@ -67,6 +67,9 @@ class CurriculumLevelListView(APIView):
                 'is_complete': progress.is_complete if progress else False,
                 'completed_at': progress.completed_at if progress else None,
             }
+            # Add total_modules and completed_modules for frontend compatibility
+            level_data['total_modules'] = level_data.get('module_count', 0)
+            level_data['completed_modules'] = progress.modules_completed if progress else 0
 
         return Response(data)
 
@@ -115,8 +118,13 @@ class CurriculumLevelDetailView(APIView):
             except LevelProgress.DoesNotExist:
                 pass
 
+        # Add total_modules and completed_modules for frontend compatibility
+        data = serializer.data
+        data['total_modules'] = data.get('module_count', 0)
+        data['completed_modules'] = progress_data.get('modules_completed', 0)
+
         return Response({
-            **serializer.data,
+            **data,
             'progress': progress_data,
         })
 
@@ -163,6 +171,9 @@ class CurriculumModuleListView(APIView):
                 'is_complete': progress.is_complete if progress else False,
                 'completed_at': progress.completed_at if progress else None,
             }
+            # Add total_lessons and completed_lessons for frontend compatibility
+            module_data['total_lessons'] = module_data.get('lesson_count', 0)
+            module_data['completed_lessons'] = progress.lessons_completed if progress else 0
 
         return Response(data)
 
@@ -211,8 +222,13 @@ class CurriculumModuleDetailView(APIView):
             except ModuleProgress.DoesNotExist:
                 pass
 
+        # Add total_lessons and completed_lessons for frontend compatibility
+        data = serializer.data
+        data['total_lessons'] = data.get('lesson_count', 0)
+        data['completed_lessons'] = progress_data.get('lessons_completed', 0)
+
         return Response({
-            **serializer.data,
+            **data,
             'progress': progress_data,
         })
 

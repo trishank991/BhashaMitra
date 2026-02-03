@@ -1,0 +1,2507 @@
+{
+  "timestamp": "2026-01-05T14:19:45.594314",
+  "words": [
+    {
+      "id": "93ea28b0-12f6-4e3a-9686-f4ded9ee0432",
+      "word": "माँ",
+      "translation": "mother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f469.svg"
+    },
+    {
+      "id": "45233f0e-d2b4-438d-90ba-fd7d637bcfb5",
+      "word": "पापा",
+      "translation": "father",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "35feb3de-6656-4b07-8b18-3f97e8b7401c",
+      "word": "भाई",
+      "translation": "brother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f466.svg"
+    },
+    {
+      "id": "f48115e6-b6e1-4dd4-be07-dbe02076a593",
+      "word": "बहन",
+      "translation": "sister",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f467.svg"
+    },
+    {
+      "id": "a815dc94-7b4f-4721-a1d8-45c97587189f",
+      "word": "दादा",
+      "translation": "grandfather",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f474.svg"
+    },
+    {
+      "id": "e07ac30b-6c13-490f-b1a4-f6947b1d0240",
+      "word": "दादी",
+      "translation": "grandmother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f475.svg"
+    },
+    {
+      "id": "9660ce6a-4efc-4406-a9a3-23a71f81cee5",
+      "word": "नमस्ते",
+      "translation": "hello/greetings",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f64f.svg"
+    },
+    {
+      "id": "42ea4197-cb4e-4180-a177-b293ed464bd3",
+      "word": "बारिश",
+      "translation": "Rain",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f327.svg"
+    },
+    {
+      "id": "b3267c13-4b13-420b-a9bf-10f8cc5c93d5",
+      "word": "खुश",
+      "translation": "Happy",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f60a.svg"
+    },
+    {
+      "id": "c1906023-1924-4ea4-8b0c-e0f1cfb5ad6b",
+      "word": "आज",
+      "translation": "Today",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4c5.svg"
+    },
+    {
+      "id": "e7367c60-43f6-4fa4-b577-d56887b13cc4",
+      "word": "हाँ",
+      "translation": "yes",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2705.svg"
+    },
+    {
+      "id": "291d9da3-7b4f-4d5d-9df5-bd818af5d3b8",
+      "word": "માં",
+      "translation": "Mother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f469.svg"
+    },
+    {
+      "id": "c49aeb3c-9920-4c1e-8722-985d696d0bae",
+      "word": "લાલ",
+      "translation": "Red",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f534.svg"
+    },
+    {
+      "id": "3a963634-81ae-414d-a833-4a3b2cf532b6",
+      "word": "એક",
+      "translation": "One",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/31-fe0f-20e3.svg"
+    },
+    {
+      "id": "6c30e3b3-ba04-453e-908f-3cafaa390cad",
+      "word": "કૂતરો",
+      "translation": "Dog",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f415.svg"
+    },
+    {
+      "id": "391fc07d-809b-4a6d-9564-76deceb3ffbd",
+      "word": "પાણી",
+      "translation": "Water",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4a7.svg"
+    },
+    {
+      "id": "b7dac1be-3a8c-44c7-8f71-85b3452e7cd2",
+      "word": "મામો",
+      "translation": "Maternal Uncle",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "5c147780-d84e-4934-8be8-735e6e3f4156",
+      "word": "કાળો",
+      "translation": "Black",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/26ab.svg"
+    },
+    {
+      "id": "96b5a251-ad2b-4ead-8a7f-c6ae3d8d0be1",
+      "word": "છ",
+      "translation": "Six",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/36-fe0f-20e3.svg"
+    },
+    {
+      "id": "cde464ec-a8f9-4e0b-81c2-4528d2a69868",
+      "word": "ઘોડો",
+      "translation": "Horse",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f434.svg"
+    },
+    {
+      "id": "cdcbefe8-45d6-4b57-bb5e-26fb21234bdc",
+      "word": "સફરજન",
+      "translation": "Apple",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34e.svg"
+    },
+    {
+      "id": "7e2af01e-a5fa-45aa-aff3-8943ce39b3f7",
+      "word": "માથું",
+      "translation": "Head",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f5e3.svg"
+    },
+    {
+      "id": "26e0293d-f582-43c0-ad89-df90faad49bb",
+      "word": "ખાવુ",
+      "translation": "To eat",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f37d.svg"
+    },
+    {
+      "id": "17e3fe3a-d676-4608-a673-807f1fd4962c",
+      "word": "ઘર",
+      "translation": "Home",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f3e0.svg"
+    },
+    {
+      "id": "f804921a-8afc-447e-9f28-21d3c5506e14",
+      "word": "સૂરજ",
+      "translation": "Sun",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2600-fe0f.svg"
+    },
+    {
+      "id": "5f6a8d8a-9d7b-4e75-a5c8-e3b4a94110f5",
+      "word": "அம்மா",
+      "translation": "Mother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f469.svg"
+    },
+    {
+      "id": "ce51dc11-af97-4955-9d73-cdf08a8696fb",
+      "word": "சிவப்பு",
+      "translation": "Red",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f534.svg"
+    },
+    {
+      "id": "20b103ec-f3f8-411b-95d3-6b2d8c64556a",
+      "word": "ஒன்று",
+      "translation": "One",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/31-fe0f-20e3.svg"
+    },
+    {
+      "id": "ceb5ce58-73c4-4bd6-abbb-80f4e9c4539d",
+      "word": "நாய்",
+      "translation": "Dog",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f415.svg"
+    },
+    {
+      "id": "d3364bfe-0350-40cf-9e9d-134647ac2cd8",
+      "word": "தண்ணீர்",
+      "translation": "Water",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4a7.svg"
+    },
+    {
+      "id": "d4064c73-e993-4156-990f-8ec0760a4067",
+      "word": "பெரியம்மா",
+      "translation": "Aunt (mother's elder sister)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f469.svg"
+    },
+    {
+      "id": "943ee6d0-f578-4347-9885-d6d79a84e076",
+      "word": "கருப்பு",
+      "translation": "Black",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/26ab.svg"
+    },
+    {
+      "id": "05144df7-c258-4efa-8172-72cede704c1a",
+      "word": "ஆறு",
+      "translation": "Six",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/36-fe0f-20e3.svg"
+    },
+    {
+      "id": "126129ff-b98e-43eb-9526-3676b6879b44",
+      "word": "யானை",
+      "translation": "Elephant",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f418.svg"
+    },
+    {
+      "id": "6894e731-688f-4d75-8b5f-dc2f84eebbf8",
+      "word": "ஆப்பிள்",
+      "translation": "Apple",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34e.svg"
+    },
+    {
+      "id": "4f43c619-dfb2-44a9-b598-7dc9776ae541",
+      "word": "பால்",
+      "translation": "Milk",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f95b.svg"
+    },
+    {
+      "id": "fdeea6a1-f567-486d-b55a-550e1def77a2",
+      "word": "தலை",
+      "translation": "Head",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f5e3.svg"
+    },
+    {
+      "id": "6f4e56ac-bd33-41cd-b94c-badda0e1718f",
+      "word": "சாப்பிடு",
+      "translation": "To eat",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f37d.svg"
+    },
+    {
+      "id": "142f0909-5bd0-4662-99dd-5bfa6de57164",
+      "word": "வீடு",
+      "translation": "Home",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f3e0.svg"
+    },
+    {
+      "id": "11a025fd-a5eb-4da8-8bbe-9ac94392c8e8",
+      "word": "சூரியன்",
+      "translation": "Sun",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2600-fe0f.svg"
+    },
+    {
+      "id": "f4fa2a01-d0d8-4f51-88a0-d4908f2c9d28",
+      "word": "ਮਾਂ",
+      "translation": "Mother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f469.svg"
+    },
+    {
+      "id": "aa691edd-fcd0-44df-8665-c78374b45326",
+      "word": "ਲਾਲ",
+      "translation": "Red",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f534.svg"
+    },
+    {
+      "id": "998c69c6-218a-42d6-9b88-e612bea0c607",
+      "word": "ਇੱਕ",
+      "translation": "One",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/31-fe0f-20e3.svg"
+    },
+    {
+      "id": "444cc7c1-717e-448e-b2c5-8c87d235e9b3",
+      "word": "ਕੁੱਤਾ",
+      "translation": "Dog",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f415.svg"
+    },
+    {
+      "id": "2b58731a-2d0c-463b-be2e-c78a8ef719b8",
+      "word": "ਪਾਣੀ",
+      "translation": "Water",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4a7.svg"
+    },
+    {
+      "id": "c261335c-d668-446a-be79-37864bcb4819",
+      "word": "ਨਾਨੀ",
+      "translation": "Grandmother (maternal)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f475.svg"
+    },
+    {
+      "id": "516e5a14-3b28-4cc2-aae5-5bed9606816d",
+      "word": "ਕਾਲਾ",
+      "translation": "Black",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/26ab.svg"
+    },
+    {
+      "id": "d40320e8-a00f-440e-8626-0b19a2b4f870",
+      "word": "ਛੇ",
+      "translation": "Six",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/36-fe0f-20e3.svg"
+    },
+    {
+      "id": "53d50d70-c805-4ee6-9604-7766e7405e28",
+      "word": "ਘੋੜਾ",
+      "translation": "Horse",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f434.svg"
+    },
+    {
+      "id": "5a2a91dc-8f00-4deb-a7f2-8649afc96e70",
+      "word": "ਸੇਬ",
+      "translation": "Apple",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34e.svg"
+    },
+    {
+      "id": "f4b92f85-cb54-4309-822e-258d25f08848",
+      "word": "ਦੁੱਧ",
+      "translation": "Milk",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f95b.svg"
+    },
+    {
+      "id": "126a2471-c487-4b32-99e6-cd06a015004d",
+      "word": "ਸਿਰ",
+      "translation": "Head",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f5e3.svg"
+    },
+    {
+      "id": "6c01c46a-5717-423a-8e46-a982a5c15e2d",
+      "word": "ਖਾਣਾ",
+      "translation": "To eat",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f37d.svg"
+    },
+    {
+      "id": "d491de4f-4880-45f5-96c6-40cc311644ab",
+      "word": "ਘਰ",
+      "translation": "Home",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f3e0.svg"
+    },
+    {
+      "id": "7c40abfe-c329-4a9d-93e7-54b15ff3c1c7",
+      "word": "ਸੂਰਜ",
+      "translation": "Sun",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2600-fe0f.svg"
+    },
+    {
+      "id": "e1a6bee3-9350-4387-86bc-b41857f059ab",
+      "word": "माई",
+      "translation": "Mother",
+      "image_url": null
+    },
+    {
+      "id": "5edc4f23-b0c7-4907-a1cb-45b3949ed07d",
+      "word": "लाल",
+      "translation": "Red",
+      "image_url": null
+    },
+    {
+      "id": "5ac1020d-be2d-4c24-9e1b-97510da53fe5",
+      "word": "एक",
+      "translation": "One",
+      "image_url": null
+    },
+    {
+      "id": "4eedc229-3dcd-43b0-b9b7-493ec7bd75e8",
+      "word": "बुला",
+      "translation": "Hello",
+      "image_url": null
+    },
+    {
+      "id": "783552f5-32b7-413a-940f-2018c97d05ea",
+      "word": "रोटी",
+      "translation": "Bread/Roti",
+      "image_url": null
+    },
+    {
+      "id": "3619e1a9-fba0-43ea-aa4f-006585f84453",
+      "word": "आँख",
+      "translation": "Eye",
+      "image_url": null
+    },
+    {
+      "id": "a8f83229-3c4e-4896-8f0a-d086889242c5",
+      "word": "कुत्ता",
+      "translation": "Dog",
+      "image_url": null
+    },
+    {
+      "id": "4c7b5e6a-301e-466a-ad4e-5da668fe0abd",
+      "word": "सूरज",
+      "translation": "Sun",
+      "image_url": null
+    },
+    {
+      "id": "4b14b8b5-a373-460d-a9a3-1da9e5512e8e",
+      "word": "मामा",
+      "translation": "Maternal Uncle",
+      "image_url": null
+    },
+    {
+      "id": "e1358eeb-64b9-4862-b5a1-b0bd59389ad5",
+      "word": "छह",
+      "translation": "Six",
+      "image_url": null
+    },
+    {
+      "id": "7c884cf6-e3bb-4686-958c-b691ea43b6bd",
+      "word": "बुला",
+      "translation": "Hello (Fijian)",
+      "image_url": null
+    },
+    {
+      "id": "ba3a727b-4eec-4c39-8221-fa28aa75284d",
+      "word": "करी",
+      "translation": "Curry",
+      "image_url": null
+    },
+    {
+      "id": "c522c8ca-587b-4861-9fcd-b217f1e219e6",
+      "word": "जाना",
+      "translation": "To go",
+      "image_url": null
+    },
+    {
+      "id": "c0e93fc3-4763-4fe9-a0a9-635040e6fa4e",
+      "word": "आज",
+      "translation": "Today",
+      "image_url": null
+    },
+    {
+      "id": "dcb375ba-e8d5-4d46-9b2f-b95235130e1c",
+      "word": "घर",
+      "translation": "Home",
+      "image_url": null
+    },
+    {
+      "id": "7d76c551-9139-4d6f-a4b5-3c6013fb37e8",
+      "word": "हाँ",
+      "translation": "Yes",
+      "image_url": null
+    },
+    {
+      "id": "6817679e-b774-45f1-b200-8a302430fc50",
+      "word": "पिता",
+      "translation": "father",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "7f968428-3f06-427f-90a3-7187f929fda9",
+      "word": "धन्यवाद",
+      "translation": "thank you",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f64f.svg"
+    },
+    {
+      "id": "61e66f7b-b822-43d7-b4df-eba3aa62e0c6",
+      "word": "धूप",
+      "translation": "Sunshine",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2600-fe0f.svg"
+    },
+    {
+      "id": "12e14bd3-4fe8-4a53-8cc9-37d7b90e8d10",
+      "word": "उदास",
+      "translation": "Sad",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f622.svg"
+    },
+    {
+      "id": "7ed7a7c7-db74-43d1-a18c-eb254970c99d",
+      "word": "कल",
+      "translation": "Yesterday/Tomorrow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4c6.svg"
+    },
+    {
+      "id": "e251b269-de6e-4ec0-b776-f14780ec9d7c",
+      "word": "नहीं",
+      "translation": "no",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/274c.svg"
+    },
+    {
+      "id": "e04452ca-f656-4008-9491-a533721e7115",
+      "word": "પિતાજી",
+      "translation": "Father",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "3626d9ab-f595-409a-8929-cc7f3b89ca5a",
+      "word": "ભાદરંગ",
+      "translation": "Blue",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f535.svg"
+    },
+    {
+      "id": "a2f257d9-e08a-4b85-8d8e-b3da6210165a",
+      "word": "બ",
+      "translation": "Two",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/32-fe0f-20e3.svg"
+    },
+    {
+      "id": "557dd930-ff05-44a2-b30d-820eb4a71df7",
+      "word": "બિલલી",
+      "translation": "Cat",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f408.svg"
+    },
+    {
+      "id": "9ec70bf6-54c0-4c36-a5f8-07978eb4db18",
+      "word": "રોટલી",
+      "translation": "Bread",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f35e.svg"
+    },
+    {
+      "id": "19165ffc-5970-4042-88b1-55c05c685731",
+      "word": "મામી",
+      "translation": "Maternal Aunt",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f469.svg"
+    },
+    {
+      "id": "c4af0010-16bc-4eb5-a78d-9b8ab38ba150",
+      "word": "સફર",
+      "translation": "White",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/26aa.svg"
+    },
+    {
+      "id": "da151184-7d41-463a-84c9-e312b6e21f18",
+      "word": "સાત",
+      "translation": "Seven",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/37-fe0f-20e3.svg"
+    },
+    {
+      "id": "0ddfeb0d-5a9f-4829-b163-2c8f74f33a51",
+      "word": "હાથી",
+      "translation": "Elephant",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f418.svg"
+    },
+    {
+      "id": "6183fff1-f962-4599-8a14-5244896296e5",
+      "word": "કে঳ું",
+      "translation": "Banana",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34c.svg"
+    },
+    {
+      "id": "573f03c0-791e-43a0-9679-fb42d10cab53",
+      "word": "આંખ",
+      "translation": "Eye",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f441.svg"
+    },
+    {
+      "id": "3d401edc-ac15-4abf-9f9b-f596a081fc3d",
+      "word": "પીવુ",
+      "translation": "To drink",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f964.svg"
+    },
+    {
+      "id": "53e0416b-9db4-484a-a6aa-5515c8b75431",
+      "word": "ઓરડો",
+      "translation": "Room",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6aa.svg"
+    },
+    {
+      "id": "9e08edd9-57d0-4d38-86c5-710a7aeb7a88",
+      "word": "ચંદ",
+      "translation": "Moon",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f319.svg"
+    },
+    {
+      "id": "d57a74ea-35b1-46be-9d50-7cb117a59729",
+      "word": "அப்பா",
+      "translation": "Father",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "80057463-f4a2-4f3f-9bb8-0d65b59ef17b",
+      "word": "நீலம்",
+      "translation": "Blue",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f535.svg"
+    },
+    {
+      "id": "18d4bb0f-8552-4b13-936d-eaad10676040",
+      "word": "இரண்டு",
+      "translation": "Two",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/32-fe0f-20e3.svg"
+    },
+    {
+      "id": "968f6075-b0b6-480a-8aac-5863f35b6acd",
+      "word": "பூனை",
+      "translation": "Cat",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f408.svg"
+    },
+    {
+      "id": "f08549db-77a2-4214-935c-8107a16092ca",
+      "word": "சாதம்",
+      "translation": "Rice",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f35a.svg"
+    },
+    {
+      "id": "5d3cd098-e763-4f1a-bdf1-c21b42ddfebb",
+      "word": "பெரியப்பா",
+      "translation": "Uncle (father's elder brother)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "24941d20-4cc7-498e-ab90-d873b5378423",
+      "word": "வெள்ளை",
+      "translation": "White",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/26aa.svg"
+    },
+    {
+      "id": "4f6e8185-53cf-4850-b9af-0159cc7e7d2f",
+      "word": "ஏழு",
+      "translation": "Seven",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/37-fe0f-20e3.svg"
+    },
+    {
+      "id": "3bded0ea-1f7f-4661-a109-0a642169fe12",
+      "word": "சிங்கம்",
+      "translation": "Lion",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f981.svg"
+    },
+    {
+      "id": "20161e3d-a243-495d-bc68-0c16191f74c1",
+      "word": "வாழைப்பழம்",
+      "translation": "Banana",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34c.svg"
+    },
+    {
+      "id": "c2a2a7e5-f9b9-40a1-b061-124cd5c4fcd3",
+      "word": "இட்லி",
+      "translation": "Idli",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1fad3.svg"
+    },
+    {
+      "id": "57837637-ef32-48d7-b70a-ed527cb500d9",
+      "word": "கண்",
+      "translation": "Eye",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f441.svg"
+    },
+    {
+      "id": "81205386-96bd-42e8-bef7-c467d4c7492f",
+      "word": "குடி",
+      "translation": "To drink",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f964.svg"
+    },
+    {
+      "id": "a1d75d1e-b911-4574-9be5-78a8928715a9",
+      "word": "அறை",
+      "translation": "Room",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6aa.svg"
+    },
+    {
+      "id": "96c2da50-8ac5-403b-aeda-806b067aed64",
+      "word": "நிலா",
+      "translation": "Moon",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f319.svg"
+    },
+    {
+      "id": "d2a5f7cb-ee17-46e6-8ced-5846628da34f",
+      "word": "ਪਾਪਾ",
+      "translation": "Father",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "3005fc8f-78a3-46c4-9c42-e219b4ed3e7f",
+      "word": "ਨੀਲਾ",
+      "translation": "Blue",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f535.svg"
+    },
+    {
+      "id": "ad3d6877-a8d1-488f-a9ff-fbd69ff70d45",
+      "word": "ਦੋ",
+      "translation": "Two",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/32-fe0f-20e3.svg"
+    },
+    {
+      "id": "62dff188-b82d-463e-b205-b9acaa2c8895",
+      "word": "ਬਿੱਲੀ",
+      "translation": "Cat",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f408.svg"
+    },
+    {
+      "id": "c1fb1f39-4a6f-43d0-9ea4-bf4194455708",
+      "word": "ਰੋਟੀ",
+      "translation": "Bread",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f35e.svg"
+    },
+    {
+      "id": "51249f1b-deb0-4045-bb13-1441f612969a",
+      "word": "ਨਾਨਾ",
+      "translation": "Grandfather (maternal)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f474.svg"
+    },
+    {
+      "id": "5be9729f-b7b4-44ce-8409-abdf16520478",
+      "word": "ਚਿੱਟਾ",
+      "translation": "White",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/26aa.svg"
+    },
+    {
+      "id": "2fa78858-ce58-4496-bfaf-2ea1122a72be",
+      "word": "ਸੱਤ",
+      "translation": "Seven",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/37-fe0f-20e3.svg"
+    },
+    {
+      "id": "a4758906-6bcb-4369-9c2e-ae2f26502ac2",
+      "word": "ਹਾਥੀ",
+      "translation": "Elephant",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f418.svg"
+    },
+    {
+      "id": "5668f72a-5441-48af-870c-98b8248bcc7d",
+      "word": "ਕੇਲਾ",
+      "translation": "Banana",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34c.svg"
+    },
+    {
+      "id": "f95aee91-fd77-402a-a535-3aec067f616c",
+      "word": "ਲੱਸੀ",
+      "translation": "Lassi",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f95b.svg"
+    },
+    {
+      "id": "6975c8c2-00be-403f-88fe-9150de63b45b",
+      "word": "ਅੱਖ",
+      "translation": "Eye",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f441.svg"
+    },
+    {
+      "id": "e5ecc25c-481c-4305-98c8-fbb3108ef828",
+      "word": "ਪੀਣਾ",
+      "translation": "To drink",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f964.svg"
+    },
+    {
+      "id": "365816e8-9b12-471a-a646-9afd30ac631b",
+      "word": "ਕਮਰਾ",
+      "translation": "Room",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6aa.svg"
+    },
+    {
+      "id": "e552f9b2-d1dc-46f5-a742-38e9cc8ae929",
+      "word": "ਚੰਦ",
+      "translation": "Moon",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f319.svg"
+    },
+    {
+      "id": "cd3c11d4-9e46-40d2-b867-952fc236bc63",
+      "word": "बाप",
+      "translation": "Father",
+      "image_url": null
+    },
+    {
+      "id": "5f29dd77-de0f-4f76-a284-acc2ec8caa6c",
+      "word": "नीला",
+      "translation": "Blue",
+      "image_url": null
+    },
+    {
+      "id": "31a708c6-5910-44b0-b511-82beb6883d98",
+      "word": "दुइ",
+      "translation": "Two",
+      "image_url": null
+    },
+    {
+      "id": "1c8e2fe5-1c7b-4988-8b81-e37052bcdac9",
+      "word": "नमस्ते",
+      "translation": "Hello (formal)",
+      "image_url": null
+    },
+    {
+      "id": "31dd9fa8-91c8-48da-b679-e9b33117ae02",
+      "word": "भात",
+      "translation": "Rice",
+      "image_url": null
+    },
+    {
+      "id": "d646fdbd-e5f1-48ca-b6c3-a092420d6fdd",
+      "word": "नाक",
+      "translation": "Nose",
+      "image_url": null
+    },
+    {
+      "id": "339f423c-8c32-4010-b53c-4ceafdbde955",
+      "word": "बिल्ली",
+      "translation": "Cat",
+      "image_url": null
+    },
+    {
+      "id": "5aa68ab4-c4f1-4d7f-a6bb-13a7befb39c0",
+      "word": "चाँद",
+      "translation": "Moon",
+      "image_url": null
+    },
+    {
+      "id": "0fac849d-1cb8-4685-a990-50e48a8d0e93",
+      "word": "मामी",
+      "translation": "Maternal Aunt",
+      "image_url": null
+    },
+    {
+      "id": "b1477f63-fac4-464b-8ced-a2cad73ba9a9",
+      "word": "सात",
+      "translation": "Seven",
+      "image_url": null
+    },
+    {
+      "id": "28b86c88-9ad5-42a3-b93e-b7c2bedb6eba",
+      "word": "विनाका",
+      "translation": "Thank you (Fijian)",
+      "image_url": null
+    },
+    {
+      "id": "134c6794-2263-4ab5-b142-759178590727",
+      "word": "चटनी",
+      "translation": "Chutney",
+      "image_url": null
+    },
+    {
+      "id": "b1ca8815-687b-4e1f-be8f-968ec77abdf1",
+      "word": "आना",
+      "translation": "To come",
+      "image_url": null
+    },
+    {
+      "id": "a0908d67-f00d-489a-ae6d-2389d66a0ca8",
+      "word": "कल",
+      "translation": "Yesterday/Tomorrow",
+      "image_url": null
+    },
+    {
+      "id": "309caf18-5cf8-470a-a5d1-6ac8a670e75e",
+      "word": "स्कूल",
+      "translation": "School",
+      "image_url": null
+    },
+    {
+      "id": "f32bf332-41cd-4741-bb2e-1c289129c99f",
+      "word": "नहीं",
+      "translation": "No",
+      "image_url": null
+    },
+    {
+      "id": "04cf78f0-9eab-446e-b597-9d55ef71247a",
+      "word": "दाल",
+      "translation": "lentils",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f372.svg"
+    },
+    {
+      "id": "edff59d9-c136-4509-916f-48e7aeb81989",
+      "word": "शुभ प्रभात",
+      "translation": "good morning",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f305.svg"
+    },
+    {
+      "id": "89dca1c1-1cb9-4c46-bb98-3fad4244f76b",
+      "word": "हवा",
+      "translation": "Wind",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4a8.svg"
+    },
+    {
+      "id": "e2a15cf6-af3e-4419-bef3-dd1c09cf1646",
+      "word": "गुस्सा",
+      "translation": "Angry",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f620.svg"
+    },
+    {
+      "id": "5f7d69fd-579d-48c4-ad90-0bf71533afbc",
+      "word": "सुबह",
+      "translation": "Morning",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f305.svg"
+    },
+    {
+      "id": "bb8bac51-c90c-4852-bd3a-2cc085892578",
+      "word": "नमस्ते",
+      "translation": "hello",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f44b.svg"
+    },
+    {
+      "id": "fdb913db-c79f-4cdd-8a44-5aafb6c53cae",
+      "word": "દાદી",
+      "translation": "Grandmother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f475.svg"
+    },
+    {
+      "id": "3d79698a-1ea0-4795-a54e-60132d0005e1",
+      "word": "પીળો",
+      "translation": "Yellow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f49b.svg"
+    },
+    {
+      "id": "c3481a69-1e23-49bb-a4ca-c04db9eab258",
+      "word": "ત્રણ",
+      "translation": "Three",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/33-fe0f-20e3.svg"
+    },
+    {
+      "id": "0eaf0343-06e3-4dd4-9e45-8f5798032caa",
+      "word": "ગાય",
+      "translation": "Cow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f404.svg"
+    },
+    {
+      "id": "c50b7b71-121c-4d3c-8a19-4e3a508471d6",
+      "word": "ચાચો",
+      "translation": "Paternal Uncle",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "624521da-c544-4eb8-9354-dd1ee984d703",
+      "word": "નારંગી",
+      "translation": "Orange",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f7e0.svg"
+    },
+    {
+      "id": "2068c55f-0c0e-4fc6-93aa-36dc256ace94",
+      "word": "આઠ",
+      "translation": "Eight",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/38-fe0f-20e3.svg"
+    },
+    {
+      "id": "77a819fd-d347-4528-b8f1-f93551f164c4",
+      "word": "સિંહ",
+      "translation": "Lion",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f981.svg"
+    },
+    {
+      "id": "68d64b61-5c67-413d-8870-6d7b8235a1a0",
+      "word": "આંબલો",
+      "translation": "Mango",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f96d.svg"
+    },
+    {
+      "id": "871441bc-3998-424e-9cd7-c985303c017c",
+      "word": "નાક",
+      "translation": "Nose",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f443.svg"
+    },
+    {
+      "id": "e7ececeb-a580-42cd-98df-634316d25891",
+      "word": "સૂવુ",
+      "translation": "To sleep",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f634.svg"
+    },
+    {
+      "id": "0d9e7414-059e-4d0d-a268-be150ed250a9",
+      "word": "દરવાજો",
+      "translation": "Door",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6aa.svg"
+    },
+    {
+      "id": "605862c3-75c4-4499-abc8-f779ee95de74",
+      "word": "તારો",
+      "translation": "Star",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2b50.svg"
+    },
+    {
+      "id": "ca8ebcef-b72d-4434-aa28-aafea3121b67",
+      "word": "பாட்டி",
+      "translation": "Grandmother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f475.svg"
+    },
+    {
+      "id": "4d73976c-bdae-4867-a7d6-fdb495c3b061",
+      "word": "மஞ்சள்",
+      "translation": "Yellow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f49b.svg"
+    },
+    {
+      "id": "9a1817a8-a44d-4f43-b8f2-cccbf6536a1e",
+      "word": "மூன்று",
+      "translation": "Three",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/33-fe0f-20e3.svg"
+    },
+    {
+      "id": "25521746-6169-4b0d-be38-12737dd3b003",
+      "word": "பசு",
+      "translation": "Cow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f404.svg"
+    },
+    {
+      "id": "540d0cc2-b28b-469c-a428-4c2fe66ee9f7",
+      "word": "சித்தி",
+      "translation": "Aunt (mother's younger sister)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f469.svg"
+    },
+    {
+      "id": "e1dd6ea2-3e63-456c-bbf2-c7a7a2ead1cd",
+      "word": "ஆரஞ்சு",
+      "translation": "Orange",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f7e0.svg"
+    },
+    {
+      "id": "fc431cd6-8f4b-4bfd-a6b3-c703c534cf8d",
+      "word": "எட்டு",
+      "translation": "Eight",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/38-fe0f-20e3.svg"
+    },
+    {
+      "id": "7eaa7a1c-8161-4e14-a1cb-050255c7858e",
+      "word": "புலி",
+      "translation": "Tiger",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f405.svg"
+    },
+    {
+      "id": "46734baf-3bc6-4d09-8c4d-cf09928c8324",
+      "word": "மாம்பழம்",
+      "translation": "Mango",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f96d.svg"
+    },
+    {
+      "id": "a0bca516-d49e-429c-b45a-bebfee072124",
+      "word": "மூக்கு",
+      "translation": "Nose",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f443.svg"
+    },
+    {
+      "id": "35a9fec2-691d-4981-88be-92dda1376fc2",
+      "word": "தூங்கு",
+      "translation": "To sleep",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f634.svg"
+    },
+    {
+      "id": "00822c07-383b-4405-aeae-882c810f5d5c",
+      "word": "கதவு",
+      "translation": "Door",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6aa.svg"
+    },
+    {
+      "id": "dbbb38df-9237-432e-b912-8c6edfe0a13a",
+      "word": "நட்சத்திரம்",
+      "translation": "Star",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2b50.svg"
+    },
+    {
+      "id": "a8e0e8c5-051a-4735-98a6-31ec8b88310d",
+      "word": "ਦਾਦੀ",
+      "translation": "Grandmother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f475.svg"
+    },
+    {
+      "id": "641b5100-7a43-4c04-a048-64389843aaf4",
+      "word": "ਪੀਲਾ",
+      "translation": "Yellow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f49b.svg"
+    },
+    {
+      "id": "2155d8fb-dffc-4c7f-8432-f4020ae1bd4f",
+      "word": "ਤਿੰਨ",
+      "translation": "Three",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/33-fe0f-20e3.svg"
+    },
+    {
+      "id": "70ff5b5e-5526-4244-9853-61e0ba3ce8dd",
+      "word": "ਗਾਂ",
+      "translation": "Cow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f404.svg"
+    },
+    {
+      "id": "b754b859-6731-4ee5-8d3d-1a3b2905e15c",
+      "word": "ਚਾਚਾ",
+      "translation": "Uncle (paternal)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "c0d31d63-4473-4252-8d41-b901065d95ff",
+      "word": "ਸੰਤਰੀ",
+      "translation": "Orange",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f7e0.svg"
+    },
+    {
+      "id": "0c24228b-d3ce-42f0-83e9-2242a6c28339",
+      "word": "ਅੱਠ",
+      "translation": "Eight",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/38-fe0f-20e3.svg"
+    },
+    {
+      "id": "54d68062-d932-435b-b70e-0a2797c60880",
+      "word": "ਸ਼ੇਰ",
+      "translation": "Lion",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f981.svg"
+    },
+    {
+      "id": "854fce78-b750-4f6d-af39-409f668d2342",
+      "word": "ਆਮ",
+      "translation": "Mango",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f96d.svg"
+    },
+    {
+      "id": "0e63f0db-82ae-4e3c-901a-4aa80679ee9d",
+      "word": "ਨੱਕ",
+      "translation": "Nose",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f443.svg"
+    },
+    {
+      "id": "7d961046-835b-44a9-8375-ae29bc144507",
+      "word": "ਸੌਣਾ",
+      "translation": "To sleep",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f634.svg"
+    },
+    {
+      "id": "78f2979e-39d3-465c-be99-6287fc4378d7",
+      "word": "ਦਰਵਾਜ਼ਾ",
+      "translation": "Door",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6aa.svg"
+    },
+    {
+      "id": "311b63b3-85f8-48fc-9710-995e37e4f608",
+      "word": "ਤਾਰਾ",
+      "translation": "Star",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2b50.svg"
+    },
+    {
+      "id": "e8c5f36b-17b6-42ba-bedc-387a1f40542d",
+      "word": "दादा",
+      "translation": "Grandfather",
+      "image_url": null
+    },
+    {
+      "id": "e3be4295-84cc-41f2-9c37-0a933af72e20",
+      "word": "पीला",
+      "translation": "Yellow",
+      "image_url": null
+    },
+    {
+      "id": "193ab51a-1378-4b8f-98fe-d8333df1af5d",
+      "word": "तीन",
+      "translation": "Three",
+      "image_url": null
+    },
+    {
+      "id": "5c5cf801-62d2-493d-bf8e-527471b49b46",
+      "word": "कैसे है",
+      "translation": "How are you",
+      "image_url": null
+    },
+    {
+      "id": "8c86ace0-009e-4511-a859-34150a0358ad",
+      "word": "दाल",
+      "translation": "Lentils",
+      "image_url": null
+    },
+    {
+      "id": "15fd4bbf-eefa-494c-90d2-63727097670e",
+      "word": "कान",
+      "translation": "Ear",
+      "image_url": null
+    },
+    {
+      "id": "ad2e140a-7adc-4fc7-ab1e-6992425ee989",
+      "word": "गाय",
+      "translation": "Cow",
+      "image_url": null
+    },
+    {
+      "id": "e109b8f6-1f9a-4abe-bf0d-a1c5d9e53dbe",
+      "word": "तारा",
+      "translation": "Star",
+      "image_url": null
+    },
+    {
+      "id": "83541241-f05e-4855-8b44-0d2a4bb8f45f",
+      "word": "चाचा",
+      "translation": "Paternal Uncle",
+      "image_url": null
+    },
+    {
+      "id": "e2698fbc-f83b-4f04-a89f-cbf074e206a7",
+      "word": "आठ",
+      "translation": "Eight",
+      "image_url": null
+    },
+    {
+      "id": "fbc38a03-171e-4e7a-a227-3310e1a1150c",
+      "word": "दालो",
+      "translation": "Taro",
+      "image_url": null
+    },
+    {
+      "id": "908d2f93-5ad2-4577-a215-eac66619b9d9",
+      "word": "पूरी",
+      "translation": "Puri (fried bread)",
+      "image_url": null
+    },
+    {
+      "id": "8ba38e5e-50e7-432a-a71d-ac77a3e1dcd4",
+      "word": "खाना",
+      "translation": "To eat",
+      "image_url": null
+    },
+    {
+      "id": "994991cf-e538-401d-b007-521d851e93f2",
+      "word": "सुबह",
+      "translation": "Morning",
+      "image_url": null
+    },
+    {
+      "id": "1ac2ac61-7e6e-4948-8acf-100c362603e6",
+      "word": "मंदिर",
+      "translation": "Temple",
+      "image_url": null
+    },
+    {
+      "id": "5a899247-4975-4578-a064-cda79f87cc6d",
+      "word": "अच्छा",
+      "translation": "Good",
+      "image_url": null
+    },
+    {
+      "id": "41ab520e-f461-4206-b34f-569a4d7cdfef",
+      "word": "सब्ज़ी",
+      "translation": "vegetable",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f96c.svg"
+    },
+    {
+      "id": "9cf70c99-ba02-4a3e-90ff-50a8a8a67ab3",
+      "word": "शुभ रात्रि",
+      "translation": "good night",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f319.svg"
+    },
+    {
+      "id": "525630ed-4676-4cb9-bfc5-a64ba8bca4a0",
+      "word": "जागना",
+      "translation": "to wake up",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/23f0.svg"
+    },
+    {
+      "id": "559e02f9-184e-4880-9e09-c5107bc022d8",
+      "word": "दौड़ना",
+      "translation": "To run",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f3c3.svg"
+    },
+    {
+      "id": "7e94d7f5-c601-4369-b76f-414cb9087508",
+      "word": "बादल",
+      "translation": "Cloud",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2601-fe0f.svg"
+    },
+    {
+      "id": "e2254897-7104-464e-af8d-2e7cb78ca824",
+      "word": "डर",
+      "translation": "Fear",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f628.svg"
+    },
+    {
+      "id": "37d764fe-609f-46a0-a9dc-365c2ab58003",
+      "word": "शाम",
+      "translation": "Evening",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f306.svg"
+    },
+    {
+      "id": "60dc7006-bcee-4999-a6e9-40e2f4de632b",
+      "word": "धन्यवाद",
+      "translation": "thank you",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f64f.svg"
+    },
+    {
+      "id": "16d616dd-5383-4c47-834d-f4208a861d01",
+      "word": "દાદો",
+      "translation": "Grandfather",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f474.svg"
+    },
+    {
+      "id": "2ab62c31-82a3-4b20-8841-d3b84415c8e0",
+      "word": "લીલો",
+      "translation": "Green",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f49a.svg"
+    },
+    {
+      "id": "d3859265-71ae-4e7e-b1e0-01c480bfd42a",
+      "word": "ચાર",
+      "translation": "Four",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/34-fe0f-20e3.svg"
+    },
+    {
+      "id": "f10f7de2-7509-4c41-8b3f-dbf7151798bc",
+      "word": "ચાચી",
+      "translation": "Paternal Aunt",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f469.svg"
+    },
+    {
+      "id": "28c6ac56-3dda-49a9-8e15-0cf56f7d6b49",
+      "word": "નવ",
+      "translation": "Nine",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/39-fe0f-20e3.svg"
+    },
+    {
+      "id": "f50637fc-8462-4ca1-ba3a-0680e8ba8e47",
+      "word": "વાંદરો",
+      "translation": "Monkey",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f412.svg"
+    },
+    {
+      "id": "ff42c089-236c-4a76-9453-65148cc61879",
+      "word": "દ્રાક્ષ",
+      "translation": "Grapes",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f347.svg"
+    },
+    {
+      "id": "3764d412-07fe-4e9a-b811-4cfee8eb8a48",
+      "word": "કાન",
+      "translation": "Ear",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f442.svg"
+    },
+    {
+      "id": "b7387b2e-05c0-4a5f-99df-24b7a27c626c",
+      "word": "રમવુ",
+      "translation": "To play",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f3ae.svg"
+    },
+    {
+      "id": "4b5c59a7-2f67-4bb3-b39b-75792ccd94e4",
+      "word": "બારી",
+      "translation": "Window",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1fa9f.svg"
+    },
+    {
+      "id": "a26d2b74-7231-4006-8aeb-1c75d3cf10fb",
+      "word": "ફૂલ",
+      "translation": "Flower",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f338.svg"
+    },
+    {
+      "id": "7e40c062-1702-4256-b78e-7b8524e94ad2",
+      "word": "தாத்தா",
+      "translation": "Grandfather",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f474.svg"
+    },
+    {
+      "id": "443e8430-a0a2-407f-870c-55ed8f9c848f",
+      "word": "பச்சை",
+      "translation": "Green",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f49a.svg"
+    },
+    {
+      "id": "778dbc83-05d5-4647-ad52-8ac22b00f770",
+      "word": "நான்கு",
+      "translation": "Four",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/34-fe0f-20e3.svg"
+    },
+    {
+      "id": "9e877d82-da35-4891-9950-295cdbec6d1d",
+      "word": "சித்தப்பா",
+      "translation": "Uncle (father's younger brother)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "6aa6067c-4633-431a-bcde-0c65e47db18c",
+      "word": "ஒன்பது",
+      "translation": "Nine",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/39-fe0f-20e3.svg"
+    },
+    {
+      "id": "1b215312-10f8-4332-ad7f-58d6ad90948f",
+      "word": "குரங்கு",
+      "translation": "Monkey",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f412.svg"
+    },
+    {
+      "id": "9af559ef-9c86-4dce-a64a-2d92a0f91ac9",
+      "word": "திராட்சை",
+      "translation": "Grapes",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f347.svg"
+    },
+    {
+      "id": "dd1a2445-53e7-4702-87dc-688105aaac3f",
+      "word": "காது",
+      "translation": "Ear",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f442.svg"
+    },
+    {
+      "id": "0db49e9a-a6f5-4432-a7ab-9dcf71c964b6",
+      "word": "விளையாடு",
+      "translation": "To play",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f3ae.svg"
+    },
+    {
+      "id": "a00393ed-4e28-4a13-9be7-41f9cff40658",
+      "word": "ஜன்னல்",
+      "translation": "Window",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1fa9f.svg"
+    },
+    {
+      "id": "272269c1-b076-4415-8a0d-c83a39d8b1ba",
+      "word": "பூ",
+      "translation": "Flower",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f338.svg"
+    },
+    {
+      "id": "c4676ea5-4e60-4acf-a602-b353017ac18a",
+      "word": "ਦਾਦਾ",
+      "translation": "Grandfather",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f474.svg"
+    },
+    {
+      "id": "bd862f1b-fb8d-4a8c-8cba-9eddbe1eabe8",
+      "word": "ਹਰਾ",
+      "translation": "Green",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f49a.svg"
+    },
+    {
+      "id": "4108ece0-9af7-46e0-9b04-1d300d727c56",
+      "word": "ਚਾਰ",
+      "translation": "Four",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/34-fe0f-20e3.svg"
+    },
+    {
+      "id": "915ce168-1845-408e-9cbd-3a621f71c531",
+      "word": "ਚਾਚੀ",
+      "translation": "Aunt (paternal)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f469.svg"
+    },
+    {
+      "id": "8e8514b1-5a8c-4480-8ccf-6e8dba24f3ce",
+      "word": "ਨੌਂ",
+      "translation": "Nine",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/39-fe0f-20e3.svg"
+    },
+    {
+      "id": "68e8cad9-e139-4dc9-9900-9efc70b52261",
+      "word": "ਬਾਂਦਰ",
+      "translation": "Monkey",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f412.svg"
+    },
+    {
+      "id": "2f54604e-da7e-43d1-93e5-b4538e780f55",
+      "word": "ਅੰਗੂਰ",
+      "translation": "Grapes",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f347.svg"
+    },
+    {
+      "id": "9f4b4415-681e-4860-95d8-40353ace8a12",
+      "word": "ਕੰਨ",
+      "translation": "Ear",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f442.svg"
+    },
+    {
+      "id": "d52a89a1-affb-454a-a757-855533b1469d",
+      "word": "ਖੇਡਣਾ",
+      "translation": "To play",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f3ae.svg"
+    },
+    {
+      "id": "9a72e92b-31f7-40e5-821e-ba3d3139cc7a",
+      "word": "ਖਿੜਕੀ",
+      "translation": "Window",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1fa9f.svg"
+    },
+    {
+      "id": "cc7894fb-dd4d-41ab-a189-721b7882cc9a",
+      "word": "ਫੁੱਲ",
+      "translation": "Flower",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f338.svg"
+    },
+    {
+      "id": "6a11d3f1-aa3d-40df-ac0d-18692dc57bee",
+      "word": "दादी",
+      "translation": "Grandmother",
+      "image_url": null
+    },
+    {
+      "id": "48fb39f2-55b5-4767-8109-d3863ba5036f",
+      "word": "हरा",
+      "translation": "Green",
+      "image_url": null
+    },
+    {
+      "id": "baa4ba3d-b6c1-493e-8c36-fd299814e58f",
+      "word": "चार",
+      "translation": "Four",
+      "image_url": null
+    },
+    {
+      "id": "f883ec92-4302-462a-b528-c132dd0f6c8b",
+      "word": "ठीक है",
+      "translation": "Fine/OK",
+      "image_url": null
+    },
+    {
+      "id": "84d96990-a1ec-4d09-8162-2331d62ca6c2",
+      "word": "पानी",
+      "translation": "Water",
+      "image_url": null
+    },
+    {
+      "id": "876c5f94-63b2-467f-a8fc-f215a14d87b2",
+      "word": "मुँह",
+      "translation": "Mouth",
+      "image_url": null
+    },
+    {
+      "id": "16e85f3e-331a-49f5-98af-29b9cc34c665",
+      "word": "मुर्गी",
+      "translation": "Chicken",
+      "image_url": null
+    },
+    {
+      "id": "c39425db-f1da-4512-83fc-3561aab9b21f",
+      "word": "बादल",
+      "translation": "Cloud",
+      "image_url": null
+    },
+    {
+      "id": "08281113-6d4c-41c7-95d7-b5c447baec8c",
+      "word": "चाची",
+      "translation": "Paternal Aunt",
+      "image_url": null
+    },
+    {
+      "id": "9c7085d4-2520-4ff9-880b-2d7973225bfa",
+      "word": "नौ",
+      "translation": "Nine",
+      "image_url": null
+    },
+    {
+      "id": "ee19ec93-8762-4888-b9f6-69c2794686ba",
+      "word": "कासावा",
+      "translation": "Cassava",
+      "image_url": null
+    },
+    {
+      "id": "7e51a36c-e9a8-42a3-8adc-f871d5bd6a11",
+      "word": "सब्जी",
+      "translation": "Vegetable",
+      "image_url": null
+    },
+    {
+      "id": "3e34a676-95b5-4122-bab8-2b6e0b0cb08f",
+      "word": "पीना",
+      "translation": "To drink",
+      "image_url": null
+    },
+    {
+      "id": "0b31b459-7894-4290-b15e-a098252d0d6d",
+      "word": "शाम",
+      "translation": "Evening",
+      "image_url": null
+    },
+    {
+      "id": "2b1d240a-d0ae-498e-9bd3-508da13773f3",
+      "word": "दुकान",
+      "translation": "Shop",
+      "image_url": null
+    },
+    {
+      "id": "6c709e82-d59a-4beb-857c-617f982b6151",
+      "word": "बुरा",
+      "translation": "Bad",
+      "image_url": null
+    },
+    {
+      "id": "ac1317b2-6767-443c-ad43-6c9909f4857f",
+      "word": "कृपया",
+      "translation": "please",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f64f.svg"
+    },
+    {
+      "id": "7d0c4dd1-47ce-4fcc-b9c8-59e4886b7e53",
+      "word": "ठंड",
+      "translation": "Cold",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f976.svg"
+    },
+    {
+      "id": "d3257a45-77b9-4904-aa93-01da96fcd0f0",
+      "word": "प्यार",
+      "translation": "Love",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2764-fe0f.svg"
+    },
+    {
+      "id": "85c5d1c5-a78c-4d81-a842-d462bd89b13d",
+      "word": "रात",
+      "translation": "Night",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f319.svg"
+    },
+    {
+      "id": "89620a6e-ecf0-4265-950c-8600929cd6fe",
+      "word": "पानी",
+      "translation": "water",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4a7.svg"
+    },
+    {
+      "id": "8ea75883-c2ec-4287-af2e-ebf99e4e90db",
+      "word": "ભાઈ",
+      "translation": "Brother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f466.svg"
+    },
+    {
+      "id": "29da9d2e-56ac-4e13-90af-aa288ab8524f",
+      "word": "પાંચ",
+      "translation": "Five",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/35-fe0f-20e3.svg"
+    },
+    {
+      "id": "319d0092-71e6-46e9-aa39-3670e06d9fcd",
+      "word": "દસ",
+      "translation": "Ten",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f51f.svg"
+    },
+    {
+      "id": "53a7a4f2-0a93-48ca-87a0-1be0a3458d0d",
+      "word": "માછલી",
+      "translation": "Fish",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f41f.svg"
+    },
+    {
+      "id": "9ab45346-8dfc-4283-aac4-267b3e62988e",
+      "word": "હાથ",
+      "translation": "Hand",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/270b.svg"
+    },
+    {
+      "id": "e798adf5-e62e-49b1-9505-67e0972227e2",
+      "word": "વાંચવુ",
+      "translation": "To read",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4d6.svg"
+    },
+    {
+      "id": "c755448b-e372-42cf-9254-a311b5dbd9de",
+      "word": "ઝાડ",
+      "translation": "Tree",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f333.svg"
+    },
+    {
+      "id": "896da67b-7dfc-4100-85a9-e215130f63b4",
+      "word": "அக்கா",
+      "translation": "Elder sister",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f467.svg"
+    },
+    {
+      "id": "6264c01e-454f-4b09-8963-260e374079a9",
+      "word": "ஐந்து",
+      "translation": "Five",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/35-fe0f-20e3.svg"
+    },
+    {
+      "id": "cdc9caad-5371-47b2-9f83-2799e50faa44",
+      "word": "மாமா",
+      "translation": "Uncle (maternal)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "51d45e90-ada6-4c71-bcf9-d477a11e21b5",
+      "word": "பத்து",
+      "translation": "Ten",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f51f.svg"
+    },
+    {
+      "id": "a6b707f9-8fbe-4671-9755-639a2e4ec255",
+      "word": "கிளி",
+      "translation": "Parrot",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f99c.svg"
+    },
+    {
+      "id": "9c041332-2c73-487b-b613-1d57af77013b",
+      "word": "ஆரஞ்சு பழம்",
+      "translation": "Orange fruit",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34a.svg"
+    },
+    {
+      "id": "de7c2aed-f8ef-4c25-a83c-5b6f76497e9f",
+      "word": "வாய்",
+      "translation": "Mouth",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f444.svg"
+    },
+    {
+      "id": "3b1f1c80-4622-49d6-9d51-f7cb727252a8",
+      "word": "படி",
+      "translation": "To read/study",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4d6.svg"
+    },
+    {
+      "id": "6863bca6-eb57-4e34-b701-49f8aaf51aab",
+      "word": "மேசை",
+      "translation": "Table",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1fa91.svg"
+    },
+    {
+      "id": "8ff41e10-5d99-4dfd-9ced-70eb9c94bd26",
+      "word": "மரம்",
+      "translation": "Tree",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f333.svg"
+    },
+    {
+      "id": "7866b92d-ac7c-4a72-8d7b-9fa157d2b76a",
+      "word": "ਭੈਣ",
+      "translation": "Sister",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f467.svg"
+    },
+    {
+      "id": "21ec2368-0f69-4dd7-be15-fe2e53f22bae",
+      "word": "ਪੰਜ",
+      "translation": "Five",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/35-fe0f-20e3.svg"
+    },
+    {
+      "id": "e0c37b62-206c-4b89-b89f-1307959617da",
+      "word": "ਮਾਮਾ",
+      "translation": "Uncle (maternal)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "f1129d13-003e-43fa-a5cc-e6f86a2351c5",
+      "word": "ਦਸ",
+      "translation": "Ten",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f51f.svg"
+    },
+    {
+      "id": "78ff95ec-2a8f-42cc-9f1f-ff5f33b38f29",
+      "word": "ਚਿੜੀ",
+      "translation": "Sparrow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f426.svg"
+    },
+    {
+      "id": "4615ecc5-53c6-41de-aa0e-9c1ed4123248",
+      "word": "ਸੰਤਰਾ",
+      "translation": "Orange",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f7e0.svg"
+    },
+    {
+      "id": "ebc8df5c-a007-4a21-a6bc-b3de85bedabe",
+      "word": "ਮੂੰਹ",
+      "translation": "Mouth",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f444.svg"
+    },
+    {
+      "id": "8348d817-69f8-4bd5-88d9-802d07b3ce89",
+      "word": "ਪੜ੍ਹਨਾ",
+      "translation": "To read",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4d6.svg"
+    },
+    {
+      "id": "fe2f3e32-a477-402f-8398-9e2a8c8d973d",
+      "word": "ਮੇਜ਼",
+      "translation": "Table",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1fa91.svg"
+    },
+    {
+      "id": "f48d36d2-72d0-4224-9fbf-24eef462d5d1",
+      "word": "ਰੁੱਖ",
+      "translation": "Tree",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f333.svg"
+    },
+    {
+      "id": "446df2a8-3a9f-4efc-b617-aa0117210423",
+      "word": "भाई",
+      "translation": "Brother",
+      "image_url": null
+    },
+    {
+      "id": "cf89fc6a-abe9-4ef1-86f3-6f2afec9e586",
+      "word": "सफेद",
+      "translation": "White",
+      "image_url": null
+    },
+    {
+      "id": "76292085-24f1-44a8-94ad-bf5dd51615cc",
+      "word": "पाँच",
+      "translation": "Five",
+      "image_url": null
+    },
+    {
+      "id": "db6c36f1-8284-4dae-b42f-a9cfc42d9044",
+      "word": "धन्यवाद",
+      "translation": "Thank you",
+      "image_url": null
+    },
+    {
+      "id": "f7641254-5e11-4a9f-8473-c16d5b27486c",
+      "word": "दूध",
+      "translation": "Milk",
+      "image_url": null
+    },
+    {
+      "id": "6847e89c-a650-4840-bfdb-940d62546599",
+      "word": "हाथ",
+      "translation": "Hand",
+      "image_url": null
+    },
+    {
+      "id": "a79a0f0f-3edf-4060-90a3-d0f8ceefeecd",
+      "word": "मछली",
+      "translation": "Fish",
+      "image_url": null
+    },
+    {
+      "id": "daa90446-253d-43cf-9740-d548058478ed",
+      "word": "बारिश",
+      "translation": "Rain",
+      "image_url": null
+    },
+    {
+      "id": "c0736b38-00e4-429e-bea2-9adb366129b7",
+      "word": "नाना",
+      "translation": "Maternal Grandfather",
+      "image_url": null
+    },
+    {
+      "id": "62549f91-8fde-4d5f-a9ad-8ae760a7ed3f",
+      "word": "दस",
+      "translation": "Ten",
+      "image_url": null
+    },
+    {
+      "id": "ee2744b9-eb49-48ce-ba74-d2634586c964",
+      "word": "सुलु",
+      "translation": "Sarong/Wrap",
+      "image_url": null
+    },
+    {
+      "id": "9af20ff0-c58d-4698-888e-6b07591e957f",
+      "word": "फल",
+      "translation": "Fruit",
+      "image_url": null
+    },
+    {
+      "id": "0e97554d-e898-4e53-a031-c36f16d3ec77",
+      "word": "सोना",
+      "translation": "To sleep",
+      "image_url": null
+    },
+    {
+      "id": "ecae6172-796d-4562-85e4-f870faf7047f",
+      "word": "रात",
+      "translation": "Night",
+      "image_url": null
+    },
+    {
+      "id": "99c5a613-a780-489d-bf5f-22c779bf3fbb",
+      "word": "बाजार",
+      "translation": "Market",
+      "image_url": null
+    },
+    {
+      "id": "6560c3d5-95f7-4a74-9d8f-820c21a2775d",
+      "word": "बड़ा",
+      "translation": "Big",
+      "image_url": null
+    },
+    {
+      "id": "e60445e5-c168-453d-a438-ee7ecf174efb",
+      "word": "पानी",
+      "translation": "water",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4a7.svg"
+    },
+    {
+      "id": "090c617b-23c2-4c44-9c31-60dd0200ff78",
+      "word": "माफ़ कीजिए",
+      "translation": "sorry/excuse me",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f647.svg"
+    },
+    {
+      "id": "93d8e246-9da2-4f3a-81cd-c56e6afe9700",
+      "word": "घर",
+      "translation": "home",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f3e0.svg"
+    },
+    {
+      "id": "1baa9513-c834-43e2-84ff-dfefde32ae54",
+      "word": "બહન",
+      "translation": "Sister",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f467.svg"
+    },
+    {
+      "id": "7201bb83-c8bc-41ab-a003-2126b7d6c1ed",
+      "word": "அண்ணா",
+      "translation": "Elder brother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f466.svg"
+    },
+    {
+      "id": "94dc9ef9-91a7-45c1-a818-188564474ce6",
+      "word": "மீன்",
+      "translation": "Fish",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f41f.svg"
+    },
+    {
+      "id": "7bdb49cc-ac08-4e58-850f-cbea497581e2",
+      "word": "கை",
+      "translation": "Hand",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/270b.svg"
+    },
+    {
+      "id": "6bf35927-f6ca-4fa5-8583-11bef8fe933a",
+      "word": "எழுது",
+      "translation": "To write",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/270d.svg"
+    },
+    {
+      "id": "6eafb8f2-22b8-4497-8c74-1e61dcb21d12",
+      "word": "நாற்காலி",
+      "translation": "Chair",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1fa91.svg"
+    },
+    {
+      "id": "7e959a9d-4c9f-446c-a359-1e1ea95c9684",
+      "word": "ਵੀਰ",
+      "translation": "Brother",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f466.svg"
+    },
+    {
+      "id": "1e2005ea-38b3-4fa9-be44-40797cd08bd9",
+      "word": "ਮੱਛੀ",
+      "translation": "Fish",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f41f.svg"
+    },
+    {
+      "id": "50e49dcc-eec9-4ec1-abe7-85bcfb1d4497",
+      "word": "ਹੱਥ",
+      "translation": "Hand",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/270b.svg"
+    },
+    {
+      "id": "e273df6c-623f-42ff-bc50-4aeca72d6804",
+      "word": "ਲਿਖਣਾ",
+      "translation": "To write",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/270d.svg"
+    },
+    {
+      "id": "0fa1503f-f3bb-4a69-bf73-6af77c26228b",
+      "word": "ਕੁਰਸੀ",
+      "translation": "Chair",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1fa91.svg"
+    },
+    {
+      "id": "189b5cd1-efcc-415a-b292-740478f5df4b",
+      "word": "बहिन",
+      "translation": "Sister",
+      "image_url": null
+    },
+    {
+      "id": "eeb5b347-8c70-4ed9-976c-384ead819d1c",
+      "word": "काला",
+      "translation": "Black",
+      "image_url": null
+    },
+    {
+      "id": "857d7508-6424-4951-a8e9-5dbd9e1d92fe",
+      "word": "बाद में",
+      "translation": "See you later",
+      "image_url": null
+    },
+    {
+      "id": "fdf28e39-c322-4913-bb6a-4bd2ab36f17a",
+      "word": "पैर",
+      "translation": "Foot/Leg",
+      "image_url": null
+    },
+    {
+      "id": "d0e2e444-935f-469d-bbcb-ea570b2fd148",
+      "word": "नानी",
+      "translation": "Maternal Grandmother",
+      "image_url": null
+    },
+    {
+      "id": "54c05a81-a226-40f3-a78e-72e31703e684",
+      "word": "बीस",
+      "translation": "Twenty",
+      "image_url": null
+    },
+    {
+      "id": "ba59ddbf-2a17-45ed-90d9-11d509c53b1b",
+      "word": "याकोना",
+      "translation": "Kava drink",
+      "image_url": null
+    },
+    {
+      "id": "4ca21a36-c095-4f48-a23d-9a8906e135ba",
+      "word": "केला",
+      "translation": "Banana",
+      "image_url": null
+    },
+    {
+      "id": "e4e0e247-cecc-474c-8a1b-264da64dda1a",
+      "word": "खेलना",
+      "translation": "To play",
+      "image_url": null
+    },
+    {
+      "id": "91d903c7-9cc3-4fb9-b851-86cb3da67a45",
+      "word": "हफ्ता",
+      "translation": "Week",
+      "image_url": null
+    },
+    {
+      "id": "dd351273-c815-4ac2-a14e-a04d45ba0c35",
+      "word": "गाँव",
+      "translation": "Village",
+      "image_url": null
+    },
+    {
+      "id": "b200cafb-105b-48bb-9f29-7155994c9c05",
+      "word": "छोटा",
+      "translation": "Small",
+      "image_url": null
+    },
+    {
+      "id": "2d2248c9-5d8b-49c4-a28e-d724e1d79c8d",
+      "word": "नाना",
+      "translation": "grandfather (maternal)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f474.svg"
+    },
+    {
+      "id": "c0717fec-76ff-4025-a9e5-cada077596af",
+      "word": "फल",
+      "translation": "fruit",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34e.svg"
+    },
+    {
+      "id": "a28548bc-c763-4a88-8478-12b1ad7dcb7d",
+      "word": "हाँ",
+      "translation": "yes",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/2705.svg"
+    },
+    {
+      "id": "3be8461e-023d-42f3-89a7-d42f797a4ab2",
+      "word": "खाना",
+      "translation": "food",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f37d.svg"
+    },
+    {
+      "id": "81c64f9d-008a-4bfd-b192-45cdacb6b592",
+      "word": "கால்",
+      "translation": "Leg/Foot",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f9b6.svg"
+    },
+    {
+      "id": "8ed32d9a-8e3f-4ac2-bbb6-292511109aaf",
+      "word": "ਪੈਰ",
+      "translation": "Foot",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f9b6.svg"
+    },
+    {
+      "id": "3a0ca0ff-4971-4066-980b-10b309e6cb3a",
+      "word": "बेटा",
+      "translation": "Son",
+      "image_url": null
+    },
+    {
+      "id": "b326970e-5a52-4189-a964-2d06148d6c19",
+      "word": "बीस और एक",
+      "translation": "Twenty-one",
+      "image_url": null
+    },
+    {
+      "id": "170a3565-be90-4a35-b862-7dc225aa1e8b",
+      "word": "आम",
+      "translation": "Mango",
+      "image_url": null
+    },
+    {
+      "id": "bc50a83d-b405-4962-84b9-3f4dd64026a0",
+      "word": "पढ़ना",
+      "translation": "To read/study",
+      "image_url": null
+    },
+    {
+      "id": "ddae7816-539f-4e9a-97c2-c94f32192d9f",
+      "word": "महीना",
+      "translation": "Month",
+      "image_url": null
+    },
+    {
+      "id": "ae92e40b-b635-453c-9ba5-d598f3d0a5e8",
+      "word": "अरे!",
+      "translation": "Hey!",
+      "image_url": null
+    },
+    {
+      "id": "dfd0a616-347c-4e84-a830-20031d36ac2a",
+      "word": "नानी",
+      "translation": "grandmother (maternal)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f475.svg"
+    },
+    {
+      "id": "dbaa4b0c-0efb-4861-a908-89445765d5a7",
+      "word": "रोटी",
+      "translation": "bread",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f35e.svg"
+    },
+    {
+      "id": "a7e268f7-6221-401c-9503-a5446dc92ec0",
+      "word": "चावल",
+      "translation": "rice",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f35a.svg"
+    },
+    {
+      "id": "6e81f77c-d7c8-48ad-ac19-661882d14a21",
+      "word": "दूध",
+      "translation": "milk",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f95b.svg"
+    },
+    {
+      "id": "6d50a049-2782-4a55-8f7b-6042f0bbc540",
+      "word": "मिठाई",
+      "translation": "sweets",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f36c.svg"
+    },
+    {
+      "id": "3575bed9-a103-4f05-b2ee-7411d1ba140c",
+      "word": "उंगली",
+      "translation": "finger",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f446.svg"
+    },
+    {
+      "id": "fbb39580-04ea-4b6c-a843-5ebd38eccff2",
+      "word": "नहीं",
+      "translation": "no",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/274c.svg"
+    },
+    {
+      "id": "45cc2dcf-0b98-4cf6-a6df-728b7d388377",
+      "word": "सेब",
+      "translation": "apple",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34e.svg"
+    },
+    {
+      "id": "cc0a633f-9191-452c-b6c3-f3e3e8c5620d",
+      "word": "बेटी",
+      "translation": "Daughter",
+      "image_url": null
+    },
+    {
+      "id": "975f7c94-3a3a-442c-8526-aff060e8af5f",
+      "word": "सौ",
+      "translation": "Hundred",
+      "image_url": null
+    },
+    {
+      "id": "af29c6f4-c362-42fb-9bbf-83b3b67679b6",
+      "word": "सेब",
+      "translation": "Apple",
+      "image_url": null
+    },
+    {
+      "id": "113c327a-79df-46ec-91aa-8e17c1d18477",
+      "word": "लिखना",
+      "translation": "To write",
+      "image_url": null
+    },
+    {
+      "id": "407c1e3e-0dc9-48b8-a5a8-f56451ba88cf",
+      "word": "साल",
+      "translation": "Year",
+      "image_url": null
+    },
+    {
+      "id": "d6b985f2-9615-453c-8668-226f68c062f7",
+      "word": "चाचा",
+      "translation": "uncle (paternal)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f468.svg"
+    },
+    {
+      "id": "9f68123f-b577-47fb-8244-cd53ec8a4eee",
+      "word": "आम",
+      "translation": "mango",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f96d.svg"
+    },
+    {
+      "id": "85666f8b-94ca-4853-a97a-99cfeadc5ec7",
+      "word": "अलविदा",
+      "translation": "goodbye",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f44b.svg"
+    },
+    {
+      "id": "e39d8c82-a71f-4a4a-9878-7159e575d333",
+      "word": "केला",
+      "translation": "banana",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34c.svg"
+    },
+    {
+      "id": "90edb9a7-df1e-4231-b649-6ea1896f4cdf",
+      "word": "बोलना",
+      "translation": "To speak",
+      "image_url": null
+    },
+    {
+      "id": "78d41513-a7d4-4777-95a9-5251f466fbeb",
+      "word": "चाची",
+      "translation": "aunt (paternal uncle wife)",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f469.svg"
+    },
+    {
+      "id": "c9088b20-d121-4a1e-a7f5-1b78af344369",
+      "word": "कुत्ता",
+      "translation": "dog",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f415.svg"
+    },
+    {
+      "id": "937a8662-a2dd-4d1e-bf03-fa3fbff2497a",
+      "word": "गाय",
+      "translation": "cow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f404.svg"
+    },
+    {
+      "id": "4991fb1f-f6c1-4b84-b24e-6b250f8a0fab",
+      "word": "सेब",
+      "translation": "apple",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f34e.svg"
+    },
+    {
+      "id": "23df0b0e-045f-4ab7-9e98-3e9985cdd7c0",
+      "word": "स्वागत है",
+      "translation": "welcome",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f917.svg"
+    },
+    {
+      "id": "636ea69a-af2b-4591-a016-4c675762a1e9",
+      "word": "सुनना",
+      "translation": "To listen",
+      "image_url": null
+    },
+    {
+      "id": "d4f2ef70-4e1c-4232-987f-75fb801cfce3",
+      "word": "देखना",
+      "translation": "To see",
+      "image_url": null
+    },
+    {
+      "id": "df58a7c1-cdbd-4a59-9438-76abeb604515",
+      "word": "करना",
+      "translation": "To do",
+      "image_url": null
+    },
+    {
+      "id": "0b6d87a7-26c9-41e9-9207-40081fa33d93",
+      "word": "लाल",
+      "translation": "red",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f534.svg"
+    },
+    {
+      "id": "b515cc73-25fb-4acb-bf85-53817d029b97",
+      "word": "नीला",
+      "translation": "blue",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f535.svg"
+    },
+    {
+      "id": "6c784a3d-236c-4ffc-acdf-7ae0252bc095",
+      "word": "पीला",
+      "translation": "yellow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f49b.svg"
+    },
+    {
+      "id": "e0761851-65ef-4b54-8f4a-1ed31951fe10",
+      "word": "हरा",
+      "translation": "green",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f49a.svg"
+    },
+    {
+      "id": "9c6fc122-dad1-4f48-8b26-ec4c6756992e",
+      "word": "काला",
+      "translation": "black",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/26ab.svg"
+    },
+    {
+      "id": "f03c4d5a-4f8f-4a08-aa2a-bd510e5db9b0",
+      "word": "सफ़ेद",
+      "translation": "white",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/26aa.svg"
+    },
+    {
+      "id": "3de89d90-3052-4e27-893d-340c2c65bc44",
+      "word": "नारंगी",
+      "translation": "orange",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f7e0.svg"
+    },
+    {
+      "id": "0e2d4349-fd61-4bb0-8785-c8b22dea7815",
+      "word": "गुलाबी",
+      "translation": "pink",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f497.svg"
+    },
+    {
+      "id": "12f8ccb6-1605-409b-98ed-56fcedac5c4a",
+      "word": "बैंगनी",
+      "translation": "purple",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f7e3.svg"
+    },
+    {
+      "id": "3afd9657-7f08-42c3-9717-b7bc799b4e0a",
+      "word": "भूरा",
+      "translation": "brown",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f7e4.svg"
+    },
+    {
+      "id": "02e04c2e-bfc8-4c03-90dc-aadc6566af7c",
+      "word": "एक",
+      "translation": "one",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/31-fe0f-20e3.svg"
+    },
+    {
+      "id": "19f27287-91d6-4bd2-a7ac-c784f646bd30",
+      "word": "दो",
+      "translation": "two",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/32-fe0f-20e3.svg"
+    },
+    {
+      "id": "8b23d42d-e76b-41d1-b341-83b1fe65dc56",
+      "word": "तीन",
+      "translation": "three",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/33-fe0f-20e3.svg"
+    },
+    {
+      "id": "42c33816-1ff2-40ed-a779-b04f8f6b7f9e",
+      "word": "चार",
+      "translation": "four",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/34-fe0f-20e3.svg"
+    },
+    {
+      "id": "70e4123a-5b52-42ba-b057-dd751d1145a9",
+      "word": "पाँच",
+      "translation": "five",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/35-fe0f-20e3.svg"
+    },
+    {
+      "id": "c82cef87-a035-427f-ba11-91f18a69d9b9",
+      "word": "छह",
+      "translation": "six",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/36-fe0f-20e3.svg"
+    },
+    {
+      "id": "38956ed7-d80b-47f3-959b-53bb50a8e172",
+      "word": "सात",
+      "translation": "seven",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/37-fe0f-20e3.svg"
+    },
+    {
+      "id": "5148c017-d240-412e-8c7a-8f51db42b92e",
+      "word": "आठ",
+      "translation": "eight",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/38-fe0f-20e3.svg"
+    },
+    {
+      "id": "5cc9e033-89f2-48fe-9c3d-a24b90b63a39",
+      "word": "नौ",
+      "translation": "nine",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/39-fe0f-20e3.svg"
+    },
+    {
+      "id": "18c90dbf-4dfa-47a2-a1c6-bd26f59048bb",
+      "word": "दस",
+      "translation": "ten",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f51f.svg"
+    },
+    {
+      "id": "a6da1c9f-0244-48f8-aa0d-1d7295582ec1",
+      "word": "बिल्ली",
+      "translation": "cat",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f408.svg"
+    },
+    {
+      "id": "a188c659-ce4c-4fbd-a705-338d1e728e7b",
+      "word": "घोड़ा",
+      "translation": "horse",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f434.svg"
+    },
+    {
+      "id": "67a3a302-e6fa-4377-9f95-a79e003c34b1",
+      "word": "हाथी",
+      "translation": "elephant",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f418.svg"
+    },
+    {
+      "id": "4a437516-2efa-4518-86c5-665f7d84f3cb",
+      "word": "शेर",
+      "translation": "lion",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f981.svg"
+    },
+    {
+      "id": "37ec4c33-4e31-48d7-a02c-2c76eb85a4d5",
+      "word": "बंदर",
+      "translation": "monkey",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f412.svg"
+    },
+    {
+      "id": "c04b6d1c-af36-4bbf-9d4c-9a51a8833784",
+      "word": "चिड़िया",
+      "translation": "bird",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f426.svg"
+    },
+    {
+      "id": "ac0c87dd-52b7-4332-8198-4d657eae2871",
+      "word": "मछली",
+      "translation": "fish",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f41f.svg"
+    },
+    {
+      "id": "f2687919-11cb-4c28-8d03-7e0fa5e5034f",
+      "word": "खरगोश",
+      "translation": "rabbit",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f430.svg"
+    },
+    {
+      "id": "a453ea56-9582-4ec6-8b49-66680abe49a5",
+      "word": "कौआ",
+      "translation": "crow",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f426-200d-2b1b.svg"
+    },
+    {
+      "id": "c897a543-9875-4a0e-bfb6-a732c8a59f4a",
+      "word": "तितली",
+      "translation": "butterfly",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f98b.svg"
+    },
+    {
+      "id": "34b9be39-8f18-46d7-b2f7-d2be396feaf2",
+      "word": "सिर",
+      "translation": "head",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f5e3.svg"
+    },
+    {
+      "id": "0a3abfc2-f25d-4430-9d02-e0a5312f3a60",
+      "word": "आँख",
+      "translation": "eye",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f441.svg"
+    },
+    {
+      "id": "4024c9a2-bb06-4b2c-a943-b8bf018f4036",
+      "word": "कान",
+      "translation": "ear",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f442.svg"
+    },
+    {
+      "id": "ab53eb77-f63e-4999-9830-90ce46b58985",
+      "word": "नाक",
+      "translation": "nose",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f443.svg"
+    },
+    {
+      "id": "14b5699d-bbf2-4c09-a98f-41764b3f5f7b",
+      "word": "मुँह",
+      "translation": "mouth",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f444.svg"
+    },
+    {
+      "id": "9371eece-c771-4879-8978-d585b779106c",
+      "word": "हाथ",
+      "translation": "hand",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/270b.svg"
+    },
+    {
+      "id": "6b14c8d5-8571-442d-90eb-38ca823feaeb",
+      "word": "पैर",
+      "translation": "foot",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f9b6.svg"
+    },
+    {
+      "id": "524d45f6-7eef-47dc-be92-345ac379054b",
+      "word": "पेट",
+      "translation": "stomach",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1fac3.svg"
+    },
+    {
+      "id": "9e86bd63-8fc7-42fb-a5d7-ab7a8ebfbebf",
+      "word": "दाँत",
+      "translation": "teeth",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f9b7.svg"
+    },
+    {
+      "id": "dc1d2e28-9d2a-4ba5-8d26-f7842aa6b31b",
+      "word": "बाल",
+      "translation": "hair",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f487.svg"
+    },
+    {
+      "id": "d935c663-5202-414c-a6ef-2d47c9fad9e3",
+      "word": "खाना",
+      "translation": "to eat",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f37d.svg"
+    },
+    {
+      "id": "95afa488-f59b-4707-b3b4-e8fd929dbc4b",
+      "word": "पीना",
+      "translation": "to drink",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f964.svg"
+    },
+    {
+      "id": "96e7fa1b-1902-4223-8185-fa047952e661",
+      "word": "सोना",
+      "translation": "to sleep",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f634.svg"
+    },
+    {
+      "id": "0693a0f4-63e7-4fbd-9f7a-2131d3f30708",
+      "word": "पढ़ना",
+      "translation": "to read",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4d6.svg"
+    },
+    {
+      "id": "fcbbf1dd-2312-4b4c-8857-3d794db629ef",
+      "word": "लिखना",
+      "translation": "to write",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/270d.svg"
+    },
+    {
+      "id": "4c14275b-2a96-4a10-9870-1b8be8c17a2d",
+      "word": "खेलना",
+      "translation": "to play",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f3ae.svg"
+    },
+    {
+      "id": "d8d38971-ea46-4be7-9010-b06e678d6365",
+      "word": "देखना",
+      "translation": "to see",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f440.svg"
+    },
+    {
+      "id": "0f0c2ab9-dbf5-4701-8dd3-b36e1e576d9b",
+      "word": "सुनना",
+      "translation": "to listen",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f442.svg"
+    },
+    {
+      "id": "d28fe70a-77ec-4877-8250-f754af33f7c3",
+      "word": "बोलना",
+      "translation": "to speak",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f5e3.svg"
+    },
+    {
+      "id": "add62d47-0f77-4730-ae3f-9b99ae924058",
+      "word": "चलना",
+      "translation": "to walk",
+      "image_url": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6b6.svg"
+    }
+  ]
+}

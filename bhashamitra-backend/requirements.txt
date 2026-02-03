@@ -1,0 +1,50 @@
+# Django and core
+Django>=5.0,<6.0
+djangorestframework>=3.15.0
+djangorestframework-simplejwt>=5.3.0
+django-cors-headers>=4.3.0
+django-filter>=24.0
+django-redis>=5.4.0
+django-storages>=1.14.0
+django-health-check>=3.18.0
+dj-database-url>=2.2.0
+gunicorn>=21.0.0
+whitenoise>=6.6.0
+
+# Database
+psycopg2-binary>=2.9.9
+
+# Google Cloud APIs
+google-cloud-texttospeech>=2.16.0
+google-cloud-speech>=2.26.0
+google-generativeai>=0.5.0
+google-genai>=1.0.0
+google-api-python-client>=2.100.0
+google-auth>=2.25.0
+
+# AI/ML - lightweight only
+openai>=1.0.0
+
+# Hugging Face (TTS) - lightweight client only
+gradio_client>=0.16.0
+huggingface_hub>=0.20.0
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+pillow>=10.0.0
+PyJWT>=2.8.0
+python-dateutil>=2.8.0
+pyyaml>=6.0.0
+
+# Stripe payments
+stripe>=7.0.0
+
+# Testing (optional, for dev)
+pytest>=7.4.0
+pytest-django>=4.7.0
+pytest-cov>=4.1.0
+
+# Type checking
+typing_extensions>=4.8.0
+pydantic>=2.5.0

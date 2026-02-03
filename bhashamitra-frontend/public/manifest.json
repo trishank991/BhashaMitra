@@ -1,0 +1,50 @@
+{
+  "name": "BhashaMitra - Your Language Friend",
+  "short_name": "BhashaMitra",
+  "description": "Help your children connect with their heritage through fun, interactive stories in Indian languages.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFF7ED",
+  "theme_color": "#F97316",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "kids"],
+  "lang": "en",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Continue Learning",
+      "short_name": "Learn",
+      "description": "Jump back into your last lesson",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Browse Stories",
+      "short_name": "Stories",
+      "description": "Explore stories in your language",
+      "url": "/stories",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [],
+  "related_applications": [],
+  "serviceworker": {
+    "src": "/sw.js",
+    "scope": "/"
+  }
+}

@@ -1,0 +1,1 @@
+"""Festivals app for BhashaMitra."""

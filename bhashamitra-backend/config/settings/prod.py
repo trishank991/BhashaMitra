@@ -26,8 +26,35 @@ SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
+# CORS settings for cross-origin requests from frontend
+CORS_ALLOWED_ORIGINS = [
+    'https://bhashamitra-frontend.vercel.app',
+    'https://bhasha-mitra.vercel.app',
+    'https://bhashamitra.vercel.app',
+]
+
+# Add additional CORS origins from environment if needed
+_extra_cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
+if _extra_cors_origins:
+    CORS_ALLOWED_ORIGINS.extend([
+        origin.strip() for origin in _extra_cors_origins.split(',')
+        if origin.strip() and origin.strip().startswith('https://')
+    ])
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 # CSRF trusted origins for cross-origin requests
-# Only allow specific verified domains, not all Vercel subdomains
 CSRF_TRUSTED_ORIGINS = [
     'https://bhashamitra-frontend.vercel.app',
     'https://bhasha-mitra.vercel.app',

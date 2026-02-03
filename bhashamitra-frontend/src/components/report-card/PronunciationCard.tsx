@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Mic, Star, Target, Trophy } from 'lucide-react';
+import { Mic, Star, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { PronunciationStats } from '@/services/parentApi';
 

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import api from '@/lib/api';
 import { PeppiAvatar } from '@/components/peppi/PeppiAvatar';
 
 interface MimicResult {
@@ -30,39 +29,38 @@ interface MimicResult {
   };
 }
 
+// Mock result for testing when no backend data available
+const mockResult: MimicResult = {
+  attempt_id: 'mock-id',
+  transcription: 'नमस्ते',
+  score: 85,
+  stars: 3,
+  coach_tip: 'Great pronunciation! Try to emphasize the "न" sound a bit more.',
+  points_earned: 35,
+  is_personal_best: true,
+  mastered: true,
+  peppi_feedback: "MEOW! That was PURRRFECT! You're a paw-some language star!",
+  share_message: '🎉 I got a PERFECT score on PeppiAcademy! Word: नमस्ते Score: ⭐⭐⭐ 85%',
+  progress: {
+    best_score: 85,
+    best_stars: 3,
+    total_attempts: 5,
+    mastered: true,
+  },
+  score_breakdown: {
+    stt_confidence: { raw: 0.92, weighted: 46, weight: 0.5 },
+    text_match: { raw: 90, weighted: 27, weight: 0.3 },
+    energy: { raw: 85, weighted: 12.75, weight: 0.15 },
+    duration: { raw: 80, weighted: 4, weight: 0.05 },
+  },
+};
+
 export default function MimicResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const challengeId = searchParams.get('id');
   const [result, setResult] = useState<MimicResult | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Mock result for testing when no backend data available
-  const mockResult: MimicResult = {
-    attempt_id: 'mock-id',
-    transcription: 'नमस्ते',
-    score: 85,
-    stars: 3,
-    coach_tip: 'Great pronunciation! Try to emphasize the "न" sound a bit more.',
-    points_earned: 35,
-    is_personal_best: true,
-    mastered: true,
-    peppi_feedback: 'MEOW! That was PURRRFECT! You\'re a paw-some language star!',
-    share_message: '🎉 I got a PERFECT score on PeppiAcademy! Word: नमस्ते Score: ⭐⭐⭐ 85%',
-    progress: {
-      best_score: 85,
-      best_stars: 3,
-      total_attempts: 5,
-      mastered: true,
-    },
-    score_breakdown: {
-      stt_confidence: { raw: 0.92, weighted: 46, weight: 0.5 },
-      text_match: { raw: 90, weighted: 27, weight: 0.3 },
-      energy: { raw: 85, weighted: 12.75, weight: 0.15 },
-      duration: { raw: 80, weighted: 4, weight: 0.05 },
-    },
-  };
 
   useEffect(() => {
     // Try to get actual result from sessionStorage
@@ -212,7 +210,7 @@ export default function MimicResultsPage() {
             <div className="flex gap-3">
               <span className="text-xl">💡</span>
               <div>
-                <p className="text-sm font-medium text-yellow-800">Coach's Tip</p>
+                <p className="text-sm font-medium text-yellow-800">Coach&apos;s Tip</p>
                 <p className="text-sm text-yellow-700">{result.coach_tip}</p>
               </div>
             </div>

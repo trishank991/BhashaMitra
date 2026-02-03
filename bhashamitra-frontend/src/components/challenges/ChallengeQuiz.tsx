@@ -21,23 +21,6 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
   const questions = challenge?.questions ?? [];
   const currentQuestion = (questions[currentIndex] ?? {}) as Omit<ChallengeQuestion, 'correct_index'>;
   const isLastQuestion = currentIndex === questions.length - 1;
-
-  // Return early if no questions
-  if (!questions.length) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl shadow-xl p-8 text-center max-w-sm">
-          <div className="text-6xl mb-4">📝</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Questions</h1>
-          <p className="text-gray-500 mb-6">This challenge has no questions yet.</p>
-          <a href="/" className="inline-block px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-semibold">
-            Go Home
-          </a>
-        </div>
-      </div>
-    );
-  }
-
   const timeLimit = challenge?.time_limit_seconds ?? 30;
 
   // Move to next question with the given answer
@@ -86,6 +69,22 @@ export function ChallengeQuiz({ challenge, onComplete }: ChallengeQuizProps) {
 
     return () => clearInterval(timer);
   }, [currentIndex, timeLimit, questions.length, handleSkip]);
+
+  // Return early if no questions - AFTER all hooks
+  if (!questions.length) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 text-center max-w-sm">
+          <div className="text-6xl mb-4">📝</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Questions</h1>
+          <p className="text-gray-500 mb-6">This challenge has no questions yet.</p>
+          <a href="/" className="inline-block px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-semibold">
+            Go Home
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const progressPercent = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
   const timerPercent = timeLimit > 0 ? (timeLeft / timeLimit) * 100 : 0;

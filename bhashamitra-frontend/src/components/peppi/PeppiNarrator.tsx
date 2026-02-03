@@ -36,7 +36,6 @@ const GENDER_LABELS: Record<LanguageCode, { male: string; female: string }> = {
 
 export function PeppiNarrator({
   storyId,
-  storyTitle,
   language,
   defaultGender = 'female',
   subscriptionTier,

@@ -93,6 +93,7 @@ export default function LiveClassesPage() {
 
   const isPremium = subscription.tier === 'PREMIUM';
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleBookClass = (classId: string) => {
     if (!isPremium) {
       router.push('/pricing');

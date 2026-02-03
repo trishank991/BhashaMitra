@@ -297,10 +297,12 @@ export function isRandomPlaceholder(url?: string | null): boolean {
   return url.includes('picsum.photos/seed/');
 }
 
-export default {
+const vocabularyImages = {
   getVocabularyImageUrl,
   getVocabularyImageWithFallback,
   emojiToTwemojiUrl,
   isRandomPlaceholder,
   VOCABULARY_EMOJI_MAP,
 };
+
+export default vocabularyImages;

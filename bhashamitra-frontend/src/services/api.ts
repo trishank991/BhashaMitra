@@ -63,7 +63,7 @@ apiClient.interceptors.response.use(
           }
           return apiClient(originalRequest);
         }
-      } catch (refreshError) {
+      } catch {
         // Refresh failed - clear tokens and redirect to login
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');

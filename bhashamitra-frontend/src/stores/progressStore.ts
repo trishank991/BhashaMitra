@@ -127,6 +127,7 @@ export const useProgressStore = create<ProgressState>()(
         }
       },
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       syncWithBackend: async (childId: string) => {
         try {
           // Fetch streak from backend

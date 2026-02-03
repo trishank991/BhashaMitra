@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Card, Badge } from '@/components/ui';
-import { fadeInUp, staggerContainer, SUPPORTED_LANGUAGES, LEVEL_TITLES, XP_PER_LEVEL } from '@/lib/constants';
+import { fadeInUp, staggerContainer, LEVEL_TITLES, XP_PER_LEVEL } from '@/lib/constants';
 import { ChildProfile } from '@/types';
 import { SubscriptionFeatures, SubscriptionLimits } from '@/lib/api';
 import { ChildProgress } from '@/hooks/useSubscription';
@@ -41,7 +41,6 @@ export function PaidHomepage({
   tier,
   streak,
   storiesRead,
-  wordsLearned,
   features,
   limits,
   childProgress,
@@ -50,7 +49,6 @@ export function PaidHomepage({
   const languageCode = child?.language
     ? (typeof child.language === 'string' ? child.language : child.language.code)
     : 'HINDI';
-  const languageInfo = SUPPORTED_LANGUAGES[languageCode as keyof typeof SUPPORTED_LANGUAGES] || SUPPORTED_LANGUAGES.HINDI;
   const languageMeta = LANGUAGE_METADATA[languageCode] || LANGUAGE_METADATA.HINDI;
 
   const isPremium = tier === 'PREMIUM';

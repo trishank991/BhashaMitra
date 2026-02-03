@@ -306,10 +306,10 @@ export function PeppiAlphabetHelper({ language = 'HINDI', className }: PeppiAlph
                     <PeppiMiniHead />
                   </div>
                   <h4 className="font-semibold text-gray-800 mb-1">
-                    Hey! I'm Peppi!
+                    Hey! I&apos;m Peppi!
                   </h4>
                   <p className="text-sm text-gray-500 mb-3 px-4">
-                    I'm here to help you learn dost!
+                    I&apos;m here to help you learn dost!
                   </p>
 
                   {!isAvailable && childId && (

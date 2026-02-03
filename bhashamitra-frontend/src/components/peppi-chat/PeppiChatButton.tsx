@@ -43,7 +43,8 @@ function PeppiHead() {
   );
 }
 
-export function PeppiChatButton({ childId }: PeppiChatButtonProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function PeppiChatButton(props: PeppiChatButtonProps) {
   const { isOpen, openChat, closeChat } = usePeppiChatStore();
 
   const handleClick = () => {

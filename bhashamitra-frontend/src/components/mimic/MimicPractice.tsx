@@ -40,7 +40,6 @@ export function MimicPractice({
   const {
     isRecording,
     duration,
-    audioBlob,
     permissionStatus,
     error: recordingError,
     startRecording,

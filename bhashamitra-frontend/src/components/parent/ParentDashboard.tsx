@@ -244,7 +244,7 @@ export function ParentDashboard({ className }: ParentDashboardProps) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Parent Dashboard</h1>
-              <p className="text-sm text-gray-500">Track your children's learning progress</p>
+              <p className="text-sm text-gray-500">Track your children&apos;s learning progress</p>
             </div>
             <div className="flex items-center gap-3">
               <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
@@ -355,7 +355,7 @@ export function ParentDashboard({ className }: ParentDashboardProps) {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <Users className="w-5 h-5 text-primary-600" />
-              Children's Progress
+              Children&apos;s Progress
             </h2>
             <button className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
               View All <ChevronRight size={16} />

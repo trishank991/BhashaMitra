@@ -19,7 +19,6 @@ import {
   PeppiGender,
   PeppiAddressing,
   // Mimic types
-  PeppiMimicChallenge,
   PeppiMimicChallengeWithProgress,
   PeppiMimicAttemptResult,
   PeppiMimicProgressSummary,
@@ -45,9 +44,7 @@ import {
   PeppiFeedback,
   // Peppi Chat types
   PeppiChatMode,
-  PeppiConversation,
   PeppiConversationListItem,
-  PeppiChatMessage,
   StartConversationRequest,
   StartConversationResponse,
   SendMessageRequest,
@@ -491,7 +488,9 @@ private async request<T>(
       difficulty: this.mapLevelToDifficulty(backendStory.level),
       duration: backendStory.estimated_minutes || 3,
       thumbnail: backendStory.cover_image_url || '',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       pages: (backendStory.pages || []).map((page: any) => this.transformStoryPage(page)),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vocabulary: (backendStory.vocabulary || []).map((vocab: any) => this.transformVocabularyWord(vocab)),
       isLocked: false,
       requiredLevel: backendStory.level || 1,
@@ -703,6 +702,7 @@ private async request<T>(
   }
 
   // Alphabet/Script endpoints
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getScripts(childId: string): Promise<ApiResponse<Script[]>> {
     // API returns { data: [...] } format at /curriculum/alphabet/scripts/
     const response = await this.request<{ data: Script[] }>('/curriculum/alphabet/scripts/');
@@ -712,10 +712,12 @@ private async request<T>(
     return { success: false, error: response.error, data: [] };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getScriptLetters(childId: string, scriptId: string): Promise<ApiResponse<Letter[]>> {
     return this.request<Letter[]>(`/curriculum/alphabet/scripts/${scriptId}/letters/`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getAlphabetProgress(childId: string): Promise<ApiResponse<AlphabetProgress>> {
     return this.request<AlphabetProgress>(`/curriculum/alphabet/progress/`);
   }
@@ -958,9 +960,9 @@ private async request<T>(
    * Fetches available categories (Alphabet, Vocab, Mimic) for a specific language.
    * This is what unlocks the "Next" button!
    */
-  async getAvailableCategories(language: string): Promise<ApiResponse<any[]>> {
-    // Note: ensure this URL matches your backend urls.py path
-    return this.request<any[]>(`/challenges/categories/?language=${language}`);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getAvailableCategories(language: string): Promise<ApiResponse<Record<string, unknown>[]>> {
+    return this.request<Record<string, unknown>[]>(`/challenges/categories/?language=${language}`);
   }
 
   /**
@@ -978,12 +980,14 @@ private async request<T>(
     if (childId) params.append('child_id', childId);
 
     const queryString = params.toString();
-    const response = await this.request<any>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await this.request<{ results?: PeppiMimicChallengeWithProgress[] } | PeppiMimicChallengeWithProgress[]>(
       `/speech/mimic/challenges/${queryString ? `?${queryString}` : ''}`
-    );
+    ) as ApiResponse<{ results?: PeppiMimicChallengeWithProgress[] } | PeppiMimicChallengeWithProgress[]>;
 
     if (response.success && response.data) {
-      const data = response.data.results || response.data;
+      const responseData = response.data as { results?: PeppiMimicChallengeWithProgress[] } | PeppiMimicChallengeWithProgress[];
+      const data = Array.isArray(responseData) ? responseData : (responseData.results || []);
       return {
         success: true,
         data: Array.isArray(data) ? data : [],

@@ -9,7 +9,6 @@ import {
   Gamepad2,
   PenLine,
   Trophy,
-  TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ReportCardOverallStats } from '@/services/parentApi';

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Card, Button, Loading } from '@/components/ui';
+import { Card, Button } from '@/components/ui';
 import { useSounds } from '@/hooks';
 import { useAgeConfig } from '@/hooks/useAgeConfig';
 
@@ -57,15 +57,15 @@ const FILL_IN_THE_BLANK_SENTENCES = [
 ];
 
 export default function FillBlanksGame({ onComplete, onBack }: FillBlanksGameProps) {
-  const [questions, setQuestions] = useState(FILL_IN_THE_BLANK_SENTENCES);
+  const [questions] = useState(FILL_IN_THE_BLANK_SENTENCES);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
-  
-  const ageConfig = useAgeConfig();
+
+  useAgeConfig();
   const { onCorrect, onWrong, onLevelUp, onClick } = useSounds();
 
   // Shuffle options for each question

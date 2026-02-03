@@ -36,7 +36,7 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-export function FestivalList({ language, onFestivalSelect }: FestivalListProps) {
+export function FestivalList({ onFestivalSelect }: FestivalListProps) {
   const [festivals, setFestivals] = useState<Festival[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');

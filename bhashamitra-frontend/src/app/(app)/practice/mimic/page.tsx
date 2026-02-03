@@ -14,8 +14,6 @@ import {
   MimicChallengeFilters,
   MIMIC_CATEGORY_LABELS,
   MIMIC_CATEGORY_ICONS,
-  MIMIC_DIFFICULTY_LABELS,
-  MimicDifficulty,
 } from '@/types';
 import { AudioButton } from '@/components/ui/AudioButton';
 
@@ -27,7 +25,7 @@ export default function MimicPracticePage() {
   const [challenges, setChallenges] = useState<PeppiMimicChallengeWithProgress[]>([]);
   const [progressSummary, setProgressSummary] = useState<PeppiMimicProgressSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<MimicChallengeFilters>({});
   const [showFilters, setShowFilters] = useState(false);
 
@@ -86,8 +84,6 @@ export default function MimicPracticePage() {
   const handleFilterChange = (newFilters: Partial<MimicChallengeFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
   };
-
-  const clearFilters = () => setFilters({});
 
   const availableCategories = Array.from(
     new Set(challenges.map(c => c.category))

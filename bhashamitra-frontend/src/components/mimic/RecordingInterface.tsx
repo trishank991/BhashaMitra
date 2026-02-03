@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, Square, Loader2, Play } from 'lucide-react';
+import { Mic, MicOff, Loader2, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { soundService } from '@/lib/soundService';
 import { RecordingState, RecordingResult } from '@/types';

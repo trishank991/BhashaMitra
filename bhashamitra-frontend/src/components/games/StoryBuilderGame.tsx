@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Card, Button, Loading } from '@/components/ui';
+import { Card, Button } from '@/components/ui';
 import { useSounds } from '@/hooks';
 
 interface StoryBuilderGameProps {
@@ -56,9 +56,8 @@ export default function StoryBuilderGame({ onComplete, onBack }: StoryBuilderGam
   });
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  
-  const { onCorrect, onWrong, onLevelUp, onClick } = useSounds();
+
+  const { onCorrect, onLevelUp, onClick } = useSounds();
 
   const categories: Array<'starters' | 'characters' | 'actions' | 'endings'> = ['starters', 'characters', 'actions', 'endings'];
 
@@ -217,7 +216,7 @@ export default function StoryBuilderGame({ onComplete, onBack }: StoryBuilderGam
             {story.length === 0 ? (
               <p className="text-gray-400 italic">कहानी शुरू करने के लिए नीचे से चुनें...</p>
             ) : (
-              story.map((part, index) => (
+              story.map((part) => (
                 <motion.span
                   key={part.id}
                   initial={{ opacity: 0, x: -20 }}

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui';
 import { fadeInUp, staggerContainer, SUPPORTED_LANGUAGES } from '@/lib/constants';
-import { ChildProfile, LanguageCode } from '@/types';
+import { ChildProfile } from '@/types';
 import { UpgradeCTA, SubscriptionLimits } from '@/lib/api';
 import { ChildProgress } from '@/hooks/useSubscription';
 
@@ -39,7 +39,6 @@ export function FreeHomepage({
   child,
   streak,
   storiesRead,
-  wordsLearned,
   limits,
   upgradeCta,
   curriculumStats,

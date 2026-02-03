@@ -282,7 +282,7 @@ export default function AlphabetPage() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [selectedLetter, setSelectedLetter] = useState<typeof HINDI_VOWELS[0] | null>(null);
   const [activeTab, setActiveTab] = useState<'vowels' | 'consonants'>('vowels');
-  const { isAuthenticated, user, activeChild } = useAuthStore();
+  const { isAuthenticated, activeChild } = useAuthStore();
 
   // Get current language from active child, default to Hindi
   // Handle both string and object formats from API
@@ -373,9 +373,6 @@ export default function AlphabetPage() {
   };
 
   const metadata = languageMetadata[currentLanguage as keyof typeof languageMetadata] || languageMetadata.HINDI;
-
-  // Check if user is Premium tier for enhanced audio
-  const isPremium = user?.subscription_tier === 'PREMIUM';
 
   // Audio playback hook
   const { isPlaying, isLoading, playAudio, stopAudio, error: audioError } = useAudio({

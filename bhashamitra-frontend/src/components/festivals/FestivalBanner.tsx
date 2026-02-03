@@ -21,16 +21,7 @@ const RELIGION_COLORS: Record<string, { bg: string; text: string; accent: string
   BUDDHIST: { bg: 'from-yellow-500 to-amber-600', text: 'text-gray-900', accent: 'bg-red-500' },
 };
 
-const RELIGION_ICONS: Record<string, string> = {
-  HINDU: '/icons/festivals/diya.png',
-  MUSLIM: '/icons/festivals/moon.png',
-  SIKH: '/icons/festivals/khanda.png',
-  CHRISTIAN: '/icons/festivals/star.png',
-  JAIN: '/icons/festivals/ahimsa.png',
-  BUDDHIST: '/icons/festivals/wheel.png',
-};
-
-export function FestivalBanner({ language, onFestivalClick, className = '' }: FestivalBannerProps) {
+export function FestivalBanner({ onFestivalClick, className = '' }: FestivalBannerProps) {
   const [upcomingFestivals, setUpcomingFestivals] = useState<Festival[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);

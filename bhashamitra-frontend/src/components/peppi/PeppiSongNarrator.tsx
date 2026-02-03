@@ -36,7 +36,6 @@ const GENDER_LABELS: Record<LanguageCode, { male: string; female: string }> = {
 
 export function PeppiSongNarrator({
   songId,
-  songTitle,
   language = 'HINDI',
   defaultGender = 'female',
   subscriptionTier,

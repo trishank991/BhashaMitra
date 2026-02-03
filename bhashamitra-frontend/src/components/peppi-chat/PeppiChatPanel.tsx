@@ -168,14 +168,14 @@ export function PeppiChatPanel({ childId }: PeppiChatPanelProps) {
               <PeppiMascot size="sm" />
             </div>
             <h4 className="font-semibold text-gray-800 mb-1">
-              Hey! I'm Peppi!
+              Hey! I&apos;m Peppi!
             </h4>
             <p className="text-sm text-gray-500 mb-3 px-4">
               {mode === 'FESTIVAL_STORY'
-                ? "Let's explore festival stories together yaar!"
+                ? "Let&apos;s explore festival stories together yaar!"
                 : mode === 'CURRICULUM_HELP'
-                ? "I'm here to help you learn dost!"
-                : "Let's chat and practice together!"}
+                ? "I&apos;m here to help you learn dost!"
+                : "Let&apos;s chat and practice together!"}
             </p>
 
             {/* Chat suggestions */}

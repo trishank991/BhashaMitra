@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Card, Button, Loading } from '@/components/ui';
+import { Card, Button } from '@/components/ui';
 import { useSounds } from '@/hooks';
 import { useAudio } from '@/hooks/useAudio';
 
@@ -97,7 +97,7 @@ export default function SpellingBeeGame({ onComplete, onBack }: SpellingBeeGameP
   const [hasRevealed, setHasRevealed] = useState(false);
   
   const { onCorrect, onWrong, onLevelUp, onClick } = useSounds();
-  const { isPlaying, isLoading, playAudio, stopAudio } = useAudio({ language: 'HINDI' });
+  const { isLoading, playAudio } = useAudio({ language: 'HINDI' });
   
   const inputRef = useRef<HTMLInputElement>(null);
   const currentWord = words[currentIndex];

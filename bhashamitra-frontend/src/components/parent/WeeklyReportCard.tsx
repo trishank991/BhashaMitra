@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { Clock, BookOpen, Star, MessageCircle, TrendingUp, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import type { WeeklyReport } from '@/types/parent';
 
 interface WeeklyReportCardProps {
@@ -33,7 +32,7 @@ export function WeeklyReportCard({ report, childName, onViewDetails }: WeeklyRep
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="font-semibold text-gray-900">{childName}'s Weekly Report</h3>
+          <h3 className="font-semibold text-gray-900">{childName}&apos;s Weekly Report</h3>
           <p className="text-sm text-gray-500">{weekRange}</p>
         </div>
         <button

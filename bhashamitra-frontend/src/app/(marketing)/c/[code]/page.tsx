@@ -11,6 +11,12 @@ import { Loading } from '@/components/ui';
 
 type GameState = 'loading' | 'intro' | 'playing' | 'result' | 'leaderboard' | 'expired' | 'error';
 
+// API response wrapper type for nested data
+interface NestedResponse<T> {
+  data?: T;
+  is_expired?: boolean;
+}
+
 export default function ChallengePlayPage() {
   const params = useParams();
   const code = (params.code as string).toUpperCase();
@@ -32,8 +38,9 @@ export default function ChallengePlayPage() {
       const response = await api.getPublicChallenge(code);
       if (response.success && response.data) {
         // Access nested data structure: response.data.data contains the challenge
-        const challengeData = (response.data as any).data;
-        if (challengeData?.is_expired) {
+        const nested = response.data as NestedResponse<PublicChallengeResponse>;
+        const challengeData = nested.data;
+        if (nested.is_expired) {
           setGameState('expired');
         } else if (challengeData) {
           setChallenge(challengeData);
@@ -60,7 +67,8 @@ export default function ChallengePlayPage() {
 
     if (response.success && response.data) {
       // Access nested data structure: response.data.data contains { attempt_id, challenge, started_at }
-      const data = (response.data as any).data;
+      const nested = response.data as NestedResponse<{ attempt_id: string; challenge: PublicChallengeResponse }>;
+      const data = nested.data;
       if (data) {
         setAttemptId(data.attempt_id);
         setChallenge(data.challenge);
@@ -84,7 +92,8 @@ export default function ChallengePlayPage() {
 
     if (response.success && response.data) {
       // Access nested data structure: response.data.data contains the result
-      const resultData = (response.data as any).data;
+      const nested = response.data as NestedResponse<ChallengeResultResponse>;
+      const resultData = nested.data;
       if (resultData) {
         setResult(resultData);
         setGameState('result');
@@ -102,7 +111,8 @@ export default function ChallengePlayPage() {
     const response = await api.getChallengeLeaderboard(code);
     if (response.success && response.data) {
       // Access nested data structure: response.data.data contains the leaderboard
-      const leaderboardData = (response.data as any).data;
+      const nested = response.data as NestedResponse<ChallengeLeaderboardResponse>;
+      const leaderboardData = nested.data;
       if (leaderboardData) {
         setLeaderboard(leaderboardData);
         setGameState('leaderboard');

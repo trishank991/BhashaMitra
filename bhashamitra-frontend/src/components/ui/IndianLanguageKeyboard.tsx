@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Delete, Globe, Volume2 } from 'lucide-react';
+import { X, Delete, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type LanguageCode = 'HINDI' | 'TAMIL' | 'TELUGU' | 'GUJARATI' | 'PUNJABI' | 'BENGALI' | 'MALAYALAM';

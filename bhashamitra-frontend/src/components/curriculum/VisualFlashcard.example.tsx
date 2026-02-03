@@ -174,17 +174,10 @@ export function FlashcardListExample() {
  */
 export function FlashcardWithAudioExample() {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   // In a real implementation, you would use the useAudio hook here
   const handleAudioPlay = async (word: string) => {
-    setIsPlayingAudio(true);
     console.log('Playing audio for:', word);
-
-    // Simulate audio playback
-    setTimeout(() => {
-      setIsPlayingAudio(false);
-    }, 2000);
   };
 
   return (
@@ -199,6 +192,25 @@ export function FlashcardWithAudioExample() {
       isFlipped={isFlipped}
       onFlip={() => setIsFlipped(!isFlipped)}
       onAudioPlay={handleAudioPlay}
+    />
+  );
+}
+
+/**
+ * Single category card component - extracted to avoid hooks in callback
+ */
+function CategoryCard({ cat }: { cat: { name: string; word: string; romanization: string; translation: string } }) {
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  return (
+    <VisualFlashcard
+      word={cat.word}
+      romanization={cat.romanization}
+      translation={cat.translation}
+      category={cat.name}
+      partOfSpeech="noun"
+      isFlipped={isFlipped}
+      onFlip={() => setIsFlipped(!isFlipped)}
     />
   );
 }
@@ -219,22 +231,9 @@ export function CategoryExamplesGrid() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {categories.map((cat) => {
-        const [isFlipped, setIsFlipped] = useState(false);
-
-        return (
-          <VisualFlashcard
-            key={cat.name}
-            word={cat.word}
-            romanization={cat.romanization}
-            translation={cat.translation}
-            category={cat.name}
-            partOfSpeech="noun"
-            isFlipped={isFlipped}
-            onFlip={() => setIsFlipped(!isFlipped)}
-          />
-        );
-      })}
+      {categories.map((cat) => (
+        <CategoryCard key={cat.name} cat={cat} />
+      ))}
     </div>
   );
 }

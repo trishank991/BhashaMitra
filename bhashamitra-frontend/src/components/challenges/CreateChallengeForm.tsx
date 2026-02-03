@@ -20,13 +20,37 @@ const LANGUAGES = [
   { value: 'FIJI_HINDI', label: 'Fiji Hindi' },
 ];
 
+interface Category {
+  id: string;
+  name: string;
+  label?: string;
+  slug?: string;
+  value?: string;
+  display_name?: string;
+}
+
+interface ChallengeFormData {
+  title: string;
+  description: string;
+  language: string;
+  category: string;
+  difficulty: string;
+  question_count: number;
+  time_limit_seconds: number;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T | { data: T };
+  error?: string;
+}
+
 export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, isQuotaLoading }: Props) {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Using <any> here to allow 'description' which is missing in the base type
-  const [formData, setFormData] = useState<any>({
+
+  const [formData, setFormData] = useState<ChallengeFormData>({
     title: '',
     description: '',
     language: 'HINDI',
@@ -39,10 +63,11 @@ export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, is
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await api.getChallengeCategories() as any;
+        const res = await api.getChallengeCategories() as ApiResponse<Category[]>;
         if (res?.success && res?.data) {
           // Normalizes data structure for safety
-          setCategories(res.data.data || res.data || []);
+          const data = res.data as Category[] | { data: Category[] };
+          setCategories(Array.isArray(data) ? data : (data.data || []));
         }
       } catch (err) {
         console.error("Failed to fetch categories", err);
@@ -58,9 +83,15 @@ export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, is
     setIsSubmitting(true);
     setError(null);
     try {
-      const res = await api.createChallenge(formData) as any;
-      if (res?.success && res?.data?.data?.code) {
-        onSuccess(res.data.data.code);
+      const res = await api.createChallenge(formData) as ApiResponse<{ code: string }>;
+      if (res?.success && res?.data) {
+        const data = res.data as { code: string } | { data: { code: string } };
+        const code = 'code' in data ? data.code : data.data?.code;
+        if (code) {
+          onSuccess(code);
+        } else {
+          setError('Failed to create challenge');
+        }
       } else if (res?.error) {
         setError(res.error);
       }
@@ -112,7 +143,8 @@ export default function CreateChallengeForm({ onSuccess, onCancel, canCreate, is
           disabled={!canCreate || isSubmitting}
         >
           <option value="">Select a category</option>
-          {categories.map((cat: any) => (
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {categories.map((cat: Category) => (
             <option key={cat.id || cat.slug || cat.value} value={cat.id || cat.slug || cat.value}>
               {cat.name || cat.display_name || cat.label || 'Unnamed Category'}
             </option>

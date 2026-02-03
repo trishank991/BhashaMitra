@@ -86,7 +86,7 @@ export function StreakCard({ streak, className }: StreakCardProps) {
           <div className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-yellow-300" />
             <span className="text-sm font-medium">
-              Amazing! You're on fire!
+              Amazing! You&apos;re on fire!
             </span>
           </div>
         </motion.div>

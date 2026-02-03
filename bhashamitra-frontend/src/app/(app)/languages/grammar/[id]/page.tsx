@@ -187,7 +187,7 @@ export default function GrammarTopicDetailPage() {
         <div className="flex flex-col items-center justify-center py-12">
           <span className="text-6xl mb-4">📚</span>
           <h1 className="text-xl font-bold text-gray-900 mb-2">Topic Not Found</h1>
-          <p className="text-gray-500 mb-6">This grammar topic doesn't exist.</p>
+          <p className="text-gray-500 mb-6">This grammar topic does not exist.</p>
           <Link href="/languages/grammar">
             <Button>Back to Grammar</Button>
           </Link>

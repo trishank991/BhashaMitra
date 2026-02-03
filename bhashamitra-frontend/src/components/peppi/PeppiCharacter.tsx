@@ -99,7 +99,8 @@ export function PeppiCharacter({
       {/* Peppi character - ragdoll cat SVG */}
       <motion.div
         className={cn(sizeClass, 'relative')}
-        animate={animate && animation ? animation as any : false}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        animate={animate && animation ? (animation as any) : false}
       >
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-lg">
           {/* Ears */}

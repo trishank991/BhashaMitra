@@ -12,7 +12,7 @@ class Command(BaseCommand):
         test_users = [
             {
                 'email': 'free@test.com',
-                'password': 'test1234',
+                'password': 'Test@123',
                 'tier': 'FREE',
                 'name': 'Free Test Parent',
                 'email_verified': True,
@@ -20,7 +20,7 @@ class Command(BaseCommand):
             },
             {
                 'email': 'standard@test.com',
-                'password': 'test1234',
+                'password': 'Test@123',
                 'tier': 'STANDARD',
                 'name': 'Standard Test Parent',
                 'email_verified': True,
@@ -29,7 +29,7 @@ class Command(BaseCommand):
             },
             {
                 'email': 'premium@test.com',
-                'password': 'test1234',
+                'password': 'Test@123',
                 'tier': 'PREMIUM',
                 'name': 'Premium Test Parent',
                 'email_verified': True,
@@ -51,12 +51,14 @@ class Command(BaseCommand):
             )
             
             if created:
-                user.set_password(user_data['password'])
                 created_count += 1
                 self.stdout.write(self.style.SUCCESS(f'✅ Created user: {user_data["email"]}'))
             else:
                 self.stdout.write(self.style.WARNING(f'⚠️  User already exists: {user_data["email"]}'))
-            
+
+            # Always set password (ensures it's updated on re-run)
+            user.set_password(user_data['password'])
+
             # Update user fields
             user.name = user_data['name']
             user.subscription_tier = user_data['tier']
@@ -88,6 +90,6 @@ class Command(BaseCommand):
         )
         self.stdout.write(f'📊 Created {created_count} new users')
         self.stdout.write('\n📋 Test Credentials:')
-        self.stdout.write('  FREE: free@test.com / test1234')
-        self.stdout.write('  STANDARD: standard@test.com / test1234')
-        self.stdout.write('  PREMIUM: premium@test.com / test1234')
+        self.stdout.write('  FREE: free@test.com / Test@123')
+        self.stdout.write('  STANDARD: standard@test.com / Test@123')
+        self.stdout.write('  PREMIUM: premium@test.com / Test@123')

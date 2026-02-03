@@ -13,7 +13,7 @@ class Command(BaseCommand):
         test_users = [
             {
                 'email': 'free@test.com',
-                'password': 'test1234',
+                'password': 'Test@123',
                 'name': 'Free Tier Parent',
                 'subscription_tier': 'FREE',
                 'child_name': 'Aarav',
@@ -21,7 +21,7 @@ class Command(BaseCommand):
             },
             {
                 'email': 'standard@test.com',
-                'password': 'test1234',
+                'password': 'Test@123',
                 'name': 'Standard Tier Parent',
                 'subscription_tier': 'STANDARD',
                 'child_name': 'Priya',
@@ -29,7 +29,7 @@ class Command(BaseCommand):
             },
             {
                 'email': 'premium@test.com',
-                'password': 'test1234',
+                'password': 'Test@123',
                 'name': 'Premium Tier Parent',
                 'subscription_tier': 'PREMIUM',
                 'child_name': 'Arjun',
@@ -100,7 +100,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('TEST ACCOUNTS CREATED'))
         self.stdout.write(self.style.SUCCESS('=' * 50))
         self.stdout.write('')
-        self.stdout.write('Login credentials (password: test1234):')
+        self.stdout.write('Login credentials (password: Test@123):')
         self.stdout.write('')
         self.stdout.write(self.style.HTTP_INFO('FREE TIER:'))
         self.stdout.write('  Email: free@test.com')
